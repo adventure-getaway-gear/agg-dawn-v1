@@ -41,6 +41,30 @@
       "label": "Video URL (YouTube, Vimeo, MP4)"
     },
     {
+      "type": "checkbox",
+      "id": "video_autoplay",
+      "label": "Autoplay Video",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "video_muted",
+      "label": "Mute Video",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "video_controls",
+      "label": "Show Controls",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "video_loop",
+      "label": "Loop Video",
+      "default": false
+    },
+    {
       "type": "select",
       "id": "image_position",
       "label": "Media Position",
@@ -92,7 +116,14 @@
       {% elsif section.settings.media_type == 'video' and section.settings.video_url %}
         <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
           <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
-            <iframe src="{{ section.settings.video_url }}" frameborder="0" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"></iframe>
+            <video
+              src="{{ section.settings.video_url }}"
+              {% if section.settings.video_autoplay %}autoplay{% endif %}
+              {% if section.settings.video_muted %}muted{% endif %}
+              {% if section.settings.video_controls %}controls{% endif %}
+              {% if section.settings.video_loop %}loop{% endif %}
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"
+            ></video>
           </div>
         </div>
       {% endif %}
@@ -113,7 +144,14 @@
       {% elsif section.settings.media_type == 'video' and section.settings.video_url %}
         <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
           <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
-            <iframe src="{{ section.settings.video_url }}" frameborder="0" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"></iframe>
+            <video
+              src="{{ section.settings.video_url }}"
+              {% if section.settings.video_autoplay %}autoplay{% endif %}
+              {% if section.settings.video_muted %}muted{% endif %}
+              {% if section.settings.video_controls %}controls{% endif %}
+              {% if section.settings.video_loop %}loop{% endif %}
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"
+            ></video>
           </div>
         </div>
       {% endif %}
