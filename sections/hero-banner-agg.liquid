@@ -47,6 +47,110 @@
     assign show_controls = false
   endif
 -%}
+  # Helper: function to build style for a 9-point code + offsets
+  assign heading_pos = s.heading_position | default: 'mc'
+  assign sub_pos = s.subheading_position | default: heading_pos
+  assign cta_pos = s.cta_position | default: heading_pos
+  assign heading_style = ''
+  assign sub_style = ''
+  assign cta_style = ''
+  assign positions = 'heading_pos sub_pos cta_pos'
+  # internal capture macro-like via for loops not practical; build per element
+  # Build styles
+  for p in (1..1)
+    assign code = heading_pos
+    assign offx = s.heading_offset_x | default: 0
+    assign offy = s.heading_offset_y | default: 0
+    assign heading_style = ''
+    if code == 'tl'
+      assign heading_style = 'top:0;left:0;'
+    elsif code == 'tc'
+      assign heading_style = 'top:0;left:50%;transform:translateX(-50%)'
+    elsif code == 'tr'
+      assign heading_style = 'top:0;right:0;'
+    elsif code == 'ml'
+      assign heading_style = 'top:50%;left:0;transform:translateY(-50%)'
+    elsif code == 'mc'
+      assign heading_style = 'top:50%;left:50%;transform:translate(-50%,-50%)'
+    elsif code == 'mr'
+      assign heading_style = 'top:50%;right:0;transform:translateY(-50%)'
+    elsif code == 'bl'
+      assign heading_style = 'bottom:0;left:0;'
+    elsif code == 'bc'
+      assign heading_style = 'bottom:0;left:50%;transform:translateX(-50%)'
+    elsif code == 'br'
+      assign heading_style = 'bottom:0;right:0;'
+    endif
+    if heading_style contains 'transform:'
+      assign heading_style = heading_style | append: ' translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+      assign heading_style = heading_style | replace: 'transform:translate', 'transform:translate'
+    else
+      assign heading_style = heading_style | append: ' transform:translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+    endif
+  endfor
+  for p in (1..1)
+    assign code = sub_pos
+    assign offx = s.subheading_offset_x | default: 0
+    assign offy = s.subheading_offset_y | default: 40
+    assign sub_style = ''
+    if code == 'tl'
+      assign sub_style = 'top:0;left:0;'
+    elsif code == 'tc'
+      assign sub_style = 'top:0;left:50%;transform:translateX(-50%)'
+    elsif code == 'tr'
+      assign sub_style = 'top:0;right:0;'
+    elsif code == 'ml'
+      assign sub_style = 'top:50%;left:0;transform:translateY(-50%)'
+    elsif code == 'mc'
+      assign sub_style = 'top:50%;left:50%;transform:translate(-50%,-50%)'
+    elsif code == 'mr'
+      assign sub_style = 'top:50%;right:0;transform:translateY(-50%)'
+    elsif code == 'bl'
+      assign sub_style = 'bottom:0;left:0;'
+    elsif code == 'bc'
+      assign sub_style = 'bottom:0;left:50%;transform:translateX(-50%)'
+    elsif code == 'br'
+      assign sub_style = 'bottom:0;right:0;'
+    endif
+    if sub_style contains 'transform:'
+      assign sub_style = sub_style | append: ' translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+      assign sub_style = sub_style | replace: 'transform:translate', 'transform:translate'
+    else
+      assign sub_style = sub_style | append: ' transform:translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+    endif
+  endfor
+  for p in (1..1)
+    assign code = cta_pos
+    assign offx = s.cta_offset_x | default: 0
+    assign offy = s.cta_offset_y | default: 100
+    assign cta_style = ''
+    if code == 'tl'
+      assign cta_style = 'top:0;left:0;'
+    elsif code == 'tc'
+      assign cta_style = 'top:0;left:50%;transform:translateX(-50%)'
+    elsif code == 'tr'
+      assign cta_style = 'top:0;right:0;'
+    elsif code == 'ml'
+      assign cta_style = 'top:50%;left:0;transform:translateY(-50%)'
+    elsif code == 'mc'
+      assign cta_style = 'top:50%;left:50%;transform:translate(-50%,-50%)'
+    elsif code == 'mr'
+      assign cta_style = 'top:50%;right:0;transform:translateY(-50%)'
+    elsif code == 'bl'
+      assign cta_style = 'bottom:0;left:0;'
+    elsif code == 'bc'
+      assign cta_style = 'bottom:0;left:50%;transform:translateX(-50%)'
+    elsif code == 'br'
+      assign cta_style = 'bottom:0;right:0;'
+    endif
+    if cta_style contains 'transform:'
+      assign cta_style = cta_style | append: ' translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+      assign cta_style = cta_style | replace: 'transform:translate', 'transform:translate'
+    else
+      assign cta_style = cta_style | append: ' transform:translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+    endif
+  endfor
+-%}
 
 <section class="hero-banner-agg" role="banner" aria-label="{{ s.headline | escape }}" style="position:relative;overflow:hidden;">
   <style>
@@ -109,23 +213,31 @@
       <div style="background:#222;height:100%;width:100%;"></div>
     {% endif %}
   </div>
-  <div class="hero-inner" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:{{ align_map }};text-align:{{ s.text_align }};padding:{{ s.padding }}px;gap:1rem;">
-    <h1 style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;">{{ s.headline }}</h1>
-    {% if s.subheadline != blank %}
-      <p style="margin:0 0 1rem 0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;max-width:60ch;">{{ s.subheadline }}</p>
-    {% endif %}
-    <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:{{ s.text_align }};">
-      {% if s.cta_link %}
-        <a href="{{ s.cta_link }}" class="btn" aria-label="{{ s.cta_aria_primary | default: s.cta_text }}" style="background:#fff;color:#000;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;font-weight:600;">{{ s.cta_text }}</a>
-      {% endif %}
-      {% if s.cta_link_2 %}
-        <a href="{{ s.cta_link_2 }}" class="btn" aria-label="{{ s.cta_aria_secondary | default: s.cta_text_2 }}" style="background:#fff;color:#000;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;font-weight:600;">{{ s.cta_text_2 }}</a>
-      {% endif %}
+  <div class="hero-layer" style="position:absolute;inset:0;padding:{{ s.padding }}px;">
+    <div class="hero-heading-wrap" style="position:absolute;{{ heading_style }}max-width:{{ s.heading_max_width | default: 60 }}ch;">
+      <h1 style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;">{{ s.headline }}</h1>
     </div>
-    {% if s.seo_description != blank %}
-      <div class="visually-hidden">{{ s.seo_description }}</div>
+    {% if s.subheadline != blank %}
+    <div class="hero-subheading-wrap" style="position:absolute;{{ sub_style }}max-width:{{ s.subheading_max_width | default: 70 }}ch;">
+      <p style="margin:0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;">{{ s.subheadline }}</p>
+    </div>
     {% endif %}
+    <div class="hero-ctas-wrap" style="position:absolute;{{ cta_style }}">
+      <div class="hero-ctas{% if s.stack_ctas_mobile %} stack-mobile{% endif %}" style="display:flex;flex-wrap:wrap;gap:1rem;">
+        {% if s.cta_link %}
+          <a href="{{ s.cta_link }}" class="btn" aria-label="{{ s.cta_aria_primary | default: s.cta_text }}" style="background:#fff;color:#000;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;font-weight:600;">{{ s.cta_text }}</a>
+        {% endif %}
+        {% if s.cta_link_2 %}
+          <a href="{{ s.cta_link_2 }}" class="btn" aria-label="{{ s.cta_aria_secondary | default: s.cta_text_2 }}" style="background:#fff;color:#000;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;font-weight:600;">{{ s.cta_text_2 }}</a>
+        {% endif %}
+      </div>
+    </div>
+    {% if s.seo_description != blank %}<div class="visually-hidden">{{ s.seo_description }}</div>{% endif %}
   </div>
+  <style>
+    .hero-banner-agg .stack-mobile{ }
+    @media (max-width: 749px){ .hero-banner-agg .stack-mobile{flex-direction:column;align-items:flex-start;} }
+  </style>
   {% if s.output_jsonld and s.headline != blank %}
     <script type="application/ld+json">{
       "@context":"https://schema.org",
@@ -142,7 +254,7 @@
 {
   "name": "Hero Banner AGG",
   "settings": [
-    {"type":"select","id":"media_type","label":"Media Type","options":[{"value":"image","label":"Image"},{"value":"video","label":"Video"}],"default":"image"},
+  {"type":"select","id":"media_type","label":"Media Type","options":[{"value":"image","label":"Image"},{"value":"video","label":"Video"}],"default":"image"},
     {"type":"image_picker","id":"hero_image","label":"Hero Image"},
     {"type":"text","id":"image_alt","label":"Image Alt Text"},
     {"type":"url","id":"video_url","label":"Video URL (YouTube, Vimeo, or MP4)"},
@@ -163,9 +275,21 @@
     {"type":"text","id":"subheadline","label":"Subheadline","default":"Gear up for your next getaway"},
     {"type":"color","id":"headline_color","label":"Headline Color","default":"#ffffff"},
     {"type":"color","id":"subheadline_color","label":"Subheadline Color","default":"#ffffff"},
-    {"type":"range","id":"headline_size","label":"Headline Font Size (px)","min":20,"max":96,"step":2,"default":48},
-    {"type":"range","id":"subheadline_size","label":"Subheadline Font Size (px)","min":14,"max":48,"step":2,"default":22},
-    {"type":"range","id":"padding","label":"Content Padding (px)","min":0,"max":120,"step":4,"default":40},
+  {"type":"range","id":"headline_size","label":"Headline Font Size (px)","min":20,"max":120,"step":2,"default":56},
+  {"type":"range","id":"subheadline_size","label":"Subheadline Font Size (px)","min":12,"max":64,"step":2,"default":24},
+  {"type":"range","id":"padding","label":"Content Padding (px)","min":0,"max":160,"step":4,"default":40},
+  {"type":"range","id":"heading_max_width","label":"Heading Max Width (ch)","min":20,"max":100,"step":2,"default":60},
+  {"type":"range","id":"subheading_max_width","label":"Subheading Max Width (ch)","min":20,"max":120,"step":2,"default":70},
+  {"type":"select","id":"heading_position","label":"Heading Position (9-point)","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}],"default":"mc"},
+  {"type":"range","id":"heading_offset_x","label":"Heading Offset X (px)","min":-400,"max":400,"step":5,"default":0},
+  {"type":"range","id":"heading_offset_y","label":"Heading Offset Y (px)","min":-400,"max":400,"step":5,"default":0},
+  {"type":"select","id":"subheading_position","label":"Subheading Position (9-point)","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}],"default":"mc"},
+  {"type":"range","id":"subheading_offset_x","label":"Subheading Offset X (px)","min":-400,"max":400,"step":5,"default":0},
+  {"type":"range","id":"subheading_offset_y","label":"Subheading Offset Y (px)","min":-400,"max":400,"step":5,"default":40},
+  {"type":"select","id":"cta_position","label":"CTA Group Position (9-point)","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}],"default":"mc"},
+  {"type":"range","id":"cta_offset_x","label":"CTA Offset X (px)","min":-400,"max":400,"step":5,"default":0},
+  {"type":"range","id":"cta_offset_y","label":"CTA Offset Y (px)","min":-400,"max":400,"step":5,"default":100},
+  {"type":"checkbox","id":"stack_ctas_mobile","label":"Stack CTAs on Mobile","default":true},
     {"type":"url","id":"cta_link","label":"Primary CTA Link"},
     {"type":"text","id":"cta_text","label":"Primary CTA Text","default":"Shop Now"},
     {"type":"text","id":"cta_aria_primary","label":"Primary CTA Aria Label"},
