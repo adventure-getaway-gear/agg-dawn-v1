@@ -46,110 +46,102 @@
   if s.video_controls == false and force_controls == false
     assign show_controls = false
   endif
--%}
-  # Helper: function to build style for a 9-point code + offsets
+%}
+{%- liquid
   assign heading_pos = s.heading_position | default: 'mc'
   assign sub_pos = s.subheading_position | default: heading_pos
   assign cta_pos = s.cta_position | default: heading_pos
+
   assign heading_style = ''
   assign sub_style = ''
   assign cta_style = ''
-  assign positions = 'heading_pos sub_pos cta_pos'
-  # internal capture macro-like via for loops not practical; build per element
-  # Build styles
-  for p in (1..1)
-    assign code = heading_pos
-    assign offx = s.heading_offset_x | default: 0
-    assign offy = s.heading_offset_y | default: 0
-    assign heading_style = ''
-    if code == 'tl'
-      assign heading_style = 'top:0;left:0;'
-    elsif code == 'tc'
-      assign heading_style = 'top:0;left:50%;transform:translateX(-50%)'
-    elsif code == 'tr'
-      assign heading_style = 'top:0;right:0;'
-    elsif code == 'ml'
-      assign heading_style = 'top:50%;left:0;transform:translateY(-50%)'
-    elsif code == 'mc'
-      assign heading_style = 'top:50%;left:50%;transform:translate(-50%,-50%)'
-    elsif code == 'mr'
-      assign heading_style = 'top:50%;right:0;transform:translateY(-50%)'
-    elsif code == 'bl'
-      assign heading_style = 'bottom:0;left:0;'
-    elsif code == 'bc'
-      assign heading_style = 'bottom:0;left:50%;transform:translateX(-50%)'
-    elsif code == 'br'
-      assign heading_style = 'bottom:0;right:0;'
-    endif
-    if heading_style contains 'transform:'
-      assign heading_style = heading_style | append: ' translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
-      assign heading_style = heading_style | replace: 'transform:translate', 'transform:translate'
-    else
-      assign heading_style = heading_style | append: ' transform:translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
-    endif
-  endfor
-  for p in (1..1)
-    assign code = sub_pos
-    assign offx = s.subheading_offset_x | default: 0
-    assign offy = s.subheading_offset_y | default: 40
-    assign sub_style = ''
-    if code == 'tl'
-      assign sub_style = 'top:0;left:0;'
-    elsif code == 'tc'
-      assign sub_style = 'top:0;left:50%;transform:translateX(-50%)'
-    elsif code == 'tr'
-      assign sub_style = 'top:0;right:0;'
-    elsif code == 'ml'
-      assign sub_style = 'top:50%;left:0;transform:translateY(-50%)'
-    elsif code == 'mc'
-      assign sub_style = 'top:50%;left:50%;transform:translate(-50%,-50%)'
-    elsif code == 'mr'
-      assign sub_style = 'top:50%;right:0;transform:translateY(-50%)'
-    elsif code == 'bl'
-      assign sub_style = 'bottom:0;left:0;'
-    elsif code == 'bc'
-      assign sub_style = 'bottom:0;left:50%;transform:translateX(-50%)'
-    elsif code == 'br'
-      assign sub_style = 'bottom:0;right:0;'
-    endif
-    if sub_style contains 'transform:'
-      assign sub_style = sub_style | append: ' translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
-      assign sub_style = sub_style | replace: 'transform:translate', 'transform:translate'
-    else
-      assign sub_style = sub_style | append: ' transform:translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
-    endif
-  endfor
-  for p in (1..1)
-    assign code = cta_pos
-    assign offx = s.cta_offset_x | default: 0
-    assign offy = s.cta_offset_y | default: 100
-    assign cta_style = ''
-    if code == 'tl'
-      assign cta_style = 'top:0;left:0;'
-    elsif code == 'tc'
-      assign cta_style = 'top:0;left:50%;transform:translateX(-50%)'
-    elsif code == 'tr'
-      assign cta_style = 'top:0;right:0;'
-    elsif code == 'ml'
-      assign cta_style = 'top:50%;left:0;transform:translateY(-50%)'
-    elsif code == 'mc'
-      assign cta_style = 'top:50%;left:50%;transform:translate(-50%,-50%)'
-    elsif code == 'mr'
-      assign cta_style = 'top:50%;right:0;transform:translateY(-50%)'
-    elsif code == 'bl'
-      assign cta_style = 'bottom:0;left:0;'
-    elsif code == 'bc'
-      assign cta_style = 'bottom:0;left:50%;transform:translateX(-50%)'
-    elsif code == 'br'
-      assign cta_style = 'bottom:0;right:0;'
-    endif
-    if cta_style contains 'transform:'
-      assign cta_style = cta_style | append: ' translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
-      assign cta_style = cta_style | replace: 'transform:translate', 'transform:translate'
-    else
-      assign cta_style = cta_style | append: ' transform:translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
-    endif
-  endfor
+
+  assign code = heading_pos
+  assign offx = s.heading_offset_x | default: 0
+  assign offy = s.heading_offset_y | default: 0
+  if code == 'tl'
+    assign heading_style = 'top:0;left:0;'
+  elsif code == 'tc'
+    assign heading_style = 'top:0;left:50%;transform:translateX(-50%)'
+  elsif code == 'tr'
+    assign heading_style = 'top:0;right:0;'
+  elsif code == 'ml'
+    assign heading_style = 'top:50%;left:0;transform:translateY(-50%)'
+  elsif code == 'mc'
+    assign heading_style = 'top:50%;left:50%;transform:translate(-50%,-50%)'
+  elsif code == 'mr'
+    assign heading_style = 'top:50%;right:0;transform:translateY(-50%)'
+  elsif code == 'bl'
+    assign heading_style = 'bottom:0;left:0;'
+  elsif code == 'bc'
+    assign heading_style = 'bottom:0;left:50%;transform:translateX(-50%)'
+  elsif code == 'br'
+    assign heading_style = 'bottom:0;right:0;'
+  endif
+  if heading_style contains 'transform:'
+    assign heading_style = heading_style | append: ' translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+    assign heading_style = heading_style | replace: 'transform:translate', 'transform:translate'
+  else
+    assign heading_style = heading_style | append: ' transform:translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+  endif
+
+  assign code = sub_pos
+  assign offx = s.subheading_offset_x | default: 0
+  assign offy = s.subheading_offset_y | default: 40
+  if code == 'tl'
+    assign sub_style = 'top:0;left:0;'
+  elsif code == 'tc'
+    assign sub_style = 'top:0;left:50%;transform:translateX(-50%)'
+  elsif code == 'tr'
+    assign sub_style = 'top:0;right:0;'
+  elsif code == 'ml'
+    assign sub_style = 'top:50%;left:0;transform:translateY(-50%)'
+  elsif code == 'mc'
+    assign sub_style = 'top:50%;left:50%;transform:translate(-50%,-50%)'
+  elsif code == 'mr'
+    assign sub_style = 'top:50%;right:0;transform:translateY(-50%)'
+  elsif code == 'bl'
+    assign sub_style = 'bottom:0;left:0;'
+  elsif code == 'bc'
+    assign sub_style = 'bottom:0;left:50%;transform:translateX(-50%)'
+  elsif code == 'br'
+    assign sub_style = 'bottom:0;right:0;'
+  endif
+  if sub_style contains 'transform:'
+    assign sub_style = sub_style | append: ' translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+    assign sub_style = sub_style | replace: 'transform:translate', 'transform:translate'
+  else
+    assign sub_style = sub_style | append: ' transform:translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+  endif
+
+  assign code = cta_pos
+  assign offx = s.cta_offset_x | default: 0
+  assign offy = s.cta_offset_y | default: 100
+  if code == 'tl'
+    assign cta_style = 'top:0;left:0;'
+  elsif code == 'tc'
+    assign cta_style = 'top:0;left:50%;transform:translateX(-50%)'
+  elsif code == 'tr'
+    assign cta_style = 'top:0;right:0;'
+  elsif code == 'ml'
+    assign cta_style = 'top:50%;left:0;transform:translateY(-50%)'
+  elsif code == 'mc'
+    assign cta_style = 'top:50%;left:50%;transform:translate(-50%,-50%)'
+  elsif code == 'mr'
+    assign cta_style = 'top:50%;right:0;transform:translateY(-50%)'
+  elsif code == 'bl'
+    assign cta_style = 'bottom:0;left:0;'
+  elsif code == 'bc'
+    assign cta_style = 'bottom:0;left:50%;transform:translateX(-50%)'
+  elsif code == 'br'
+    assign cta_style = 'bottom:0;right:0;'
+  endif
+  if cta_style contains 'transform:'
+    assign cta_style = cta_style | append: ' translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+    assign cta_style = cta_style | replace: 'transform:translate', 'transform:translate'
+  else
+    assign cta_style = cta_style | append: ' transform:translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
+  endif
 -%}
 
 <section class="hero-banner-agg" role="banner" aria-label="{{ s.headline | escape }}" style="position:relative;overflow:hidden;">
