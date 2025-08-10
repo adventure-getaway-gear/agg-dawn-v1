@@ -14,7 +14,7 @@
       "name": "Hero Banner AGG",
       "settings": {
         "hero_image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
-        "image_height": 400,
+        "image_height": 600,
         "text_align": "center",
         "overlay_color": "#000000",
         "overlay_opacity": 40,
