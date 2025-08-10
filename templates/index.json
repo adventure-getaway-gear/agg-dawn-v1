@@ -36,9 +36,31 @@
         "padding_top": 44,
         "padding_bottom": 36
       }
+    },
+    "hero_banner_agg_pYBc36": {
+      "type": "hero-banner-agg",
+      "name": "Hero Banner AGG",
+      "settings": {
+        "hero_image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
+        "image_height": 400,
+        "text_align": "center",
+        "overlay_color": "#000000",
+        "overlay_opacity": 40,
+        "headline_color": "#ffffff",
+        "headline_size": 40,
+        "subheadline_color": "#ffffff",
+        "subheadline_size": 20,
+        "padding": 32,
+        "headline": "Adventure Awaits",
+        "subheadline": "Gear up for your next getaway",
+        "cta_link": "",
+        "cta_text": "Shop Now",
+        "custom_css": ""
+      }
     }
   },
   "order": [
+    "hero_banner_agg_pYBc36",
     "featured_collection"
   ]
 }
