@@ -1,0 +1,98 @@
+{% schema %}
+{
+  "name": "Hero Body AGG",
+  "settings": [
+    {
+      "type": "text",
+      "id": "headline",
+      "label": "Headline",
+      "default": "Welcome to Adventure Getaway Gear"
+    },
+    {
+      "type": "text",
+      "id": "subheadline",
+      "label": "Subheadline",
+      "default": "Your journey starts here."
+    },
+    {
+      "type": "richtext",
+      "id": "body_text",
+      "label": "Body Text",
+      "default": "Discover top gear, accessories, and inspiration for every adventure."
+    },
+    {
+      "type": "image_picker",
+      "id": "body_image",
+      "label": "Body Image"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image Position",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "right", "label": "Right"},
+        {"value": "top", "label": "Top"}
+      ],
+      "default": "left"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#f8f8f8"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA Link"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "CTA Text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "textarea",
+      "id": "custom_css",
+      "label": "Custom CSS"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Body AGG"
+    }
+  ]
+}
+{% endschema %}
+
+<section class="hero-body-agg" style="background:{{ section.settings.background_color }};padding:3rem 0;">
+  <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;max-width:1200px;margin:0 auto;">
+    {% if section.settings.image_position == 'left' or section.settings.image_position == 'top' %}
+      {% if section.settings.body_image %}
+        <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
+          <img src="{{ section.settings.body_image | img_url: '800x' }}" alt="Adventure Body Image" style="max-width:100%;height:auto;border-radius:12px;" />
+        </div>
+      {% endif %}
+    {% endif %}
+    <div style="flex:2;min-width:280px;padding:0 2rem;">
+      <h2 style="margin:0 0 1rem 0;">{{ section.settings.headline }}</h2>
+      <h3 style="margin:0 0 1rem 0;">{{ section.settings.subheadline }}</h3>
+      <div style="margin-bottom:2rem;">{{ section.settings.body_text }}</div>
+      {% if section.settings.cta_link %}
+        <a href="{{ section.settings.cta_link }}" class="btn" style="background:#000;color:#fff;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;">{{ section.settings.cta_text }}</a>
+      {% endif %}
+    </div>
+    {% if section.settings.image_position == 'right' %}
+      {% if section.settings.body_image %}
+        <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
+          <img src="{{ section.settings.body_image | img_url: '800x' }}" alt="Adventure Body Image" style="max-width:100%;height:auto;border-radius:12px;" />
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+  {% if section.settings.custom_css %}
+    <style>{{ section.settings.custom_css }}</style>
+  {% endif %}
+</section>
