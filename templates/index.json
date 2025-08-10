@@ -44,7 +44,7 @@
         "body_image_alt": "Adventure Body Image",
         "video_url": "https://www.youtube.com/embed/MD4r8nOpDBg",
         "video_title": "Adventure Getaway Gear Video",
-        "video_autoplay": true,
+        "video_autoplay": false,
         "video_muted": true,
         "video_controls": true,
         "video_loop": true,
