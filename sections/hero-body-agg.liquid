@@ -36,9 +36,21 @@
       "label": "Body Image"
     },
     {
+      "type": "text",
+      "id": "body_image_alt",
+      "label": "Body Image Alt Text",
+      "default": "Adventure Body Image"
+    },
+    {
       "type": "url",
       "id": "video_url",
       "label": "Video URL (YouTube, Vimeo, MP4)"
+    },
+    {
+      "type": "text",
+      "id": "video_title",
+      "label": "Video Title (SEO)",
+      "default": "Adventure Getaway Gear Video"
     },
     {
       "type": "checkbox",
@@ -93,6 +105,12 @@
       "default": "Shop Now"
     },
     {
+      "type": "text",
+      "id": "cta_aria_label",
+      "label": "CTA Button Aria Label (SEO)",
+      "default": "Shop Adventure Gear"
+    },
+    {
       "type": "textarea",
       "id": "custom_css",
       "label": "Custom CSS"
@@ -111,20 +129,28 @@
     {% if section.settings.image_position == 'left' or section.settings.image_position == 'top' %}
       {% if section.settings.media_type == 'image' and section.settings.body_image %}
         <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
-          <img src="{{ section.settings.body_image | img_url: '800x' }}" alt="Adventure Body Image" style="max-width:100%;height:auto;border-radius:12px;" />
+          <img src="{{ section.settings.body_image | img_url: '800x' }}" alt="{{ section.settings.body_image_alt }}" style="max-width:100%;height:auto;border-radius:12px;" />
         </div>
       {% elsif section.settings.media_type == 'video' and section.settings.video_url %}
         <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
-          <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
-            <video
-              src="{{ section.settings.video_url }}"
-              {% if section.settings.video_autoplay %}autoplay{% endif %}
-              {% if section.settings.video_muted %}muted{% endif %}
-              {% if section.settings.video_controls %}controls{% endif %}
-              {% if section.settings.video_loop %}loop{% endif %}
-              style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"
-            ></video>
-          </div>
+          {% assign video_url = section.settings.video_url | downcase %}
+          {% if video_url contains 'youtube.com' or video_url contains 'youtu.be' or video_url contains 'vimeo.com' %}
+            <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
+              <iframe src="{{ section.settings.video_url }}" title="{{ section.settings.video_title }}" frameborder="0" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"></iframe>
+            </div>
+          {% else %}
+            <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
+              <video
+                src="{{ section.settings.video_url }}"
+                title="{{ section.settings.video_title }}"
+                {% if section.settings.video_autoplay %}autoplay{% endif %}
+                {% if section.settings.video_muted %}muted{% endif %}
+                {% if section.settings.video_controls %}controls{% endif %}
+                {% if section.settings.video_loop %}loop{% endif %}
+                style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"
+              ></video>
+            </div>
+          {% endif %}
         </div>
       {% endif %}
     {% endif %}
@@ -133,26 +159,34 @@
       <h3 style="margin:0 0 1rem 0;">{{ section.settings.subheadline }}</h3>
       <div style="margin-bottom:2rem;">{{ section.settings.body_text }}</div>
       {% if section.settings.cta_link %}
-        <a href="{{ section.settings.cta_link }}" class="btn" style="background:#000;color:#fff;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;">{{ section.settings.cta_text }}</a>
+        <a href="{{ section.settings.cta_link }}" class="btn" aria-label="{{ section.settings.cta_aria_label }}" style="background:#000;color:#fff;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;">{{ section.settings.cta_text }}</a>
       {% endif %}
     </div>
     {% if section.settings.image_position == 'right' %}
       {% if section.settings.media_type == 'image' and section.settings.body_image %}
         <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
-          <img src="{{ section.settings.body_image | img_url: '800x' }}" alt="Adventure Body Image" style="max-width:100%;height:auto;border-radius:12px;" />
+          <img src="{{ section.settings.body_image | img_url: '800x' }}" alt="{{ section.settings.body_image_alt }}" style="max-width:100%;height:auto;border-radius:12px;" />
         </div>
       {% elsif section.settings.media_type == 'video' and section.settings.video_url %}
         <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
-          <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
-            <video
-              src="{{ section.settings.video_url }}"
-              {% if section.settings.video_autoplay %}autoplay{% endif %}
-              {% if section.settings.video_muted %}muted{% endif %}
-              {% if section.settings.video_controls %}controls{% endif %}
-              {% if section.settings.video_loop %}loop{% endif %}
-              style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"
-            ></video>
-          </div>
+          {% assign video_url = section.settings.video_url | downcase %}
+          {% if video_url contains 'youtube.com' or video_url contains 'youtu.be' or video_url contains 'vimeo.com' %}
+            <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
+              <iframe src="{{ section.settings.video_url }}" title="{{ section.settings.video_title }}" frameborder="0" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"></iframe>
+            </div>
+          {% else %}
+            <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
+              <video
+                src="{{ section.settings.video_url }}"
+                title="{{ section.settings.video_title }}"
+                {% if section.settings.video_autoplay %}autoplay{% endif %}
+                {% if section.settings.video_muted %}muted{% endif %}
+                {% if section.settings.video_controls %}controls{% endif %}
+                {% if section.settings.video_loop %}loop{% endif %}
+                style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"
+              ></video>
+            </div>
+          {% endif %}
         </div>
       {% endif %}
     {% endif %}
