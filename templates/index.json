@@ -40,6 +40,7 @@
         "subheadline": "Your journey starts here.",
         "body_text": "<p>Discover top gear, accessories, and inspiration for every adventure.</p>",
         "media_type": "video",
+        "body_image": "shopify://shop_images/hero_background_resized.png",
         "video_url": "https://www.youtube.com/embed/MD4r8nOpDBg",
         "image_position": "left",
         "background_color": "#f8f8f8",
