@@ -37,7 +37,7 @@
     assign video_id = original_video_url | split: 'vimeo.com/' | last | split: '?' | first | split: '/' | first
     assign embed_url = 'https://player.vimeo.com/video/' | append: video_id
   endif
-  # Determine if we must force controls (no autoplay + user hid controls otherwise no way to start)
+  {% comment %} Determine if we must force controls (no autoplay + hidden controls) {% endcomment %}
   assign force_controls = false
   if s.video_autoplay == false and s.video_controls == false
     assign force_controls = true
@@ -142,6 +142,26 @@
   else
     assign cta_style = cta_style | append: ' transform:translate(' | append: offx | append: 'px,' | append: offy | append: 'px);'
   endif
+
+  # Mobile alignment mapping
+  assign mobile_flex_align = 'flex-start'
+  if s.mobile_text_align == 'center'
+    assign mobile_flex_align = 'center'
+  elsif s.mobile_text_align == 'right'
+    assign mobile_flex_align = 'flex-end'
+  endif
+  assign wrap_heading = ''
+  if s.heading_wrap_mode == 'nowrap'
+    assign wrap_heading = 'white-space:nowrap;'
+  elsif s.heading_wrap_mode == 'balance'
+    assign wrap_heading = 'white-space:normal;text-wrap:balance;overflow-wrap:break-word;'
+  endif
+  assign wrap_sub = ''
+  if s.subheading_wrap_mode == 'nowrap'
+    assign wrap_sub = 'white-space:nowrap;'
+  elsif s.subheading_wrap_mode == 'balance'
+    assign wrap_sub = 'white-space:normal;text-wrap:balance;overflow-wrap:break-word;'
+  endif
 -%}
 
 <section class="hero-banner-agg" role="banner" aria-label="{{ s.headline | escape }}" style="position:relative;overflow:hidden;">
@@ -152,6 +172,17 @@
     .hero-banner-agg .hero-media>img,.hero-banner-agg .hero-media video{width:100%;height:100%;object-fit:cover;display:block;}
     .hero-banner-agg .hero-media iframe{position:absolute;top:0;left:0;width:100%;height:100%;}
     .hero-banner-agg .hero-inner a.btn:focus{outline:2px solid #fff;outline-offset:2px;}
+    .hero-banner-agg .video-mode{pointer-events:none;}
+    .hero-banner-agg .video-mode a,.hero-banner-agg .video-mode button{pointer-events:auto;}
+    @media (max-width:749px){
+      {% if s.mobile_auto_layout %}
+      .hero-banner-agg .hero-layer{display:flex;flex-direction:column;justify-content:center;align-items:{{ mobile_flex_align }};gap:0.75rem;}
+      .hero-banner-agg .hero-layer > div{position:static !important;transform:none !important;max-width:100%!important;}
+      .hero-banner-agg .hero-heading{font-size:calc({{ s.headline_size }}px * ({{ s.mobile_headline_scale }} / 100));}
+      .hero-banner-agg .hero-subheading{font-size:calc({{ s.subheadline_size }}px * ({{ s.mobile_subheadline_scale }} / 100));}
+      .hero-banner-agg .hero-layer{text-align:{{ s.mobile_text_align }};}
+      {% endif %}
+    }
   </style>
   <div class="hero-media" style="position:relative;width:100%;height:{{ desktop_height }}px;">
   {% if media_type == 'video' and s.video_url != blank %}
@@ -205,13 +236,13 @@
       <div style="background:#222;height:100%;width:100%;"></div>
     {% endif %}
   </div>
-  <div class="hero-layer" style="position:absolute;inset:0;padding:{{ s.padding }}px;">
+  <div class="hero-layer{% if media_type == 'video' %} video-mode{% endif %}" style="position:absolute;inset:0;padding:{{ s.padding }}px;">
     <div class="hero-heading-wrap" style="position:absolute;{{ heading_style }}max-width:{{ s.heading_max_width | default: 60 }}ch;">
-      <h1 style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;">{{ s.headline }}</h1>
+      <h1 class="hero-heading" style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;{{ wrap_heading }}">{{ s.headline }}</h1>
     </div>
     {% if s.subheadline != blank %}
     <div class="hero-subheading-wrap" style="position:absolute;{{ sub_style }}max-width:{{ s.subheading_max_width | default: 70 }}ch;">
-      <p style="margin:0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;">{{ s.subheadline }}</p>
+      <p class="hero-subheading" style="margin:0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;{{ wrap_sub }}">{{ s.subheadline }}</p>
     </div>
     {% endif %}
     <div class="hero-ctas-wrap" style="position:absolute;{{ cta_style }}">
@@ -282,6 +313,12 @@
   {"type":"range","id":"cta_offset_x","label":"CTA Offset X (px)","min":-300,"max":300,"step":10,"default":0},
   {"type":"range","id":"cta_offset_y","label":"CTA Offset Y (px)","min":-300,"max":300,"step":10,"default":100},
   {"type":"checkbox","id":"stack_ctas_mobile","label":"Stack CTAs on Mobile","default":true},
+  {"type":"checkbox","id":"mobile_auto_layout","label":"Auto Layout & Scale on Mobile (portrait)","default":true},
+  {"type":"range","id":"mobile_headline_scale","label":"Mobile Headline Scale (%)","min":50,"max":150,"step":5,"default":85},
+  {"type":"range","id":"mobile_subheadline_scale","label":"Mobile Subheadline Scale (%)","min":50,"max":150,"step":5,"default":90},
+  {"type":"select","id":"mobile_text_align","label":"Mobile Text Alignment","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}],"default":"left"},
+  {"type":"select","id":"heading_wrap_mode","label":"Heading Wrap Mode","options":[{"value":"normal","label":"Normal"},{"value":"nowrap","label":"No Wrap"},{"value":"balance","label":"Balance"}],"default":"normal"},
+  {"type":"select","id":"subheading_wrap_mode","label":"Subheading Wrap Mode","options":[{"value":"normal","label":"Normal"},{"value":"nowrap","label":"No Wrap"},{"value":"balance","label":"Balance"}],"default":"normal"},
     {"type":"url","id":"cta_link","label":"Primary CTA Link"},
     {"type":"text","id":"cta_text","label":"Primary CTA Text","default":"Shop Now"},
     {"type":"text","id":"cta_aria_primary","label":"Primary CTA Aria Label"},
