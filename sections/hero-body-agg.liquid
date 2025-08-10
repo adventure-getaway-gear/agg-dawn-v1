@@ -21,14 +21,29 @@
       "default": "<p>Discover top gear, accessories, and inspiration for every adventure.</p>"
     },
     {
+      "type": "select",
+      "id": "media_type",
+      "label": "Media Type",
+      "options": [
+        {"value": "image", "label": "Image"},
+        {"value": "video", "label": "Video"}
+      ],
+      "default": "image"
+    },
+    {
       "type": "image_picker",
       "id": "body_image",
       "label": "Body Image"
     },
     {
+      "type": "url",
+      "id": "video_url",
+      "label": "Video URL (YouTube, Vimeo, MP4)"
+    },
+    {
       "type": "select",
       "id": "image_position",
-      "label": "Image Position",
+      "label": "Media Position",
       "options": [
         {"value": "left", "label": "Left"},
         {"value": "right", "label": "Right"},
@@ -70,9 +85,15 @@
 <section class="hero-body-agg" style="background:{{ section.settings.background_color }};padding:3rem 0;">
   <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;max-width:1200px;margin:0 auto;">
     {% if section.settings.image_position == 'left' or section.settings.image_position == 'top' %}
-      {% if section.settings.body_image %}
+      {% if section.settings.media_type == 'image' and section.settings.body_image %}
         <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
           <img src="{{ section.settings.body_image | img_url: '800x' }}" alt="Adventure Body Image" style="max-width:100%;height:auto;border-radius:12px;" />
+        </div>
+      {% elsif section.settings.media_type == 'video' and section.settings.video_url %}
+        <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
+          <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
+            <iframe src="{{ section.settings.video_url }}" frameborder="0" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"></iframe>
+          </div>
         </div>
       {% endif %}
     {% endif %}
@@ -85,9 +106,15 @@
       {% endif %}
     </div>
     {% if section.settings.image_position == 'right' %}
-      {% if section.settings.body_image %}
+      {% if section.settings.media_type == 'image' and section.settings.body_image %}
         <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
           <img src="{{ section.settings.body_image | img_url: '800x' }}" alt="Adventure Body Image" style="max-width:100%;height:auto;border-radius:12px;" />
+        </div>
+      {% elsif section.settings.media_type == 'video' and section.settings.video_url %}
+        <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
+          <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;">
+            <iframe src="{{ section.settings.video_url }}" frameborder="0" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;"></iframe>
+          </div>
         </div>
       {% endif %}
     {% endif %}
