@@ -1,154 +1,155 @@
+{%- liquid
+  assign s = section.settings
+  assign align_map = s.text_align
+  if s.text_align == 'left'
+    assign align_map = 'flex-start'
+  elsif s.text_align == 'right'
+    assign align_map = 'flex-end'
+  endif
+  assign overlay_opacity = s.overlay_opacity | divided_by: 100.0
+  assign desktop_height = s.desktop_height | default: s.image_height
+  assign mobile_height = s.mobile_height | default: s.image_height
+  assign media_type = s.media_type | default: 'image'
+  assign video_url = s.video_url | downcase
+  assign is_youtube = false
+  assign is_vimeo = false
+  if video_url contains 'youtube.com' or video_url contains 'youtu.be'
+    assign is_youtube = true
+  elsif video_url contains 'vimeo.com'
+    assign is_vimeo = true
+  endif
+-%}
+
+<section class="hero-banner-agg" role="banner" aria-label="{{ s.headline | escape }}" style="position:relative;overflow:hidden;">
+  <style>
+    .hero-banner-agg{--hero-h-desktop:{{ desktop_height }}px;--hero-h-mobile:{{ mobile_height }}px;}
+    @media (max-width: 749px){.hero-banner-agg .hero-media{height:var(--hero-h-mobile);} }
+    @media (min-width: 750px){.hero-banner-agg .hero-media{height:var(--hero-h-desktop);} }
+    .hero-banner-agg .hero-media>img,.hero-banner-agg .hero-media video{width:100%;height:100%;object-fit:cover;display:block;}
+    .hero-banner-agg .hero-media iframe{position:absolute;top:0;left:0;width:100%;height:100%;}
+    .hero-banner-agg .hero-inner a.btn:focus{outline:2px solid #fff;outline-offset:2px;}
+  </style>
+  <div class="hero-media" style="position:relative;width:100%;height:{{ desktop_height }}px;">
+    {% if media_type == 'video' and s.video_url != blank %}
+      {% comment %} Video background logic {% endcomment %}
+      {% capture common_attrs %}title="{{ s.video_title | escape }}" aria-label="{{ s.video_title | escape }}"{% endcapture %}
+      {% if is_youtube %}
+        {% assign yt_params = 'rel=0&playsinline=1&enablejsapi=0' %}
+        {% if s.video_autoplay %}{% assign yt_params = yt_params | append: '&autoplay=1' %}{% endif %}
+        {% if s.video_muted %}{% assign yt_params = yt_params | append: '&mute=1' %}{% endif %}
+        {% if s.video_loop %}{% assign yt_params = yt_params | append: '&loop=1&playlist=' | append: s.video_url | split: 'v=' | last %}{% endif %}
+        {% if s.video_controls == false %}{% assign yt_params = yt_params | append: '&controls=0&modestbranding=1' %}{% endif %}
+        <div style="position:absolute;inset:0;">
+          <iframe src="{{ s.video_url }}?{{ yt_params }}" {{ common_attrs }} frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen loading="lazy"></iframe>
+        </div>
+      {% elsif is_vimeo %}
+        {% assign vimeo_params = 'background=0&playsinline=1' %}
+        {% if s.video_autoplay %}{% assign vimeo_params = vimeo_params | append: '&autoplay=1' %}{% endif %}
+        {% if s.video_muted %}{% assign vimeo_params = vimeo_params | append: '&muted=1' %}{% endif %}
+        {% if s.video_loop %}{% assign vimeo_params = vimeo_params | append: '&loop=1' %}{% endif %}
+        {% if s.video_controls == false %}{% assign vimeo_params = vimeo_params | append: '&controls=0' %}{% endif %}
+        <div style="position:absolute;inset:0;">
+          <iframe src="{{ s.video_url }}?{{ vimeo_params }}" {{ common_attrs }} frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen loading="lazy"></iframe>
+        </div>
+      {% else %}
+        <video
+          {% if s.video_poster %}poster="{{ s.video_poster | img_url: '800x' }}"{% endif %}
+          {% if s.video_autoplay %}autoplay{% endif %}
+          {% if s.video_muted or s.video_autoplay %}muted{% endif %}
+          {% if s.video_loop %}loop{% endif %}
+          {% if s.video_controls %}controls{% endif %}
+          playsinline
+          preload="metadata"
+          style="width:100%;height:100%;object-fit:cover;"
+          {{ common_attrs }}>
+          <source src="{{ s.video_url }}" type="video/mp4">
+        </video>
+      {% endif %}
+      {% if s.enable_overlay %}
+        <div class="hero-overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>
+      {% endif %}
+    {% elsif s.hero_image %}
+      {%- assign image = s.hero_image -%}
+      <picture>
+        <source srcset="{{ image | img_url: '2048x' }} 2048w, {{ image | img_url: '1600x' }} 1600w, {{ image | img_url: '1200x' }} 1200w, {{ image | img_url: '800x' }} 800w" sizes="100vw">
+        <img src="{{ image | img_url: '1600x' }}" alt="{{ s.image_alt | default: s.headline | escape }}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+      </picture>
+      {% if s.enable_overlay %}
+        <div class="hero-overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>
+      {% endif %}
+    {% else %}
+      <div style="background:#222;height:100%;width:100%;"></div>
+    {% endif %}
+  </div>
+  <div class="hero-inner" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:{{ align_map }};text-align:{{ s.text_align }};padding:{{ s.padding }}px;gap:1rem;">
+    <h1 style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;">{{ s.headline }}</h1>
+    {% if s.subheadline != blank %}
+      <p style="margin:0 0 1rem 0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;max-width:60ch;">{{ s.subheadline }}</p>
+    {% endif %}
+    <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:{{ s.text_align }};">
+      {% if s.cta_link %}
+        <a href="{{ s.cta_link }}" class="btn" aria-label="{{ s.cta_aria_primary | default: s.cta_text }}" style="background:#fff;color:#000;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;font-weight:600;">{{ s.cta_text }}</a>
+      {% endif %}
+      {% if s.cta_link_2 %}
+        <a href="{{ s.cta_link_2 }}" class="btn" aria-label="{{ s.cta_aria_secondary | default: s.cta_text_2 }}" style="background:#fff;color:#000;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;font-weight:600;">{{ s.cta_text_2 }}</a>
+      {% endif %}
+    </div>
+    {% if s.seo_description != blank %}
+      <div class="visually-hidden">{{ s.seo_description }}</div>
+    {% endif %}
+  </div>
+  {% if s.output_jsonld and s.headline != blank %}
+    <script type="application/ld+json">{
+      "@context":"https://schema.org",
+      "@type":"WPHeader",
+      "name": {{ s.headline | json }},
+      {% if s.seo_description != blank %}"description": {{ s.seo_description | strip_html | json }},{% endif %}
+      "publisher": {"@type":"Organization","name": {{ shop.name | json }}}
+    }</script>
+  {% endif %}
+  {% if s.custom_css %}<style>{{ s.custom_css }}</style>{% endif %}
+</section>
+
 {% schema %}
 {
   "name": "Hero Banner AGG",
   "settings": [
-    {
-      "type": "image_picker",
-      "id": "hero_image",
-      "label": "Hero Image"
-    },
-    {
-      "type": "range",
-      "id": "image_height",
-      "label": "Image Height (px)",
-      "min": 200,
-      "max": 800,
-      "step": 10,
-      "default": 400
-    },
-    {
-      "type": "select",
-      "id": "text_align",
-      "label": "Text Alignment",
-      "options": [
-        {"value": "left", "label": "Left"},
-        {"value": "center", "label": "Center"},
-        {"value": "right", "label": "Right"}
-      ],
-      "default": "center"
-    },
-    {
-      "type": "color",
-      "id": "overlay_color",
-      "label": "Overlay Color",
-      "default": "#000000"
-    },
-    {
-      "type": "range",
-      "id": "overlay_opacity",
-      "label": "Overlay Opacity (%)",
-      "min": 0,
-      "max": 100,
-      "step": 5,
-      "default": 40
-    },
-    {
-      "type": "color",
-      "id": "headline_color",
-      "label": "Headline Color",
-      "default": "#ffffff"
-    },
-    {
-      "type": "range",
-      "id": "headline_size",
-      "label": "Headline Font Size (px)",
-      "min": 20,
-      "max": 80,
-      "step": 2,
-      "default": 40
-    },
-    {
-      "type": "color",
-      "id": "subheadline_color",
-      "label": "Subheadline Color",
-      "default": "#ffffff"
-    },
-    {
-      "type": "range",
-      "id": "subheadline_size",
-      "label": "Subheadline Font Size (px)",
-      "min": 14,
-      "max": 40,
-      "step": 2,
-      "default": 20
-    },
-    {
-      "type": "range",
-      "id": "padding",
-      "label": "Content Padding (px)",
-      "min": 0,
-      "max": 80,
-      "step": 4,
-      "default": 32
-    },
-    {
-      "type": "text",
-      "id": "headline",
-      "label": "Headline",
-      "default": "Adventure Awaits"
-    },
-    {
-      "type": "text",
-      "id": "subheadline",
-      "label": "Subheadline",
-      "default": "Gear up for your next getaway"
-    },
-    {
-      "type": "url",
-      "id": "cta_link",
-      "label": "CTA Link"
-    },
-    {
-      "type": "text",
-      "id": "cta_text",
-      "label": "CTA Text",
-      "default": "Shop Now"
-    },
-    {
-      "type": "url",
-      "id": "cta_link_2",
-      "label": "Second CTA Link"
-    },
-    {
-      "type": "text",
-      "id": "cta_text_2",
-      "label": "Second CTA Text",
-      "default": "Learn More"
-    },
-    {
-      "type": "textarea",
-      "id": "custom_css",
-      "label": "Custom CSS"
-    }
+    {"type":"select","id":"media_type","label":"Media Type","options":[{"value":"image","label":"Image"},{"value":"video","label":"Video"}],"default":"image"},
+    {"type":"image_picker","id":"hero_image","label":"Hero Image"},
+    {"type":"text","id":"image_alt","label":"Image Alt Text"},
+    {"type":"url","id":"video_url","label":"Video URL (YouTube, Vimeo, or MP4)"},
+    {"type":"image_picker","id":"video_poster","label":"Video Poster (Thumbnail)"},
+    {"type":"text","id":"video_title","label":"Video Title (SEO)","default":"Hero Video"},
+    {"type":"checkbox","id":"video_autoplay","label":"Autoplay Video","default":true},
+    {"type":"checkbox","id":"video_muted","label":"Mute Video","default":true},
+    {"type":"checkbox","id":"video_loop","label":"Loop Video","default":true},
+    {"type":"checkbox","id":"video_controls","label":"Show Video Controls","default":false},
+    {"type":"range","id":"desktop_height","label":"Desktop Height (px)","min":240,"max":900,"step":20,"default":520},
+    {"type":"range","id":"mobile_height","label":"Mobile Height (px)","min":200,"max":800,"step":20,"default":420},
+    {"type":"range","id":"image_height","label":"Legacy Height Fallback (px)","min":200,"max":800,"step":10,"default":400},
+    {"type":"select","id":"text_align","label":"Text Alignment","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}],"default":"center"},
+    {"type":"checkbox","id":"enable_overlay","label":"Enable Overlay","default":true},
+    {"type":"color","id":"overlay_color","label":"Overlay Color","default":"#000000"},
+    {"type":"range","id":"overlay_opacity","label":"Overlay Opacity (%)","min":0,"max":100,"step":5,"default":40},
+    {"type":"text","id":"headline","label":"Headline","default":"Adventure Awaits"},
+    {"type":"text","id":"subheadline","label":"Subheadline","default":"Gear up for your next getaway"},
+    {"type":"color","id":"headline_color","label":"Headline Color","default":"#ffffff"},
+    {"type":"color","id":"subheadline_color","label":"Subheadline Color","default":"#ffffff"},
+    {"type":"range","id":"headline_size","label":"Headline Font Size (px)","min":20,"max":96,"step":2,"default":48},
+    {"type":"range","id":"subheadline_size","label":"Subheadline Font Size (px)","min":14,"max":48,"step":2,"default":22},
+    {"type":"range","id":"padding","label":"Content Padding (px)","min":0,"max":120,"step":4,"default":40},
+    {"type":"url","id":"cta_link","label":"Primary CTA Link"},
+    {"type":"text","id":"cta_text","label":"Primary CTA Text","default":"Shop Now"},
+    {"type":"text","id":"cta_aria_primary","label":"Primary CTA Aria Label"},
+    {"type":"url","id":"cta_link_2","label":"Secondary CTA Link"},
+    {"type":"text","id":"cta_text_2","label":"Secondary CTA Text","default":"Learn More"},
+    {"type":"text","id":"cta_aria_secondary","label":"Secondary CTA Aria Label"},
+    {"type":"textarea","id":"seo_description","label":"SEO Description"},
+    {"type":"checkbox","id":"output_jsonld","label":"Output JSON-LD Structured Data","default":true},
+    {"type":"textarea","id":"custom_css","label":"Custom CSS"}
   ],
   "presets": [
-    {
-      "name": "Hero Banner AGG"
-    }
+    {"name": "Hero Banner AGG"}
   ]
 }
 {% endschema %}
-
-<section class="hero-banner-agg" style="position:relative;overflow:hidden;">
-  {% if section.settings.hero_image %}
-    <img src="{{ section.settings.hero_image | img_url: 'master' }}"
-         alt="Adventure Getaway Gear Hero"
-         style="width:100%;height:{{ section.settings.image_height }}px;object-fit:cover;display:block;" />
-    <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:{{ section.settings.overlay_color }};opacity:{{ section.settings.overlay_opacity | divided_by: 100.0 }};"></div>
-  {% endif %}
-  <div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:{{ section.settings.text_align }};padding:{{ section.settings.padding }}px;">
-    <h1 style="margin:0 0 1rem 0;color:{{ section.settings.headline_color }};font-size:{{ section.settings.headline_size }}px;">{{ section.settings.headline }}</h1>
-    <p style="margin:0 0 2rem 0;color:{{ section.settings.subheadline_color }};font-size:{{ section.settings.subheadline_size }}px;">{{ section.settings.subheadline }}</p>
-    <div style="display:flex;gap:1rem;justify-content:{{ section.settings.text_align }};flex-wrap:wrap;">
-      {% if section.settings.cta_link %}
-        <a href="{{ section.settings.cta_link }}" class="btn" style="background:#fff;color:#000;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;">{{ section.settings.cta_text }}</a>
-      {% endif %}
-      {% if section.settings.cta_link_2 %}
-        <a href="{{ section.settings.cta_link_2 }}" class="btn" style="background:#fff;color:#000;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;display:inline-block;">{{ section.settings.cta_text_2 }}</a>
-      {% endif %}
-    </div>
-  </div>
-  {% if section.settings.custom_css %}
-    <style>{{ section.settings.custom_css }}</style>
-  {% endif %}
-</section>
