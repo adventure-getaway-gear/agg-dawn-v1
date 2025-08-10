@@ -1,0 +1,94 @@
+{%- liquid
+  assign s = section.settings
+  assign overlay_opacity = s.overlay_opacity | divided_by: 100.0
+  assign heading_tag = s.heading_tag | default: 'h1'
+  assign is_home = template.name == 'index'
+  if is_home == false and heading_tag == 'h1'
+    assign heading_tag = 'h2'
+  endif
+-%}
+
+<section class="hero-banner polished-hero-banner" role="region" aria-label="Hero banner: {{ s.headline | escape }}" style="position:relative;overflow:hidden;">
+  {% if s.hero_image %}
+    {%- assign image = s.hero_image -%}
+    <picture>
+      <source srcset="{{ image | img_url: '2048x' }} 2048w, {{ image | img_url: '1600x' }} 1600w, {{ image | img_url: '1200x' }} 1200w, {{ image | img_url: '800x' }} 800w, {{ image | img_url: '600x' }} 600w" sizes="100vw">
+      <img 
+        src="{{ image | img_url: '1600x' }}" 
+        alt="{{ s.image_alt | default: s.headline | escape }}" 
+        loading="lazy" 
+        style="width:100%;height:{{ s.image_height }}px;object-fit:cover;display:block;" />
+    </picture>
+    {% if s.enable_overlay %}
+      <div class="hero-overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>
+    {% endif %}
+  {% else %}
+    <div style="background:var(--color-bg, #222);width:100%;height:{{ s.image_height }}px;"></div>
+  {% endif %}
+  <div class="hero-inner" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:{{ s.text_align }};text-align:{{ s.text_align }};padding:{{ s.padding_vertical }}px {{ s.padding_horizontal }}px;gap:1rem;">
+    <{{ heading_tag }} class="hero-heading" style="margin:0;color:{{ s.headline_color }};font-size:clamp({{ s.headline_min }}px, {{ s.headline_fluid }}vw, {{ s.headline_max }}px);line-height:1.1;font-weight:700;">{{ s.headline }}</{{ heading_tag }}>
+    {% if s.subheadline != blank %}
+      <p class="hero-subheading" style="margin:0 0 0.5rem 0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;max-width:{{ s.text_max_width }}ch;">{{ s.subheadline }}</p>
+    {% endif %}
+    {% if s.show_ctas %}
+      <div class="hero-ctas" style="display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:{{ s.text_align }};">
+        {% if s.cta_link and s.cta_text != blank %}
+          <a href="{{ s.cta_link }}" class="btn hero-btn-primary" style="background:{{ s.cta_bg }};color:{{ s.cta_color }};padding:0.9rem 1.8rem;border-radius:{{ s.button_radius }}px;text-decoration:none;font-weight:600;box-shadow:0 2px 4px rgba(0,0,0,.25);">{{ s.cta_text }}</a>
+        {% endif %}
+        {% if s.cta_link_2 and s.cta_text_2 != blank %}
+          <a href="{{ s.cta_link_2 }}" class="btn hero-btn-secondary" style="background:{{ s.cta2_bg }};color:{{ s.cta2_color }};padding:0.9rem 1.8rem;border-radius:{{ s.button_radius }}px;text-decoration:none;font-weight:600;">{{ s.cta_text_2 }}</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+  {% if s.custom_css %}<style>{{ s.custom_css }}</style>{% endif %}
+</section>
+
+{% schema %}
+{
+  "name": "Hero Banner",
+  "settings": [
+    {"type": "image_picker", "id": "hero_image", "label": "Hero Image"},
+    {"type": "text", "id": "image_alt", "label": "Image Alt Text"},
+    {"type": "range", "id": "image_height", "label": "Image Height (px)", "min": 240, "max": 900, "step": 20, "default": 520},
+    {"type": "checkbox", "id": "enable_overlay", "label": "Enable Overlay", "default": true},
+    {"type": "color", "id": "overlay_color", "label": "Overlay Color", "default": "#000000"},
+    {"type": "range", "id": "overlay_opacity", "label": "Overlay Opacity (%)", "min": 0, "max": 100, "step": 5, "default": 40},
+    {"type": "select", "id": "text_align", "label": "Text Alignment", "options": [
+      {"value": "flex-start", "label": "Left"},
+      {"value": "center", "label": "Center"},
+      {"value": "flex-end", "label": "Right"}
+    ], "default": "center"},
+    {"type": "text", "id": "headline", "label": "Headline", "default": "Adventure Awaits"},
+    {"type": "text", "id": "subheadline", "label": "Subheadline", "default": "Gear up for your next getaway"},
+    {"type": "range", "id": "headline_min", "label": "Headline Min Size (px)", "min": 16, "max": 48, "step": 2, "default": 28},
+    {"type": "range", "id": "headline_max", "label": "Headline Max Size (px)", "min": 48, "max": 120, "step": 4, "default": 88},
+    {"type": "range", "id": "headline_fluid", "label": "Headline Fluid VW", "min": 1, "max": 12, "step": 0.5, "default": 7},
+    {"type": "color", "id": "headline_color", "label": "Headline Color", "default": "#ffffff"},
+    {"type": "color", "id": "subheadline_color", "label": "Subheadline Color", "default": "#ffffff"},
+    {"type": "range", "id": "subheadline_size", "label": "Subheadline Size (px)", "min": 12, "max": 48, "step": 2, "default": 20},
+    {"type": "range", "id": "text_max_width", "label": "Text Max Width (ch)", "min": 20, "max": 80, "step": 2, "default": 60},
+    {"type": "select", "id": "heading_tag", "label": "Heading Tag", "options": [
+      {"value": "h1", "label": "H1"},
+      {"value": "h2", "label": "H2"},
+      {"value": "h3", "label": "H3"}
+    ], "default": "h1"},
+    {"type": "range", "id": "padding_vertical", "label": "Vertical Padding (px)", "min": 0, "max": 160, "step": 8, "default": 40},
+    {"type": "range", "id": "padding_horizontal", "label": "Horizontal Padding (px)", "min": 0, "max": 160, "step": 8, "default": 40},
+    {"type": "checkbox", "id": "show_ctas", "label": "Show CTAs", "default": true},
+    {"type": "url", "id": "cta_link", "label": "Primary CTA Link"},
+    {"type": "text", "id": "cta_text", "label": "Primary CTA Text", "default": "Shop Now"},
+    {"type": "color", "id": "cta_bg", "label": "Primary CTA Background", "default": "#ffffff"},
+    {"type": "color", "id": "cta_color", "label": "Primary CTA Text Color", "default": "#000000"},
+    {"type": "url", "id": "cta_link_2", "label": "Secondary CTA Link"},
+    {"type": "text", "id": "cta_text_2", "label": "Secondary CTA Text", "default": "Learn More"},
+    {"type": "color", "id": "cta2_bg", "label": "Secondary CTA Background", "default": "#000000"},
+    {"type": "color", "id": "cta2_color", "label": "Secondary CTA Text Color", "default": "#ffffff"},
+    {"type": "range", "id": "button_radius", "label": "Button Radius (px)", "min": 0, "max": 60, "step": 2, "default": 4},
+    {"type": "textarea", "id": "custom_css", "label": "Custom CSS"}
+  ],
+  "presets": [
+    {"name": "Hero Banner"}
+  ]
+}
+{% endschema %}
