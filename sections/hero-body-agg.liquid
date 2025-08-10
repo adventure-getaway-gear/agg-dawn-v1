@@ -125,14 +125,36 @@
 {% endschema %}
 
 <section class="hero-body-agg" style="background:{{ section.settings.background_color }};padding:3rem 0;">
+  <style>
+    @media (min-width: 900px) {
+      .hero-body-agg .agg-body-img {
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: 0;
+        padding-right: 0;
+      }
+      .hero-body-agg .agg-body-content {
+        padding-left: 2rem;
+        padding-right: 2rem;
+      }
+    }
+    @media (max-width: 899px) {
+      .hero-body-agg .agg-body-img {
+        margin-bottom: 2rem;
+      }
+      .hero-body-agg .agg-body-content {
+        padding: 0 1rem;
+      }
+    }
+  </style>
   <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;max-width:1200px;margin:0 auto;">
     {% if section.settings.image_position == 'left' or section.settings.image_position == 'top' %}
       {% if section.settings.media_type == 'image' and section.settings.body_image %}
-        <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
+        <div class="agg-body-img" style="flex:1;min-width:280px;text-align:center;">
           <img src="{{ section.settings.body_image | img_url: '800x' }}" alt="{{ section.settings.body_image_alt }}" style="max-width:100%;height:auto;border-radius:12px;" />
         </div>
       {% elsif section.settings.media_type == 'video' and section.settings.video_url %}
-        <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
+        <div class="agg-body-img" style="flex:1;min-width:280px;text-align:center;">
           {% assign video_url = section.settings.video_url | downcase %}
           {% if video_url contains 'youtube.com' or video_url contains 'youtu.be' %}
             {% assign yt_params = '' %}
@@ -168,7 +190,7 @@
         </div>
       {% endif %}
     {% endif %}
-    <div style="flex:2;min-width:280px;padding:0 2rem;">
+    <div class="agg-body-content" style="flex:2;min-width:280px;">
       <h2 style="margin:0 0 1rem 0;">{{ section.settings.headline }}</h2>
       <h3 style="margin:0 0 1rem 0;">{{ section.settings.subheadline }}</h3>
       <div style="margin-bottom:2rem;">{{ section.settings.body_text }}</div>
@@ -178,11 +200,11 @@
     </div>
     {% if section.settings.image_position == 'right' %}
       {% if section.settings.media_type == 'image' and section.settings.body_image %}
-        <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
+        <div class="agg-body-img" style="flex:1;min-width:280px;text-align:center;">
           <img src="{{ section.settings.body_image | img_url: '800x' }}" alt="{{ section.settings.body_image_alt }}" style="max-width:100%;height:auto;border-radius:12px;" />
         </div>
       {% elsif section.settings.media_type == 'video' and section.settings.video_url %}
-        <div style="flex:1;min-width:280px;text-align:center;margin-bottom:2rem;">
+        <div class="agg-body-img" style="flex:1;min-width:280px;text-align:center;">
           {% assign video_url = section.settings.video_url | downcase %}
           {% if video_url contains 'youtube.com' or video_url contains 'youtu.be' %}
             {% assign yt_params = '' %}
