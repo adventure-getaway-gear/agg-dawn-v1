@@ -41,7 +41,7 @@
         "enable_overlay": true,
         "overlay_color": "#000000",
         "overlay_opacity": 40,
-        "slideshow_autoplay": false,
+        "slideshow_autoplay": true,
         "slideshow_interval": 2,
         "pause_on_hover": true,
         "loop_slides": true,
