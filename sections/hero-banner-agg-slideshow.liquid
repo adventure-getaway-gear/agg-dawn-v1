@@ -34,6 +34,20 @@
   @keyframes hbZoomPulse { 0%{ transform: scale(1); } 50%{ transform: scale(var(--zoom-scale,1.12)); } 100%{ transform: scale(1); } }
   @keyframes hbParallaxUp { 0%{ transform: translateY(var(--parallax-shift,12px)); } 100%{ transform: translateY(0); } }
   @keyframes hbBlurFocus { 0%{ filter: blur(var(--blur-amt,2px)); } 100%{ filter: blur(0px); } }
+  /* Subtle continuous ambient drift (looping) */
+  @keyframes hbAmbientDrift {
+    0% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
+    25% { transform: translate3d(calc(var(--amb-x, 6px) * .5), calc(var(--amb-y, 4px) * -.8), 0) scale(var(--amb-scale,1.035)); }
+    50% { transform: translate3d(calc(var(--amb-x, 6px)), calc(var(--amb-y, 4px)), 0) scale(var(--amb-scale,1.04)); }
+    75% { transform: translate3d(calc(var(--amb-x, 6px) * .4), calc(var(--amb-y, 4px) * .8), 0) scale(var(--amb-scale,1.035)); }
+    100% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
+  }
+  /* Text animations */
+  @keyframes hbTextFadeIn { 0%{ opacity:0 } 100%{ opacity:1 } }
+  @keyframes hbTextFadeUp { 0%{ opacity:0; transform: translateY(var(--txt-shift, 16px)); } 100%{ opacity:1; transform: translateY(0); } }
+  @keyframes hbTextFadeDown { 0%{ opacity:0; transform: translateY(calc(var(--txt-shift, 16px) * -1)); } 100%{ opacity:1; transform: translateY(0); } }
+  @keyframes hbTextFadeLeft { 0%{ opacity:0; transform: translateX(var(--txt-shift, 20px)); } 100%{ opacity:1; transform: translateX(0); } }
+  @keyframes hbTextFadeRight { 0%{ opacity:0; transform: translateX(calc(var(--txt-shift, 20px) * -1)); } 100%{ opacity:1; transform: translateX(0); } }
   /* Overlays */
   .hb-anim-overlay { position:absolute; inset:0; pointer-events:none; z-index:5; mix-blend-mode:screen; }
   .hb-anim-overlay.hb-mist { background: radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.06) 60%, rgba(255,255,255,0) 100%); filter: blur(12px); opacity: .35; animation: hbMist 6s ease-in-out infinite alternate; }
@@ -42,6 +56,9 @@
   @keyframes hbGradientDrift { 0%{background-position:0% 50%} 100%{background-position:100% 50%} }
   @keyframes hbMist { 0%{transform:translateX(-12%)} 100%{transform:translateX(12%)} }
   @keyframes hbFlare { 0%{transform:translateX(-120%)} 100%{transform:translateX(120%)} }
+  /* Swipe/cover overlays for image slide-ins */
+  .hb-swipe-overlay { position:absolute; inset:0; pointer-events:none; z-index:6; background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.55), rgba(255,255,255,0)); mix-blend-mode:screen; transform: translateX(-110%); }
+  .hb-swipe-overlay[data-axis="y"]{ background: linear-gradient(0deg, rgba(255,255,255,0.9), rgba(255,255,255,0.55), rgba(255,255,255,0)); transform: translateY(-110%); }
   /* Per-slide independent positioned pieces */
   .hero-banner-agg__slidePiece{position:absolute;z-index:16;display:flex;flex-direction:column;gap:.55rem;max-width:var(--maxw,{{ s.text_max_width }}ch);padding:0;margin:0}
   /* When slide is fully linked we add .is-passive to allow underlying link clicks */
@@ -162,6 +179,7 @@
                 {% assign anim_speed_custom = b.image_anim_speed_custom | default: 800 %}
                 {% assign anim_speed_val = anim_speed_custom %}
                 {% if anim_speed == 'slow' %}{% assign anim_speed_val = 1800 %}{% elsif anim_speed == 'medium' %}{% assign anim_speed_val = 800 %}{% elsif anim_speed == 'fast' %}{% assign anim_speed_val = 350 %}{% endif %}
+                {% assign img_slide_style = block.settings.image_slide_style | default: 'none' %}
                 <img
                   id="hero-slide-img-{{ section.id }}-{{ forloop.index0 }}"
                   src="{{ b.slide_image | image_url: width: 1600 }}"
@@ -176,6 +194,7 @@
                   data-anim-intensity="{{ anim_intensity }}"
                   data-anim-speed="{{ anim_speed }}"
                   data-anim-speed-val="{{ anim_speed_val }}"
+                  data-anim-slide-style="{{ img_slide_style }}"
                   style="width:100%;height:100%;object-fit:cover;display:block;" />
               {% else %}
                 <div style="background:#222;width:100%;height:100%;"></div>
@@ -189,13 +208,25 @@
             {%- assign sub_pos = b.subheadline_position | default: headline_pos | default: global_sub_pos -%}
             {%- assign ctas_pos = b.ctas_position | default: headline_pos | default: global_ctas_pos -%}
             {%- if s.show_global_headlines and b.slide_headline != blank -%}
+              {% assign h_anim_type = b.headline_anim_type | default: 'none' %}
+              {% assign h_anim_intensity = b.headline_anim_intensity | default: 50 %}
+              {% assign h_anim_speed = b.headline_anim_speed | default: 'medium' %}
+              {% assign h_anim_speed_custom = b.headline_anim_speed_custom | default: 800 %}
+              {% assign h_anim_speed_val = h_anim_speed_custom %}
+              {% if h_anim_speed == 'slow' %}{% assign h_anim_speed_val = 1800 %}{% elsif h_anim_speed == 'medium' %}{% assign h_anim_speed_val = 900 %}{% elsif h_anim_speed == 'fast' %}{% assign h_anim_speed_val = 500 %}{% endif %}
               <div class="hero-banner-agg__slidePiece pos-{{ headline_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--headline-color:{{ b.headline_color | default: s.headline_color }};--headline-size:{% if b.headline_size > 0 %}{{ b.headline_size }}px{% endif %};--headline-size-m:{% if b.headline_size > 0 %}{{ b.headline_size | divided_by: 1.6 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <h3 class="hero-banner-agg__pieceHeadline">{{ b.slide_headline }}</h3>
+                <h3 class="hero-banner-agg__pieceHeadline" data-text-anim-type="{{ h_anim_type }}" data-text-anim-intensity="{{ h_anim_intensity }}" data-text-anim-speed-val="{{ h_anim_speed_val }}">{{ b.slide_headline }}</h3>
               </div>
             {%- endif -%}
             {%- if s.show_global_subheadlines and b.slide_subheadline != blank -%}
+              {% assign s_anim_type = b.sub_anim_type | default: 'none' %}
+              {% assign s_anim_intensity = b.sub_anim_intensity | default: 50 %}
+              {% assign s_anim_speed = b.sub_anim_speed | default: 'medium' %}
+              {% assign s_anim_speed_custom = b.sub_anim_speed_custom | default: 800 %}
+              {% assign s_anim_speed_val = s_anim_speed_custom %}
+              {% if s_anim_speed == 'slow' %}{% assign s_anim_speed_val = 1800 %}{% elsif s_anim_speed == 'medium' %}{% assign s_anim_speed_val = 900 %}{% elsif s_anim_speed == 'fast' %}{% assign s_anim_speed_val = 500 %}{% endif %}
               <div class="hero-banner-agg__slidePiece pos-{{ sub_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--sub-color:{{ b.subheadline_color | default: s.subheadline_color }};--sub-size:{% if b.subheadline_size > 0 %}{{ b.subheadline_size }}px{% endif %};--sub-size-m:{% if b.subheadline_size > 0 %}{{ b.subheadline_size | divided_by: 1.1 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <p class="hero-banner-agg__pieceSub">{{ b.slide_subheadline }}</p>
+                <p class="hero-banner-agg__pieceSub" data-text-anim-type="{{ s_anim_type }}" data-text-anim-intensity="{{ s_anim_intensity }}" data-text-anim-speed-val="{{ s_anim_speed_val }}">{{ b.slide_subheadline }}</p>
               </div>
             {%- endif -%}
             {%- if s.show_slide_ctas and any_cta -%}
@@ -414,6 +445,7 @@
       var type = img.getAttribute('data-anim-type');
       var intensity = parseInt(img.getAttribute('data-anim-intensity'), 10) || 50;
       var speed = parseInt(img.getAttribute('data-anim-speed-val'), 10) || 800;
+      var slideStyle = img.getAttribute('data-anim-slide-style') || 'none';
       // Reset all styles
       img.style.transform = '';
       img.style.filter = '';
@@ -428,12 +460,64 @@
       if (i !== slideIdx) return;
       var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReduced) return;
+
+      // Directional slide-in (image enters)
+      if (slideStyle && slideStyle !== 'none') {
+        var axis = 'x';
+        var from = 0;
+        var easing = 'cubic-bezier(.22,.61,.36,1)';
+        var cover = false; // cover = overlay sweeps on top; uncover = overlay reveals image
+        switch(slideStyle){
+          case 'slide_in_left': from = -110; axis='x'; break;
+          case 'slide_in_right': from = 110; axis='x'; break;
+          case 'slide_in_top': from = -110; axis='y'; break;
+          case 'slide_in_bottom': from = 110; axis='y'; break;
+          case 'swipe_cover_left': from = -110; axis='x'; cover = true; break;
+          case 'swipe_cover_right': from = 110; axis='x'; cover = true; break;
+          case 'swipe_cover_top': from = -110; axis='y'; cover = true; break;
+          case 'swipe_cover_bottom': from = 110; axis='y'; cover = true; break;
+          case 'swipe_uncover_left': from = -110; axis='x'; cover = false; break;
+          case 'swipe_uncover_right': from = 110; axis='x'; cover = false; break;
+          case 'swipe_uncover_top': from = -110; axis='y'; cover = false; break;
+          case 'swipe_uncover_bottom': from = 110; axis='y'; cover = false; break;
+        }
+        // Initialize position
+        img.style.opacity = '1';
+        img.style.transition = 'transform '+speed+'ms '+easing;
+        img.style.transform = axis==='x' ? 'translateX('+from+'%)' : 'translateY('+from+'%)';
+        // Optional swipe overlay
+        var swipe;
+        if (slideStyle.indexOf('swipe_')===0) {
+          swipe = document.createElement('div');
+          swipe.className = 'hb-swipe-overlay';
+          if (axis==='y') swipe.setAttribute('data-axis','y');
+          slide.appendChild(swipe);
+          // place overlay depending on cover/uncover
+          swipe.style.zIndex = cover ? 7 : 4; // over image for cover, below for uncover
+          swipe.style.transition = (axis==='x' ? 'transform ' : 'transform ') + speed + 'ms ' + easing + ', opacity '+Math.max(250, speed*0.6)+'ms ease-out';
+          swipe.style.transform = axis==='x' ? 'translateX('+(from)+'%)' : 'translateY('+(from)+'%)';
+          // start animation after a frame
+          requestAnimationFrame(function(){ swipe.style.transform = axis==='x' ? 'translateX(0%)' : 'translateY(0%)'; swipe.style.opacity = '0'; setTimeout(function(){ swipe && swipe.remove(); }, speed+180); });
+        }
+        // Kick image in
+        requestAnimationFrame(function(){ img.style.transform = axis==='x' ? 'translateX(0%)' : 'translateY(0%)'; });
+      }
+
       switch(type) {
         case 'ken_burns':
           var scale = (1 + (intensity/180)).toFixed(3);
           img.style.setProperty('--kb-scale', scale);
           img.classList.add('is-animating');
           img.style.animation = 'hbKenBurns ' + (speed*1.8) + 'ms ease-in-out 1 both';
+          break;
+        case 'ambient_drift':
+          var ambX = Math.max(2, intensity/8);
+          var ambY = Math.max(1.5, intensity/10);
+          var ambScale = 1 + Math.min(0.06, intensity/1000);
+          img.style.setProperty('--amb-x', ambX+'px');
+          img.style.setProperty('--amb-y', ambY+'px');
+          img.style.setProperty('--amb-scale', ambScale.toFixed(3));
+          img.style.animation = 'hbAmbientDrift ' + Math.max(speed*3, 5000) + 'ms ease-in-out infinite alternate both';
           break;
         case 'parallax':
           var shift = (Math.max(6, intensity/4)).toFixed(2) + 'px';
@@ -496,6 +580,35 @@
           // No animation
           break;
       }
+
+      // Text animations for headline and subheadline in active slide
+      var txtElems = slide.querySelectorAll('[data-text-anim-type]');
+      txtElems.forEach(function(el){
+        var t = el.getAttribute('data-text-anim-type') || 'none';
+        var ti = parseInt(el.getAttribute('data-text-anim-intensity'),10) || 50;
+        var ts = parseInt(el.getAttribute('data-text-anim-speed-val'),10) || 900;
+        var shift = Math.max(6, ti/2);
+        el.style.setProperty('--txt-shift', shift+'px');
+        el.style.animation = 'none';
+        el.style.opacity = '1';
+        switch(t){
+          case 'fade_in':
+            el.style.animation = 'hbTextFadeIn '+ts+'ms ease-out 1 both';
+            break;
+          case 'fade_up':
+            el.style.animation = 'hbTextFadeUp '+ts+'ms cubic-bezier(.22,.61,.36,1) 1 both';
+            break;
+          case 'fade_down':
+            el.style.animation = 'hbTextFadeDown '+ts+'ms cubic-bezier(.22,.61,.36,1) 1 both';
+            break;
+          case 'fade_left':
+            el.style.animation = 'hbTextFadeLeft '+ts+'ms cubic-bezier(.22,.61,.36,1) 1 both';
+            break;
+          case 'fade_right':
+            el.style.animation = 'hbTextFadeRight '+ts+'ms cubic-bezier(.22,.61,.36,1) 1 both';
+            break;
+        }
+      });
     });
   }
   // Initial animation
@@ -599,6 +712,7 @@
       {"type":"header","content":"Image Animation Settings"},
       {"type":"select","id":"image_anim_type","label":"Image Animation Type","default":"none","options":[
         {"value":"none","label":"None"},
+  {"value":"ambient_drift","label":"Ambient Drift (subtle looping)"},
         {"value":"ken_burns","label":"Ken Burns Effect"},
         {"value":"parallax","label":"Parallax Movement"},
         {"value":"crossfade","label":"Crossfade / Soft Fade"},
@@ -613,6 +727,46 @@
       {"type":"range","id":"image_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
       {"type":"select","id":"image_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
       {"type":"range","id":"image_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800},
+      {"type":"header","content":"Directional Image Slide-in"},
+      {"type":"select","id":"image_slide_style","label":"Image Slide-in Style","default":"none","options":[
+        {"value":"none","label":"None"},
+        {"value":"slide_in_left","label":"Slide-in from Left"},
+        {"value":"slide_in_right","label":"Slide-in from Right"},
+        {"value":"slide_in_top","label":"Slide-in from Top"},
+        {"value":"slide_in_bottom","label":"Slide-in from Bottom"},
+        {"value":"swipe_cover_left","label":"Cover swipe Left→Right"},
+        {"value":"swipe_cover_right","label":"Cover swipe Right→Left"},
+        {"value":"swipe_cover_top","label":"Cover swipe Top→Bottom"},
+        {"value":"swipe_cover_bottom","label":"Cover swipe Bottom→Top"},
+        {"value":"swipe_uncover_left","label":"Uncover swipe Left→Right"},
+        {"value":"swipe_uncover_right","label":"Uncover swipe Right→Left"},
+        {"value":"swipe_uncover_top","label":"Uncover swipe Top→Bottom"},
+        {"value":"swipe_uncover_bottom","label":"Uncover swipe Bottom→Top"}
+      ]},
+      {"type":"header","content":"Headline Animation"},
+      {"type":"select","id":"headline_anim_type","label":"Headline Animation","default":"none","options":[
+        {"value":"none","label":"None"},
+        {"value":"fade_in","label":"Fade In"},
+        {"value":"fade_up","label":"Fade Up"},
+        {"value":"fade_down","label":"Fade Down"},
+        {"value":"fade_left","label":"Fade Left"},
+        {"value":"fade_right","label":"Fade Right"}
+      ]},
+      {"type":"range","id":"headline_anim_intensity","label":"Headline Animation Intensity","min":0,"max":100,"step":1,"default":50},
+      {"type":"select","id":"headline_anim_speed","label":"Headline Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
+      {"type":"range","id":"headline_anim_speed_custom","label":"Headline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900},
+      {"type":"header","content":"Subheadline Animation"},
+      {"type":"select","id":"sub_anim_type","label":"Subheadline Animation","default":"none","options":[
+        {"value":"none","label":"None"},
+        {"value":"fade_in","label":"Fade In"},
+        {"value":"fade_up","label":"Fade Up"},
+        {"value":"fade_down","label":"Fade Down"},
+        {"value":"fade_left","label":"Fade Left"},
+        {"value":"fade_right","label":"Fade Right"}
+      ]},
+      {"type":"range","id":"sub_anim_intensity","label":"Subheadline Animation Intensity","min":0,"max":100,"step":1,"default":40},
+      {"type":"select","id":"sub_anim_speed","label":"Subheadline Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
+      {"type":"range","id":"sub_anim_speed_custom","label":"Subheadline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900},
       {"type":"text","id":"slide_alt","label":"Alt text"},
       {"type":"url","id":"slide_link","label":"Full-slide link"},
       {"type":"text","id":"slide_headline","label":"Slide headline"},
