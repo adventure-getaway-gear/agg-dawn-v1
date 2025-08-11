@@ -39,6 +39,8 @@
             "cta_anim_style_hover": "",
             "cta_anim_style_click": "",
             "cta_gap": 0,
+            "cta_gap_mobile": 0,
+            "cta_style": "",
             "headline_size": 0,
             "subheadline_size": 0,
             "headline_color": "",
@@ -78,6 +80,8 @@
             "cta_anim_style_hover": "pulse",
             "cta_anim_style_click": "lift",
             "cta_gap": 52,
+            "cta_gap_mobile": 32,
+            "cta_style": "glass",
             "headline_size": 100,
             "subheadline_size": 18,
             "headline_color": "",
@@ -143,6 +147,8 @@
         "cta_global_anim_speed_hover": 2,
         "cta_global_anim_speed_click": 1,
         "cta_global_cta_gap": 14,
+        "cta_global_cta_gap_mobile": 12,
+        "cta_global_style": "raised",
         "custom_css": ""
       }
     },
