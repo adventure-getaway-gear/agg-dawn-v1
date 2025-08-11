@@ -134,6 +134,12 @@
                 {% assign widths = '400,600,800,1200,1600,2048' | split: ',' %}
                 {% capture srcset %}{% for w in widths %}{{ b.slide_image | image_url: width: w | append: ' ' | append: w | append: 'w' }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
                 {% if forloop.first %}<link rel="preload" as="image" href="{{ b.slide_image | image_url: width: 1600 }}">{% endif %}
+                {% assign anim_type = b.image_anim_type | default: 'none' %}
+                {% assign anim_intensity = b.image_anim_intensity | default: 50 %}
+                {% assign anim_speed = b.image_anim_speed | default: 'medium' %}
+                {% assign anim_speed_custom = b.image_anim_speed_custom | default: 800 %}
+                {% assign anim_speed_val = anim_speed_custom %}
+                {% if anim_speed == 'slow' %}{% assign anim_speed_val = 1800 %}{% elsif anim_speed == 'medium' %}{% assign anim_speed_val = 800 %}{% elsif anim_speed == 'fast' %}{% assign anim_speed_val = 350 %}{% endif %}
                 <img
                   id="hero-slide-img-{{ section.id }}-{{ forloop.index0 }}"
                   src="{{ b.slide_image | image_url: width: 1600 }}"
@@ -143,6 +149,11 @@
                   loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
                   fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
                   decoding="async"
+                  class="hero-banner-agg__slideImg anim-{{ anim_type }}"
+                  data-anim-type="{{ anim_type }}"
+                  data-anim-intensity="{{ anim_intensity }}"
+                  data-anim-speed="{{ anim_speed }}"
+                  data-anim-speed-val="{{ anim_speed_val }}"
                   style="width:100%;height:100%;object-fit:cover;display:block;" />
               {% else %}
                 <div style="background:#222;width:100%;height:100%;"></div>
@@ -167,7 +178,7 @@
             {%- endif -%}
             {%- if s.show_slide_ctas and any_cta -%}
               <div class="hero-banner-agg__slidePiece pos-{{ ctas_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                {%- assign use_global_anim = b.use_global_cta_anim -%}
+                {%- assign use_global_anim = b.cta_anim_style_cont | default: b.cta_anim_style | default: s.cta_global_anim_style_cont -%}
                 {%- if use_global_anim == nil %}{% assign use_global_anim = true %}{% endif %}
                 {%- assign style_cont = b.cta_anim_style_cont | default: b.cta_anim_style | default: s.cta_global_anim_style_cont -%}
                 {%- assign style_hover = b.cta_anim_style_hover | default: style_cont | default: s.cta_global_anim_style_hover -%}
@@ -335,7 +346,7 @@
       var pauseOnHover = {{ s.pause_on_hover | default: true }};
   var pointerStartX=null; var pointerDelta=0; var SWIPE_THRESHOLD=40;
       function setAria(oldI,newI){ if(dots[oldI]){dots[oldI].setAttribute('aria-selected','false');} if(dots[newI]){dots[newI].setAttribute('aria-selected','true');} if(announcer){announcer.textContent='Slide '+(newI+1)+' of '+slides.length;} }
-      function show(i){ if(i===idx) return; var old=idx; if(i>=slides.length){ if(loop){ i=0;} else {return stop();} } if(i<0){ if(loop){ i=slides.length-1;} else {return;} } slides[old].classList.remove('is-active'); if(dots[old]) dots[old].classList.remove('is-active'); idx=i; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); setAria(old,idx); }
+      function show(i){ if(i===idx) return; var old=idx; if(i>=slides.length){ if(loop){ i=0;} else {return stop();} } if(i<0){ if(loop){ i=slides.length-1;} else {return;} } slides[old].classList.remove('is-active'); if(dots[old]) dots[old].classList.remove('is-active'); idx=i; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); setAria(old,idx); applyImageAnimation(idx); }
       function nextSlide(){ show(idx+1); }
       function prevSlide(){ show(idx-1); }
   var hovering=false; var timer=null; var slideStart=Date.now(); var currentDuration=interval; var progress=root.querySelector('.hero-banner-agg__progressFill');
@@ -369,7 +380,60 @@
 
   // Enhance show() to reset timers & progress (monkey patch after definition)
   var _showOrig = show; show = function(i){ var before = idx; _showOrig(i); if(before!==idx){ applyDuration(); slideStart=Date.now(); if(progress){ progress.style.transform='scaleX(0)'; } schedule(); } };
-    })();
+
+  // Image animation logic
+  function applyImageAnimation(slideIdx) {
+    slides.forEach(function(slide, i) {
+      var img = slide.querySelector('.hero-banner-agg__slideImg');
+      if (!img) return;
+      var type = img.getAttribute('data-anim-type');
+      var intensity = parseInt(img.getAttribute('data-anim-intensity'), 10) || 50;
+      var speed = parseInt(img.getAttribute('data-anim-speed-val'), 10) || 800;
+      // Reset all styles
+      img.style.transform = '';
+      img.style.filter = '';
+      img.style.transitionDuration = speed + 'ms';
+      // Only animate active slide
+      if (i !== slideIdx) return;
+      switch(type) {
+        case 'ken_burns':
+          var scale = 1 + (intensity/200);
+          img.style.transform = 'scale(' + scale + ')';
+          img.style.transitionTimingFunction = 'ease-in-out';
+          setTimeout(function(){ img.style.transform = 'scale(1)'; }, speed);
+          break;
+        case 'parallax':
+          img.style.transform = 'translateY(' + (intensity/5) + 'px)';
+          setTimeout(function(){ img.style.transform = 'translateY(0)'; }, speed);
+          break;
+        case 'crossfade':
+          img.style.opacity = '1';
+          break;
+        case 'zoom':
+          var z = 1 + (intensity/100);
+          img.style.transform = 'scale(' + z + ')';
+          setTimeout(function(){ img.style.transform = 'scale(1)'; }, speed);
+          break;
+        case 'blur_focus':
+          var blur = (intensity/20).toFixed(1);
+          img.style.filter = 'blur(' + blur + 'px)';
+          setTimeout(function(){ img.style.filter = 'blur(0px)'; }, speed);
+          break;
+        case 'light_sweep':
+          // Simple shimmer effect using box-shadow
+          img.style.boxShadow = '0 0 ' + (intensity/2) + 'px rgba(255,255,255,0.5)';
+          setTimeout(function(){ img.style.boxShadow = 'none'; }, speed);
+          break;
+        // Ambient overlays, mouse parallax, etc. can be extended here
+        default:
+          // No animation
+          break;
+      }
+    });
+  }
+  // Initial animation
+  applyImageAnimation(idx);
+})();
   </script>
   {% endif %}
 </section>
