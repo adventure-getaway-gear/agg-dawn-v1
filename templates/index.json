@@ -173,8 +173,10 @@
       "settings": {
         "hero_image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
         "image_alt": "",
-        "headline": "",
-        "subheadline": "",
+        "headline": "gtgtgtgt",
+        "show_global_section_headline": false,
+        "subheadline": "gtgtgtg",
+        "show_global_section_subheadline": false,
         "section_aria": "",
         "text_align": "center",
         "headline_size": 96,
@@ -222,6 +224,8 @@
         "global_headline_position": "tl",
         "global_subheadline_position": "mc",
         "global_ctas_position": "bc",
+        "show_global_headlines": true,
+        "show_global_subheadlines": true,
         "custom_css": ""
       }
     },
