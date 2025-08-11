@@ -19,7 +19,23 @@
     .hero-banner-agg__slides{position:absolute;inset:0;margin:0;padding:0;list-style:none}
     .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;will-change:opacity}
     .hero-banner-agg__slide.is-active{opacity:1;}
-    .hero-banner-agg__slide img{width:100%;height:100%;object-fit:cover;display:block}
+  .hero-banner-agg__slide img{width:100%;height:100%;object-fit:cover;display:block}
+  /* Image animation helpers */
+  .hero-banner-agg__slideImg.anim-ken_burns,
+  .hero-banner-agg__slideImg.anim-parallax,
+  .hero-banner-agg__slideImg.anim-zoom { transition: transform var(--img-anim-speed,800ms) ease-in-out; will-change: transform; }
+  .hero-banner-agg__slideImg.anim-blur_focus { transition: filter var(--img-anim-speed,800ms) ease-in-out; will-change: filter; }
+  .hero-banner-agg__slideImg.anim-crossfade { opacity: 0; transition: opacity var(--img-anim-speed,800ms) ease-in-out; will-change: opacity; }
+  .hero-banner-agg__slide.is-active .hero-banner-agg__slideImg.anim-crossfade { opacity: 1; }
+  .hero-banner-agg__slideImg.anim-light_sweep { position: relative; overflow: hidden; }
+  /* Overlays */
+  .hb-anim-overlay { position:absolute; inset:0; pointer-events:none; z-index:5; mix-blend-mode:screen; }
+  .hb-anim-overlay.hb-mist { background: radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.06) 60%, rgba(255,255,255,0) 100%); filter: blur(12px); opacity: .35; animation: hbMist 6s ease-in-out infinite alternate; }
+  .hb-anim-overlay.hb-gradient { background: linear-gradient(120deg, rgba(255,255,255,0.08), rgba(255,255,255,0.0), rgba(255,255,255,0.12)); background-size: 200% 100%; animation: hbGradientDrift 8s linear infinite; opacity:.35; }
+  .hb-anim-overlay.hb-flare { background: radial-gradient(60% 60% at -10% 50%, rgba(255,255,200,0.45) 0%, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0) 60%); animation: hbFlare 5s ease-in-out infinite; opacity:.45; }
+  @keyframes hbGradientDrift { 0%{background-position:0% 50%} 100%{background-position:100% 50%} }
+  @keyframes hbMist { 0%{transform:translateX(-12%)} 100%{transform:translateX(12%)} }
+  @keyframes hbFlare { 0%{transform:translateX(-120%)} 100%{transform:translateX(120%)} }
   /* Per-slide independent positioned pieces */
   .hero-banner-agg__slidePiece{position:absolute;z-index:16;display:flex;flex-direction:column;gap:.55rem;max-width:var(--maxw,{{ s.text_max_width }}ch);padding:0;margin:0}
   /* When slide is fully linked we add .is-passive to allow underlying link clicks */
@@ -328,53 +344,53 @@
     {% endif %}
   </div>
   {% if s.custom_css %}<style>{{ s.custom_css }}</style>{% endif %}
-  {% if section.blocks.size > 1 %}
+  {% if section.blocks.size > 0 %}
   <script>
     (function(){
       var root=document.getElementById('hero-slideshow-{{ section.id }}'); if(!root) return;
       var initialized = root.getAttribute('data-enhanced'); if(initialized) return; root.setAttribute('data-enhanced','true');
       var wrap=root.querySelector('.hero-banner-agg__slideshow'); if(!wrap) return;
       var slides=[].slice.call(root.querySelectorAll('.hero-banner-agg__slide'));
-      if(slides.length<2) return; // nothing to do
+    var isCarousel = slides.length>1;
       var dots=[].slice.call(root.querySelectorAll('.hero-banner-agg__dot'));
       var announcer = root.querySelector('[data-carousel-announcer]');
       var idx=0;
   var autoplayAttr = wrap.getAttribute('data-autoplay');
-  var autoplay = (autoplayAttr==='' || autoplayAttr==='true' || autoplayAttr==='1');
+  var autoplay = (autoplayAttr==='' || autoplayAttr==='true' || autoplayAttr==='1') && isCarousel;
   var interval = parseInt(wrap.getAttribute('data-interval'),10) || 5000;
       var loop = {{ s.loop_slides | default: true }};
       var pauseOnHover = {{ s.pause_on_hover | default: true }};
   var pointerStartX=null; var pointerDelta=0; var SWIPE_THRESHOLD=40;
       function setAria(oldI,newI){ if(dots[oldI]){dots[oldI].setAttribute('aria-selected','false');} if(dots[newI]){dots[newI].setAttribute('aria-selected','true');} if(announcer){announcer.textContent='Slide '+(newI+1)+' of '+slides.length;} }
-      function show(i){ if(i===idx) return; var old=idx; if(i>=slides.length){ if(loop){ i=0;} else {return stop();} } if(i<0){ if(loop){ i=slides.length-1;} else {return;} } slides[old].classList.remove('is-active'); if(dots[old]) dots[old].classList.remove('is-active'); idx=i; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); setAria(old,idx); applyImageAnimation(idx); }
+    function show(i){ if(i===idx) return; var old=idx; if(i>=slides.length){ if(loop){ i=0;} else {return stop();} } if(i<0){ if(loop){ i=slides.length-1;} else {return;} } slides[old].classList.remove('is-active'); if(dots[old]) dots[old].classList.remove('is-active'); idx=i; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); setAria(old,idx); applyImageAnimation(idx); }
       function nextSlide(){ show(idx+1); }
       function prevSlide(){ show(idx-1); }
   var hovering=false; var timer=null; var slideStart=Date.now(); var currentDuration=interval; var progress=root.querySelector('.hero-banner-agg__progressFill');
   function applyDuration(){ var durAttr = slides[idx].getAttribute('data-duration'); var d=parseInt(durAttr,10); if(!isNaN(d) && d>0){ currentDuration=d; } else { currentDuration=interval; } }
   applyDuration();
-  function schedule(){ if(!autoplay || hovering) return; clearTimeout(timer); timer=setTimeout(function(){ nextSlide(); }, currentDuration); }
-  function start(){ if(!autoplay) return; schedule(); }
+  function schedule(){ if(!autoplay || hovering || !isCarousel) return; clearTimeout(timer); timer=setTimeout(function(){ nextSlide(); }, currentDuration); }
+  function start(){ if(!autoplay || !isCarousel) return; schedule(); }
   function stop(){ clearTimeout(timer); timer=null; }
-  function rafTick(){ if(autoplay && !hovering){ var now=Date.now(); var elapsed = now - slideStart; var frac = elapsed / currentDuration; if(progress){ if(frac>1) frac=1; progress.style.transform='scaleX('+ frac +')'; } if(elapsed >= currentDuration){ nextSlide(); } } requestAnimationFrame(rafTick); }
+  function rafTick(){ if(autoplay && !hovering && isCarousel){ var now=Date.now(); var elapsed = now - slideStart; var frac = elapsed / currentDuration; if(progress){ if(frac>1) frac=1; progress.style.transform='scaleX('+ frac +')'; } if(elapsed >= currentDuration){ nextSlide(); } } requestAnimationFrame(rafTick); }
   requestAnimationFrame(rafTick);
   start();
       // Event delegation for buttons & dots (resilient to re-render)
       wrap.addEventListener('click', function(e){
         var t=e.target;
-        if(t.closest('[data-next]')){ e.preventDefault(); nextSlide(); start(); }
-  else if(t.closest('[data-prev]')){ e.preventDefault(); prevSlide(); start(); }
-  else if(t.classList.contains('hero-banner-agg__dot')){ e.preventDefault(); var n=parseInt(t.getAttribute('data-dot')); show(n); start(); }
+    if(isCarousel && t.closest('[data-next]')){ e.preventDefault(); nextSlide(); start(); }
+  else if(isCarousel && t.closest('[data-prev]')){ e.preventDefault(); prevSlide(); start(); }
+  else if(isCarousel && t.classList.contains('hero-banner-agg__dot')){ e.preventDefault(); var n=parseInt(t.getAttribute('data-dot')); show(n); start(); }
       });
-      dots.forEach(function(d){ d.setAttribute('tabindex','0'); d.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); var n=parseInt(d.getAttribute('data-dot')); show(n); start(); }}); });
-      if(pauseOnHover){
+    dots.forEach(function(d){ d.setAttribute('tabindex','0'); d.addEventListener('keydown', function(e){ if(!isCarousel) return; if(e.key==='Enter' || e.key===' '){ e.preventDefault(); var n=parseInt(d.getAttribute('data-dot')); show(n); start(); }}); });
+    if(pauseOnHover && isCarousel){
     root.addEventListener('mouseenter', function(){ hovering=true; stop(); }, {passive:true});
     root.addEventListener('mouseleave', function(){ hovering=false; start(); }, {passive:true});
       }
       root.setAttribute('tabindex','0');
-      root.addEventListener('keydown', function(e){ if(e.key==='ArrowRight'){ e.preventDefault(); nextSlide(); start(); } else if(e.key==='ArrowLeft'){ e.preventDefault(); prevSlide(); start(); } });
+    root.addEventListener('keydown', function(e){ if(!isCarousel) return; if(e.key==='ArrowRight'){ e.preventDefault(); nextSlide(); start(); } else if(e.key==='ArrowLeft'){ e.preventDefault(); prevSlide(); start(); } });
       root.addEventListener('pointerdown', function(e){ pointerStartX=e.clientX; pointerDelta=0; });
       root.addEventListener('pointermove', function(e){ if(pointerStartX!=null){ pointerDelta=e.clientX-pointerStartX; }});
-  root.addEventListener('pointerup', function(){ if(pointerStartX!=null){ if(Math.abs(pointerDelta)>SWIPE_THRESHOLD){ if(pointerDelta<0){ nextSlide(); } else { prevSlide(); } start(); } pointerStartX=null; pointerDelta=0; }});
+  root.addEventListener('pointerup', function(){ if(pointerStartX!=null){ if(isCarousel && Math.abs(pointerDelta)>SWIPE_THRESHOLD){ if(pointerDelta<0){ nextSlide(); } else { prevSlide(); } start(); } pointerStartX=null; pointerDelta=0; }});
   document.addEventListener('visibilitychange', function(){ if(document.hidden){ stop(); } else { setTimeout(function(){ start(); },120); } });
   root.__heroSlider = { next: nextSlide, prev: prevSlide, pause: function(){ autoplay=false; stop(); }, play: function(){ if(!autoplay){ autoplay=true; start(); } } };
 
@@ -382,6 +398,9 @@
   var _showOrig = show; show = function(i){ var before = idx; _showOrig(i); if(before!==idx){ applyDuration(); slideStart=Date.now(); if(progress){ progress.style.transform='scaleX(0)'; } schedule(); } };
 
   // Image animation logic
+  function clearOverlays(slide){ var olds = slide.querySelectorAll('.hb-anim-overlay'); olds.forEach(function(n){ n.remove(); }); }
+  function makeOverlay(slide, cls){ var ov=document.createElement('div'); ov.className='hb-anim-overlay '+cls; slide.appendChild(ov); return ov; }
+  var mouseMoveHandler = null;
   function applyImageAnimation(slideIdx) {
     slides.forEach(function(slide, i) {
       var img = slide.querySelector('.hero-banner-agg__slideImg');
@@ -392,37 +411,74 @@
       // Reset all styles
       img.style.transform = '';
       img.style.filter = '';
+      img.style.boxShadow = '';
+      img.style.transition = '';
+      img.style.setProperty('--img-anim-speed', speed + 'ms');
       img.style.transitionDuration = speed + 'ms';
+      clearOverlays(slide);
       // Only animate active slide
       if (i !== slideIdx) return;
       switch(type) {
         case 'ken_burns':
           var scale = 1 + (intensity/200);
+          img.style.transition = 'transform ' + speed + 'ms ease-in-out';
           img.style.transform = 'scale(' + scale + ')';
-          img.style.transitionTimingFunction = 'ease-in-out';
           setTimeout(function(){ img.style.transform = 'scale(1)'; }, speed);
           break;
         case 'parallax':
+          img.style.transition = 'transform ' + speed + 'ms ease-in-out';
           img.style.transform = 'translateY(' + (intensity/5) + 'px)';
           setTimeout(function(){ img.style.transform = 'translateY(0)'; }, speed);
           break;
         case 'crossfade':
+          img.style.transition = 'opacity ' + speed + 'ms ease-in-out';
           img.style.opacity = '1';
           break;
         case 'zoom':
           var z = 1 + (intensity/100);
+          img.style.transition = 'transform ' + speed + 'ms ease-in-out';
           img.style.transform = 'scale(' + z + ')';
           setTimeout(function(){ img.style.transform = 'scale(1)'; }, speed);
           break;
         case 'blur_focus':
           var blur = (intensity/20).toFixed(1);
+          img.style.transition = 'filter ' + speed + 'ms ease-in-out';
           img.style.filter = 'blur(' + blur + 'px)';
           setTimeout(function(){ img.style.filter = 'blur(0px)'; }, speed);
           break;
         case 'light_sweep':
           // Simple shimmer effect using box-shadow
+          img.style.transition = 'box-shadow ' + speed + 'ms ease-in-out';
           img.style.boxShadow = '0 0 ' + (intensity/2) + 'px rgba(255,255,255,0.5)';
           setTimeout(function(){ img.style.boxShadow = 'none'; }, speed);
+          break;
+        case 'mist_fog':
+          var ov1 = makeOverlay(slide, 'hb-mist');
+          ov1.style.animationDuration = Math.max(speed*2, 3000) + 'ms';
+          ov1.style.opacity = Math.min(0.75, 0.2 + intensity/120);
+          break;
+        case 'gradient_drift':
+          var ov2 = makeOverlay(slide, 'hb-gradient');
+          ov2.style.animationDuration = Math.max(speed*1.5, 2000) + 'ms';
+          ov2.style.opacity = Math.min(0.7, 0.15 + intensity/200);
+          break;
+        case 'lens_flare':
+          var ov3 = makeOverlay(slide, 'hb-flare');
+          ov3.style.animationDuration = Math.max(speed*1.8, 2200) + 'ms';
+          ov3.style.opacity = Math.min(0.8, 0.25 + intensity/180);
+          break;
+        case 'mouse_parallax':
+          var maxShift = Math.max(4, intensity/6);
+          if (root.__mouseParallaxHandler) { root.removeEventListener('mousemove', root.__mouseParallaxHandler); root.__mouseParallaxHandler=null; }
+          mouseMoveHandler = function(e){
+            var rect = root.getBoundingClientRect();
+            var cx = rect.left + rect.width/2; var cy = rect.top + rect.height/2;
+            var dx = (e.clientX - cx) / rect.width; var dy = (e.clientY - cy) / rect.height;
+            var tx = (-dx * maxShift).toFixed(2); var ty = (-dy * maxShift).toFixed(2);
+            img.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
+          };
+          root.__mouseParallaxHandler = mouseMoveHandler;
+          root.addEventListener('mousemove', mouseMoveHandler);
           break;
         // Ambient overlays, mouse parallax, etc. can be extended here
         default:
