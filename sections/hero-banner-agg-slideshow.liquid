@@ -20,12 +20,29 @@
     .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;will-change:opacity}
     .hero-banner-agg__slide.is-active{opacity:1;}
     .hero-banner-agg__slide img{width:100%;height:100%;object-fit:cover;display:block}
-  .hero-banner-agg__slideContent{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:var(--slide-align,{{ flex_align }});text-align:{{ s.text_align }};padding:{{ s.padding_vertical }}px {{ s.padding_horizontal }}px;gap:.75rem;z-index:16;max-width:100%;pointer-events:none}
-  .hero-banner-agg__slideContentInner{max-width:{{ s.text_max_width }}ch;display:flex;flex-direction:column;gap:.6rem;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.55)}
-  .hero-banner-agg__slideContent h3{margin:0;font-size:clamp(1.4rem,3.2vw,{{ s.headline_size | default: 72 | divided_by: 1.4 }}px);line-height:1.1;font-weight:700}
-  .hero-banner-agg__slideContent p{margin:0;font-size:clamp(1rem,1.6vw,{{ s.subheadline_size | default: 24 }}px);line-height:1.45}
-  .hero-banner-agg__slideButtons{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.25rem}
-  .hero-banner-agg__slideBtn{background:{{ s.cta_bg }};color:{{ s.cta_color }};padding:.85rem 1.4rem;border-radius:{{ s.button_radius }}px;font-weight:600;text-decoration:none;font-size:.9rem;line-height:1;box-shadow:0 2px 4px rgba(0,0,0,.35);transition:background .3s ease,opacity .3s ease;pointer-events:auto}
+  /* Per-slide independent positioned pieces */
+  .hero-banner-agg__slidePiece{position:absolute;z-index:16;display:flex;flex-direction:column;gap:.55rem;max-width:var(--maxw,{{ s.text_max_width }}ch);pointer-events:none;padding:0;margin:0}
+  .hero-banner-agg__slidePiece *{pointer-events:auto}
+  .hero-banner-agg__pieceHeadline{color:var(--headline-color,#fff);font-weight:700;line-height:1.1;margin:0;font-size:var(--headline-size,clamp(1.6rem,3.4vw,{{ s.headline_size }}px));text-shadow:0 2px 4px rgba(0,0,0,.55);}
+  .hero-banner-agg__pieceSub{color:var(--sub-color,#fff);margin:0;font-size:var(--sub-size,clamp(1rem,1.6vw,{{ s.subheadline_size }}px));line-height:1.45;text-shadow:0 2px 4px rgba(0,0,0,.55);}
+  .hero-banner-agg__slideButtons{display:flex;flex-wrap:wrap;gap:.85rem;margin-top:.35rem}
+  .hero-banner-agg__slideBtn{background:{{ s.cta_bg }};color:{{ s.cta_color }};padding:var(--btn-pad-y,.85rem) var(--btn-pad-x,1.6rem);border-radius:{{ s.button_radius }}px;font-weight:600;text-decoration:none;font-size:var(--btn-font,.95rem);line-height:1;box-shadow:0 2px 4px rgba(0,0,0,.35);transition:background .3s ease,opacity .3s ease;pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;min-width:140px}
+  .hero-banner-agg__slideBtn[data-size="small"]{--btn-pad-y:.6rem;--btn-pad-x:1.2rem;--btn-font:.85rem;min-width:120px}
+  .hero-banner-agg__slideBtn[data-size="large"]{--btn-pad-y:1.05rem;--btn-pad-x:2rem;--btn-font:1rem;min-width:160px}
+  /* 9-point positioning utility classes */
+  .pos-tl{top:{{ s.padding_vertical }}px;left:{{ s.padding_horizontal }}px;text-align:left}
+  .pos-tc{top:{{ s.padding_vertical }}px;left:50%;transform:translateX(-50%);text-align:center}
+  .pos-tr{top:{{ s.padding_vertical }}px;right:{{ s.padding_horizontal }}px;text-align:right}
+  .pos-ml{top:50%;left:{{ s.padding_horizontal }}px;transform:translateY(-50%);text-align:left}
+  .pos-mc{top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+  .pos-mr{top:50%;right:{{ s.padding_horizontal }}px;transform:translateY(-50%);text-align:right}
+  .pos-bl{bottom:{{ s.padding_vertical }}px;left:{{ s.padding_horizontal }}px;text-align:left}
+  .pos-bc{bottom:{{ s.padding_vertical }}px;left:50%;transform:translateX(-50%);text-align:center}
+  .pos-br{bottom:{{ s.padding_vertical }}px;right:{{ s.padding_horizontal }}px;text-align:right}
+  @media (max-width:749px){
+    .hero-banner-agg__pieceHeadline{font-size:var(--headline-size-m,clamp(1.4rem,5.5vw,{{ s.headline_size | divided_by: 1.6 }}px));}
+    .hero-banner-agg__pieceSub{font-size:var(--sub-size-m,clamp(.9rem,3.8vw,{{ s.subheadline_size | divided_by: 1.1 }}px));}
+  }
   .hero-banner-agg__slideBtn[data-variant="secondary"]{background:{{ s.cta2_bg }};color:{{ s.cta2_color }}}
   .hero-banner-agg__slideBtn[data-variant="ghost"]{background:rgba(0,0,0,.45);color:#fff}
   .hero-banner-agg__slideBtn:hover{opacity:.85}
@@ -48,8 +65,12 @@
         {% for block in section.blocks %}
           {% assign b = block.settings %}
           {% assign slide_id = 'slide-' | append: section.id | append: '-' | append: forloop.index0 %}
+          {% assign has_cta_primary = b.slide_cta_text != blank and b.slide_cta_link != blank %}
+          {% assign has_cta_secondary = b.slide_cta2_text != blank and b.slide_cta2_link != blank %}
+          {% assign any_cta = has_cta_primary or has_cta_secondary %}
+          {% assign wrap_slide_link = b.slide_link != blank and any_cta == false %}
           <li id="{{ slide_id }}" class="hero-banner-agg__slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.index0 }}" data-duration="{{ b.slide_duration | default: s.slideshow_interval | times: 1000 }}" role="group" aria-roledescription="slide" aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}" {{ block.shopify_attributes }}>
-            {% if b.slide_link != blank %}<a href="{{ b.slide_link }}" style="display:block;position:absolute;inset:0;" tabindex="-1">{% endif %}
+            {% if wrap_slide_link %}<a href="{{ b.slide_link }}" style="display:block;position:absolute;inset:0;" tabindex="-1" aria-label="{{ b.slide_alt | default: s.image_alt | escape }}">{% endif %}
               {% if b.slide_image %}
                 {% assign widths = '400,600,800,1200,1600,2048' | split: ',' %}
                 {% capture srcset %}{% for w in widths %}{{ b.slide_image | image_url: width: w | append: ' ' | append: w | append: 'w' }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
@@ -67,26 +88,33 @@
               {% else %}
                 <div style="background:#222;width:100%;height:100%;"></div>
               {% endif %}
-            {% if b.slide_link != blank %}</a>{% endif %}
+            {% if wrap_slide_link %}</a>{% endif %}
             {% if s.enable_overlay %}<div class="hero-banner-agg__overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>{% endif %}
-            {% if b.slide_headline != blank or b.slide_subheadline != blank or b.slide_cta_text != blank or b.slide_cta2_text != blank %}
-              <div class="hero-banner-agg__slideContent">
-                <div class="hero-banner-agg__slideContentInner">
-                  {% if b.slide_headline != blank %}<h3>{{ b.slide_headline }}</h3>{% endif %}
-                  {% if b.slide_subheadline != blank %}<p>{{ b.slide_subheadline }}</p>{% endif %}
-                  {% if b.slide_cta_text != blank and b.slide_cta_link != blank or b.slide_cta2_text != blank and b.slide_cta2_link != blank %}
-                  <div class="hero-banner-agg__slideButtons">
-                    {% if b.slide_cta_text != blank and b.slide_cta_link != blank %}
-                      <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}">{{ b.slide_cta_text }}</a>
-                    {% endif %}
-                    {% if b.slide_cta2_text != blank and b.slide_cta2_link != blank %}
-                      <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}">{{ b.slide_cta2_text }}</a>
-                    {% endif %}
-                  </div>
+            {%- assign headline_pos = b.headline_position | default: 'mc' -%}
+            {%- assign sub_pos = b.subheadline_position | default: headline_pos -%}
+            {%- assign ctas_pos = b.ctas_position | default: headline_pos -%}
+            {%- if b.slide_headline != blank -%}
+              <div class="hero-banner-agg__slidePiece pos-{{ headline_pos }}" style="--headline-color:{{ b.headline_color | default: s.headline_color }};--headline-size:{% if b.headline_size > 0 %}{{ b.headline_size }}px{% endif %};--headline-size-m:{% if b.headline_size > 0 %}{{ b.headline_size | divided_by: 1.6 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
+                <h3 class="hero-banner-agg__pieceHeadline">{{ b.slide_headline }}</h3>
+              </div>
+            {%- endif -%}
+            {%- if b.slide_subheadline != blank -%}
+              <div class="hero-banner-agg__slidePiece pos-{{ sub_pos }}" style="--sub-color:{{ b.subheadline_color | default: s.subheadline_color }};--sub-size:{% if b.subheadline_size > 0 %}{{ b.subheadline_size }}px{% endif %};--sub-size-m:{% if b.subheadline_size > 0 %}{{ b.subheadline_size | divided_by: 1.1 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
+                <p class="hero-banner-agg__pieceSub">{{ b.slide_subheadline }}</p>
+              </div>
+            {%- endif -%}
+            {%- if any_cta -%}
+              <div class="hero-banner-agg__slidePiece pos-{{ ctas_pos }}" style="--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
+                <div class="hero-banner-agg__slideButtons" style="justify-content:{% if b.ctas_inline_align == 'start' %}flex-start{% elsif b.ctas_inline_align == 'end' %}flex-end{% else %}center{% endif %};">
+                  {% if has_cta_primary %}
+                    <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}">{{ b.slide_cta_text }}</a>
+                  {% endif %}
+                  {% if has_cta_secondary %}
+                    <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}">{{ b.slide_cta2_text }}</a>
                   {% endif %}
                 </div>
               </div>
-            {% endif %}
+            {%- endif -%}
           </li>
         {% endfor %}
       </ul>
@@ -276,6 +304,16 @@
   {"type":"text","id":"slide_cta2_text","label":"Secondary CTA text"},
   {"type":"url","id":"slide_cta2_link","label":"Secondary CTA link"},
   {"type":"select","id":"slide_cta2_variant","label":"Secondary CTA variant","default":"secondary","options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"ghost","label":"Ghost"}]},
+  {"type":"select","id":"cta_size","label":"CTA size","default":"medium","options":[{"value":"small","label":"Small"},{"value":"medium","label":"Medium"},{"value":"large","label":"Large"}]},
+  {"type":"range","id":"headline_size","label":"Headline size override (px)","min":0,"max":120,"step":2,"default":0,"info":"0 = inherit global"},
+  {"type":"range","id":"subheadline_size","label":"Subheadline size override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit global"},
+  {"type":"color","id":"headline_color","label":"Headline color override"},
+  {"type":"color","id":"subheadline_color","label":"Subheadline color override"},
+  {"type":"range","id":"max_width_ch","label":"Max text width (ch)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit global"},
+  {"type":"select","id":"headline_position","label":"Headline position","default":"mc","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+  {"type":"select","id":"subheadline_position","label":"Subheadline position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+  {"type":"select","id":"ctas_position","label":"CTAs position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+  {"type":"select","id":"ctas_inline_align","label":"CTAs inline alignment","default":"center","options":[{"value":"start","label":"Start"},{"value":"center","label":"Center"},{"value":"end","label":"End"}]},
       {"type":"range","id":"slide_duration","label":"Custom duration (s)","min":0,"max":25,"step":1,"default":0,"info":"0 uses default duration"}
     ]}
   ],
