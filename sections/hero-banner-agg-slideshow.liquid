@@ -465,6 +465,23 @@
   "blocks": [
     {"type":"image","name":"Slide","settings":[
       {"type":"image_picker","id":"slide_image","label":"Image"},
+      {"type":"header","content":"Image Animation Settings"},
+      {"type":"select","id":"image_anim_type","label":"Image Animation Type","default":"none","options":[
+        {"value":"none","label":"None"},
+        {"value":"ken_burns","label":"Ken Burns Effect"},
+        {"value":"parallax","label":"Parallax Movement"},
+        {"value":"crossfade","label":"Crossfade / Soft Fade"},
+        {"value":"zoom","label":"Zoom In / Zoom Out"},
+        {"value":"blur_focus","label":"Ambient Blur / Focus Shift"},
+        {"value":"light_sweep","label":"Light Sweep / Shimmer Overlay"},
+        {"value":"mist_fog","label":"Floating Mist / Fog Overlay"},
+        {"value":"gradient_drift","label":"Gradient Drift"},
+        {"value":"lens_flare","label":"Lens Flare / Glow"},
+        {"value":"mouse_parallax","label":"Mouse Parallax / Tilt"}
+      ]},
+      {"type":"range","id":"image_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
+      {"type":"select","id":"image_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
+      {"type":"range","id":"image_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800},
       {"type":"text","id":"slide_alt","label":"Alt text"},
       {"type":"url","id":"slide_link","label":"Full-slide link"},
       {"type":"text","id":"slide_headline","label":"Slide headline"},
