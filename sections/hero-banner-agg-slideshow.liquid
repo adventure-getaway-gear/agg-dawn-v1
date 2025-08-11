@@ -1,4 +1,4 @@
-{% comment %} hero-banner-agg-slideshow v1.0 simple image slideshow hero 2025-08-11 {% endcomment %}
+{% comment %} hero-banner-agg-slideshow v1.1 polished carousel (responsive srcset, a11y, keyboard + swipe, configurable speed) 2025-08-11 {% endcomment %}
 {%- liquid
   assign s = section.settings
   assign overlay_opacity = s.overlay_opacity | divided_by: 100.0
@@ -9,13 +9,14 @@
     assign flex_align = 'flex-end'
   endif
 -%}
-<section class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;">
+<section class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;" data-slide-count="{{ section.blocks.size }}">
   <style>
-    .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px}
+  .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
+  @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
     .hero-banner-agg--slideshow .hero-banner-agg__media,.hero-banner-agg--slideshow .hero-banner-agg__slideshow{position:relative;width:100%;height:var(--hb-height)}
     .hero-banner-agg__slideshow{overflow:hidden}
     .hero-banner-agg__slides{position:absolute;inset:0;margin:0;padding:0;list-style:none}
-    .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease;}
+  .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;}
     .hero-banner-agg__slide.is-active{opacity:1;}
     .hero-banner-agg__slide img{width:100%;height:100%;object-fit:cover;display:block}
     .hero-banner-agg__navBtn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);color:#fff;border:0;padding:.65rem .9rem;cursor:pointer;font-size:14px;line-height:1;border-radius:50%;display:flex;align-items:center;justify-content:center}
@@ -29,14 +30,25 @@
     @media (prefers-reduced-motion:reduce){.hero-banner-agg__slide{transition:none}}
   </style>
   {% if section.blocks.size > 0 %}
-    <div class="hero-banner-agg__slideshow" data-autoplay="{{ s.slideshow_autoplay }}" data-interval="{{ s.slideshow_interval | times: 1000 }}" data-transition="{{ s.slideshow_transition }}">
-      <ul class="hero-banner-agg__slides">
+    <div class="hero-banner-agg__slideshow" data-autoplay="{{ s.slideshow_autoplay }}" data-interval="{{ s.slideshow_interval | times: 1000 }}" data-transition="{{ s.slideshow_transition }}" aria-roledescription="carousel">
+      <ul class="hero-banner-agg__slides" aria-live="polite">
         {% for block in section.blocks %}
           {% assign b = block.settings %}
-          <li class="hero-banner-agg__slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
-            {% if b.slide_link != blank %}<a href="{{ b.slide_link }}" style="display:block;position:absolute;inset:0;">{% endif %}
+          {% assign slide_id = 'slide-' | append: section.id | append: '-' | append: forloop.index0 %}
+          <li id="{{ slide_id }}" class="hero-banner-agg__slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.index0 }}" role="group" aria-roledescription="slide" aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}" {{ block.shopify_attributes }}>
+            {% if b.slide_link != blank %}<a href="{{ b.slide_link }}" style="display:block;position:absolute;inset:0;" tabindex="-1">{% endif %}
               {% if b.slide_image %}
-                <img src="{{ b.slide_image | img_url: '1600x' }}" alt="{{ b.slide_alt | default: s.headline | escape }}" loading="lazy">
+                {% assign widths = '400,600,800,1200,1600,2048' | split: ',' %}
+                {% capture srcset %}{% for w in widths %}{{ b.slide_image | image_url: width: w | append: ' ' | append: w | append: 'w' }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
+                <img
+                  src="{{ b.slide_image | image_url: width: 1600 }}"
+                  srcset="{{ srcset | strip }}"
+                  sizes="100vw"
+                  alt="{{ b.slide_alt | default: s.headline | escape }}"
+                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                  fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
+                  decoding="async"
+                  style="width:100%;height:100%;object-fit:cover;display:block;" />
               {% else %}
                 <div style="background:#222;width:100%;height:100%;"></div>
               {% endif %}
@@ -52,10 +64,12 @@
       {% if s.show_dots and section.blocks.size > 1 %}
         <div class="hero-banner-agg__dots" role="tablist">
           {% for block in section.blocks %}
-            <button type="button" class="hero-banner-agg__dot{% if forloop.first %} is-active{% endif %}" aria-label="Go to slide {{ forloop.index }}" data-dot="{{ forloop.index0 }}"></button>
+            {% assign slide_id = 'slide-' | append: section.id | append: '-' | append: forloop.index0 %}
+            <button type="button" class="hero-banner-agg__dot{% if forloop.first %} is-active{% endif %}" role="tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="{{ slide_id }}" aria-label="Go to slide {{ forloop.index }}" data-dot="{{ forloop.index0 }}"></button>
           {% endfor %}
         </div>
       {% endif %}
+      <div class="visually-hidden" aria-live="polite" data-carousel-announcer></div>
     </div>
   {% else %}
     <div class="hero-banner-agg__media" style="position:relative;width:100%;height:{{ s.image_height }}px;">
@@ -90,21 +104,37 @@
   {% if section.blocks.size > 1 %}
   <script>
     (function(){
-      var root=document.currentScript.closest('.hero-banner-agg--slideshow');
-      if(!root) return; var wrap=root.querySelector('.hero-banner-agg__slideshow'); if(!wrap) return;
+      var root=document.currentScript.closest('.hero-banner-agg--slideshow'); if(!root) return;
+      var wrap=root.querySelector('.hero-banner-agg__slideshow'); if(!wrap) return;
       var slides=[].slice.call(root.querySelectorAll('.hero-banner-agg__slide'));
       var dots=[].slice.call(root.querySelectorAll('.hero-banner-agg__dot'));
-      var prev=root.querySelector('[data-prev]'); var next=root.querySelector('[data-next]');
-      var idx=0; var autoplay=wrap.getAttribute('data-autoplay')==='true';
-      var interval=parseInt(wrap.getAttribute('data-interval'))||5000; var timer=null;
-      function show(i){ if(i===idx) return; slides[idx].classList.remove('is-active'); if(dots[idx]) dots[idx].classList.remove('is-active'); idx=(i+slides.length)%slides.length; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); }
+      var prev=root.querySelector('[data-prev]');
+      var next=root.querySelector('[data-next]');
+      var announcer = root.querySelector('[data-carousel-announcer]');
+      var idx=0;
+      var autoplay = wrap.getAttribute('data-autoplay')==='true';
+      var interval = parseInt(wrap.getAttribute('data-interval'))||5000;
+      var loop = {{ s.loop_slides | default: true }};
+      var pauseOnHover = {{ s.pause_on_hover | default: true }};
+      var timer=null; var pointerStartX=null; var pointerDelta=0; var SWIPE_THRESHOLD=40;
+      function setAria(oldI,newI){ if(dots[oldI]){dots[oldI].setAttribute('aria-selected','false');} if(dots[newI]){dots[newI].setAttribute('aria-selected','true');} if(announcer){announcer.textContent='Slide '+(newI+1)+' of '+slides.length;} }
+      function show(i){ if(i===idx) return; var old=idx; if(i>=slides.length){ if(loop){ i=0;} else {return stop();} } if(i<0){ if(loop){ i=slides.length-1;} else {return;} } slides[idx].classList.remove('is-active'); if(dots[idx]) dots[idx].classList.remove('is-active'); idx=i; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); setAria(old,idx); }
       function nextSlide(){ show(idx+1); }
+      function prevSlide(){ show(idx-1); }
       function start(){ if(!autoplay) return; stop(); timer=setInterval(nextSlide, interval); }
-      function stop(){ if(timer){clearInterval(timer); timer=null;} }
-      if(prev) prev.addEventListener('click', function(){ show(idx-1); start(); });
+      function stop(){ if(timer){ clearInterval(timer); timer=null; } }
+      if(prev) prev.addEventListener('click', function(){ prevSlide(); start(); });
       if(next) next.addEventListener('click', function(){ nextSlide(); start(); });
-      dots.forEach(function(d){ d.addEventListener('click', function(){ show(parseInt(d.getAttribute('data-dot'))); start(); }); });
-      root.addEventListener('mouseenter', stop); root.addEventListener('mouseleave', start);
+      dots.forEach(function(d){ d.addEventListener('click', function(){ var n=parseInt(d.getAttribute('data-dot')); show(n); start(); }); });
+      if(pauseOnHover){ root.addEventListener('mouseenter', stop); root.addEventListener('mouseleave', start); }
+      // Keyboard
+      root.addEventListener('keydown', function(e){ if(e.key==='ArrowRight'){ e.preventDefault(); nextSlide(); start(); } else if(e.key==='ArrowLeft'){ e.preventDefault(); prevSlide(); start(); } });
+      // Swipe / drag
+      root.addEventListener('pointerdown', function(e){ pointerStartX=e.clientX; pointerDelta=0; });
+      root.addEventListener('pointermove', function(e){ if(pointerStartX!=null){ pointerDelta=e.clientX-pointerStartX; }});
+      root.addEventListener('pointerup', function(){ if(pointerStartX!=null){ if(Math.abs(pointerDelta)>SWIPE_THRESHOLD){ if(pointerDelta<0){ nextSlide(); } else { prevSlide(); } start(); } pointerStartX=null; pointerDelta=0; }});
+      // Visibility pause (tab inactive)
+      document.addEventListener('visibilitychange', function(){ if(document.hidden){ stop(); } else { start(); } });
       start();
     })();
   </script>
@@ -122,9 +152,13 @@
     {"type": "range", "id": "overlay_opacity", "label": "Overlay Opacity (%)", "min": 0, "max": 100, "step": 5, "default": 40},
     {"type": "checkbox", "id": "slideshow_autoplay", "label": "Autoplay slides", "default": true},
     {"type": "range", "id": "slideshow_interval", "label": "Autoplay interval (seconds)", "min": 2, "max": 15, "step": 1, "default": 5},
+  {"type": "checkbox", "id": "pause_on_hover", "label": "Pause on hover", "default": true},
+  {"type": "checkbox", "id": "loop_slides", "label": "Loop slides", "default": true},
     {"type": "select", "id": "slideshow_transition", "label": "Transition", "options": [
       {"value": "fade", "label": "Fade"}
     ], "default": "fade"},
+  {"type": "range", "id": "transition_speed", "label": "Transition speed (ms)", "min": 200, "max": 1500, "step": 100, "default": 800},
+  {"type": "range", "id": "mobile_height", "label": "Mobile Height (px)", "min": 240, "max": 900, "step": 20, "default": 480},
     {"type": "checkbox", "id": "show_nav", "label": "Show Prev/Next Arrows", "default": true},
     {"type": "checkbox", "id": "show_dots", "label": "Show Dots", "default": true},
     {"type": "select", "id": "text_align", "label": "Text Alignment", "options": [
