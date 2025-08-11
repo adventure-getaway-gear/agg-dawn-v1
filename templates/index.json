@@ -26,6 +26,16 @@
             "slide_cta2_text": "",
             "slide_cta2_link": "",
             "slide_cta2_variant": "secondary",
+            "cta_size": "medium",
+            "headline_size": 0,
+            "subheadline_size": 0,
+            "headline_color": "",
+            "subheadline_color": "",
+            "max_width_ch": 0,
+            "headline_position": "mc",
+            "subheadline_position": "",
+            "ctas_position": "",
+            "ctas_inline_align": "center",
             "slide_duration": 0
           }
         },
@@ -41,8 +51,18 @@
             "slide_cta_link": "shopify://collections",
             "slide_cta_variant": "secondary",
             "slide_cta2_text": "button does not work",
-            "slide_cta2_link": "shopify://collections/all",
+            "slide_cta2_link": "shopify://collections/check-this-out",
             "slide_cta2_variant": "secondary",
+            "cta_size": "medium",
+            "headline_size": 0,
+            "subheadline_size": 0,
+            "headline_color": "",
+            "subheadline_color": "",
+            "max_width_ch": 0,
+            "headline_position": "mc",
+            "subheadline_position": "",
+            "ctas_position": "",
+            "ctas_inline_align": "center",
             "slide_duration": 0
           }
         }
