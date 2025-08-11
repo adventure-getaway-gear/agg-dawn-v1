@@ -19,14 +19,15 @@
   .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;}
     .hero-banner-agg__slide.is-active{opacity:1;}
     .hero-banner-agg__slide img{width:100%;height:100%;object-fit:cover;display:block}
-    .hero-banner-agg__navBtn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);color:#fff;border:0;padding:.65rem .9rem;cursor:pointer;font-size:14px;line-height:1;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .hero-banner-agg__navBtn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);color:#fff;border:0;padding:.65rem .9rem;cursor:pointer;font-size:14px;line-height:1;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:15}
     .hero-banner-agg__navBtn:hover{background:rgba(0,0,0,.65)}
     .hero-banner-agg__navBtn:focus{outline:2px solid #fff}
     .hero-banner-agg__navPrev{left:10px}
     .hero-banner-agg__navNext{right:10px}
-    .hero-banner-agg__dots{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;justify-content:center;}
-    .hero-banner-agg__dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;border:2px solid rgba(0,0,0,.2);}
+  .hero-banner-agg__dots{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;justify-content:center;z-index:15}
+  .hero-banner-agg__dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;border:2px solid rgba(0,0,0,.25);box-shadow:0 0 0 2px rgba(0,0,0,.15);transition:background .3s ease,border-color .3s ease}
     .hero-banner-agg__dot.is-active{background:#fff;}
+  .hero-banner-agg__dot:focus{outline:2px solid #fff;outline-offset:2px}
     @media (prefers-reduced-motion:reduce){.hero-banner-agg__slide{transition:none}}
   </style>
   {% if section.blocks.size > 0 %}
@@ -87,7 +88,7 @@
     </div>
   {% endif %}
   <div class="hero-banner-agg__inner" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:{{ flex_align }};text-align:{{ s.text_align }};padding:{{ s.padding_vertical }}px {{ s.padding_horizontal }}px;gap:1rem;">
-    <h1 style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;max-width:{{ s.text_max_width }}ch;">{{ s.headline }}</h1>
+  <h1 itemprop="headline" style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;max-width:{{ s.text_max_width }}ch;">{{ s.headline }}</h1>
     {% if s.subheadline != blank %}
       <p style="margin:0 0 0.5rem 0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;max-width:{{ s.text_max_width }}ch;">{{ s.subheadline }}</p>
     {% endif %}
@@ -112,8 +113,6 @@
       var slides=[].slice.call(root.querySelectorAll('.hero-banner-agg__slide'));
       if(slides.length<2) return; // nothing to do
       var dots=[].slice.call(root.querySelectorAll('.hero-banner-agg__dot'));
-      var prev=root.querySelector('[data-prev]');
-      var next=root.querySelector('[data-next]');
       var announcer = root.querySelector('[data-carousel-announcer]');
       var idx=0;
       var autoplay = wrap.getAttribute('data-autoplay')==='true';
@@ -127,9 +126,14 @@
       function prevSlide(){ show(idx-1); }
       function start(){ if(!autoplay) return; stop(); timer=setInterval(nextSlide, interval); }
       function stop(){ if(timer){ clearInterval(timer); timer=null; } }
-      if(prev) prev.addEventListener('click', function(e){ e.preventDefault(); prevSlide(); start(); });
-      if(next) next.addEventListener('click', function(e){ e.preventDefault(); nextSlide(); start(); });
-      dots.forEach(function(d){ d.addEventListener('click', function(e){ e.preventDefault(); var n=parseInt(d.getAttribute('data-dot')); show(n); start(); }); });
+      // Event delegation for buttons & dots (resilient to re-render)
+      wrap.addEventListener('click', function(e){
+        var t=e.target;
+        if(t.closest('[data-next]')){ e.preventDefault(); nextSlide(); start(); }
+        else if(t.closest('[data-prev]')){ e.preventDefault(); prevSlide(); start(); }
+        else if(t.classList.contains('hero-banner-agg__dot')){ e.preventDefault(); var n=parseInt(t.getAttribute('data-dot')); show(n); start(); }
+      });
+      dots.forEach(function(d){ d.setAttribute('tabindex','0'); d.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); var n=parseInt(d.getAttribute('data-dot')); show(n); start(); }}); });
       if(pauseOnHover){ root.addEventListener('mouseenter', stop); root.addEventListener('mouseleave', start); }
       root.setAttribute('tabindex','0');
       root.addEventListener('keydown', function(e){ if(e.key==='ArrowRight'){ e.preventDefault(); nextSlide(); start(); } else if(e.key==='ArrowLeft'){ e.preventDefault(); prevSlide(); start(); } });
