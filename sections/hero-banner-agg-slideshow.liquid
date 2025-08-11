@@ -74,15 +74,15 @@
                 <div class="hero-banner-agg__slideContentInner">
                   {% if b.slide_headline != blank %}<h3>{{ b.slide_headline }}</h3>{% endif %}
                   {% if b.slide_subheadline != blank %}<p>{{ b.slide_subheadline }}</p>{% endif %}
-                  {% if (b.slide_cta_text != blank and b.slide_cta_link != blank) or (b.slide_cta2_text != blank and b.slide_cta2_link != blank) %}
-                    <div class="hero-banner-agg__slideButtons">
-                      {% if b.slide_cta_text != blank and b.slide_cta_link != blank %}
-                        <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}">{{ b.slide_cta_text }}</a>
-                      {% endif %}
-                      {% if b.slide_cta2_text != blank and b.slide_cta2_link != blank %}
-                        <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}">{{ b.slide_cta2_text }}</a>
-                      {% endif %}
-                    </div>
+                  {% if b.slide_cta_text != blank and b.slide_cta_link != blank or b.slide_cta2_text != blank and b.slide_cta2_link != blank %}
+                  <div class="hero-banner-agg__slideButtons">
+                    {% if b.slide_cta_text != blank and b.slide_cta_link != blank %}
+                      <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}">{{ b.slide_cta_text }}</a>
+                    {% endif %}
+                    {% if b.slide_cta2_text != blank and b.slide_cta2_link != blank %}
+                      <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}">{{ b.slide_cta2_text }}</a>
+                    {% endif %}
+                  </div>
                   {% endif %}
                 </div>
               </div>
