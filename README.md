@@ -36,5 +36,13 @@ If you need to fast-forward back to the advanced hero version, we can cherry-pic
 ### 2025-08-10 Reset (Image-only Hero)
 Simplified `hero-banner-agg.liquid` back to an image-only banner (removed video logic, 9-point positioning, mobile auto layout) to start a new approach. Previous advanced version preserved on branch `backup-hero-banner-agg-advanced`.
 
+### 2025-08-11 Added Slideshow Hero Section
+Introduced a new section `hero-banner-agg-slideshow.liquid` providing a lightweight image slideshow hero:
+- Fade transition, autoplay (toggle + interval seconds)
+- Optional prev/next arrows and dots
+- Overlay color + opacity reuse
+- Fallback single image mode if no blocks defined
+This keeps the original `hero-banner-agg.liquid` untouched (still image-only) while allowing experimentation without disturbing baseline.
+
 ---
 Contact: Internal build documentation. 
