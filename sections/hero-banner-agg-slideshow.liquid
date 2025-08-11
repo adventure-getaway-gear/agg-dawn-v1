@@ -34,16 +34,29 @@
   .hero-banner-agg__slideBtn[data-size="medium"], .hero-banner-agg__slideBtn:not([data-size]){--btn-pad-y:1.3rem;--btn-pad-x:2.6rem;--btn-font:1.18rem;min-width:215px}
   .hero-banner-agg__slideBtn[data-size="large"]{--btn-pad-y:1.55rem;--btn-pad-x:3.1rem;--btn-font:1.32rem;min-width:255px}
   .hero-banner-agg__slideBtn:active{transform:scale(.97)}
-  /* Shimmer animation framework */
+  /* CTA animation framework */
+  /* Shimmer */
   @keyframes ctaShimmer { 0%{background-position:-200% 0;}100%{background-position:200% 0;} }
   .hero-banner-agg__slideBtn[data-anim-style="shimmer"]{position:relative;overflow:hidden}
   .hero-banner-agg__slideBtn[data-anim-style="shimmer"]::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,215,128,0) 0%,rgba(255,215,128,.12) 35%,rgba(255,215,128,.45) 50%,rgba(255,215,128,.12) 65%,rgba(255,215,128,0) 100%);background-size:200% 100%;mix-blend-mode:screen;pointer-events:none;opacity:0;transition:opacity .3s ease}
-  /* Continuous */
-  .hero-banner-agg__slideBtn[data-anim-style="shimmer"][data-anim-cont="true"]::before{animation:ctaShimmer 3.2s linear infinite;opacity:1}
-  /* Hover */
-  .hero-banner-agg__slideBtn[data-anim-style="shimmer"][data-anim-hover="true"]:hover::before{animation:ctaShimmer 1.8s linear infinite;opacity:1}
-  /* Click */
-  .hero-banner-agg__slideBtn[data-anim-style="shimmer"][data-anim-click="true"]:active::before{animation:ctaShimmer 1.2s linear 1;opacity:1}
+  .hero-banner-agg__slideBtn[data-anim-style="shimmer"][data-anim-cont="true"]::before{animation:ctaShimmer var(--anim-speed-cont,3s) linear infinite;opacity:1}
+  .hero-banner-agg__slideBtn[data-anim-style="shimmer"][data-anim-hover="true"]:hover::before{animation:ctaShimmer var(--anim-speed-hover,2s) linear infinite;opacity:1}
+  .hero-banner-agg__slideBtn[data-anim-style="shimmer"][data-anim-click="true"]:active::before{animation:ctaShimmer var(--anim-speed-click,1s) linear 1;opacity:1}
+  /* Pulse */
+  @keyframes ctaPulse {0%{transform:scale(1);}50%{transform:scale(1.08);}100%{transform:scale(1);} }
+  .hero-banner-agg__slideBtn[data-anim-style="pulse"][data-anim-cont="true"]{animation:ctaPulse var(--anim-speed-cont,3s) ease-in-out infinite}
+  .hero-banner-agg__slideBtn[data-anim-style="pulse"][data-anim-hover="true"]:hover{animation:ctaPulse var(--anim-speed-hover,2s) ease-in-out infinite}
+  .hero-banner-agg__slideBtn[data-anim-style="pulse"][data-anim-click="true"]:active{animation:ctaPulse var(--anim-speed-click,1s) ease-in-out 1}
+  /* Glow */
+  @keyframes ctaGlow {0%{box-shadow:0 0 0 rgba(255,215,128,0),0 0 0 rgba(255,255,255,0);}50%{box-shadow:0 0 16px rgba(255,215,128,.55),0 0 4px rgba(255,255,255,.6);}100%{box-shadow:0 0 0 rgba(255,215,128,0),0 0 0 rgba(255,255,255,0);} }
+  .hero-banner-agg__slideBtn[data-anim-style="glow"][data-anim-cont="true"]{animation:ctaGlow var(--anim-speed-cont,4s) ease-in-out infinite}
+  .hero-banner-agg__slideBtn[data-anim-style="glow"][data-anim-hover="true"]:hover{animation:ctaGlow var(--anim-speed-hover,2.5s) ease-in-out infinite}
+  .hero-banner-agg__slideBtn[data-anim-style="glow"][data-anim-click="true"]:active{animation:ctaGlow var(--anim-speed-click,1.2s) ease-in-out 1}
+  /* Lift */
+  @keyframes ctaLift {0%{transform:translateY(0);}50%{transform:translateY(-4px);}100%{transform:translateY(0);} }
+  .hero-banner-agg__slideBtn[data-anim-style="lift"][data-anim-cont="true"]{animation:ctaLift var(--anim-speed-cont,3.6s) ease-in-out infinite}
+  .hero-banner-agg__slideBtn[data-anim-style="lift"][data-anim-hover="true"]:hover{animation:ctaLift var(--anim-speed-hover,2.2s) ease-in-out infinite}
+  .hero-banner-agg__slideBtn[data-anim-style="lift"][data-anim-click="true"]:active{animation:ctaLift var(--anim-speed-click,.9s) ease-in-out 1}
   /* 9-point positioning utility classes */
   .pos-tl{top:{{ s.padding_vertical }}px;left:{{ s.padding_horizontal }}px;text-align:left}
   .pos-tc{top:{{ s.padding_vertical }}px;left:50%;transform:translateX(-50%);text-align:center}
@@ -130,10 +143,10 @@
               <div class="hero-banner-agg__slidePiece pos-{{ ctas_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
                 <div class="hero-banner-agg__slideButtons" style="justify-content:{% if b.ctas_inline_align == 'start' %}flex-start{% elsif b.ctas_inline_align == 'end' %}flex-end{% else %}center{% endif %};">
                   {% if has_cta_primary %}
-                    <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}"{% unless b.cta_anim_style == 'none' %} data-anim-style="{{ b.cta_anim_style }}" data-anim-cont="{{ b.cta_anim_continuous }}" data-anim-hover="{{ b.cta_anim_hover }}" data-anim-click="{{ b.cta_anim_click }}"{% endunless %}>{{ b.slide_cta_text }}</a>
+                    <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}"{% unless b.cta_anim_style == 'none' %} data-anim-style="{{ b.cta_anim_style }}" data-anim-cont="{{ b.cta_anim_continuous }}" data-anim-hover="{{ b.cta_anim_hover }}" data-anim-click="{{ b.cta_anim_click }}"{% endunless %} style="--anim-speed-cont: {{ b.cta_anim_speed_continuous | default: 3 }}s; --anim-speed-hover: {{ b.cta_anim_speed_hover | default: 2 }}s; --anim-speed-click: {{ b.cta_anim_speed_click | default: 1 }}s;">{{ b.slide_cta_text }}</a>
                   {% endif %}
                   {% if has_cta_secondary %}
-                    <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}"{% unless b.cta_anim_style == 'none' %} data-anim-style="{{ b.cta_anim_style }}" data-anim-cont="{{ b.cta_anim_continuous }}" data-anim-hover="{{ b.cta_anim_hover }}" data-anim-click="{{ b.cta_anim_click }}"{% endunless %}>{{ b.slide_cta2_text }}</a>
+                    <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}"{% unless b.cta_anim_style == 'none' %} data-anim-style="{{ b.cta_anim_style }}" data-anim-cont="{{ b.cta_anim_continuous }}" data-anim-hover="{{ b.cta_anim_hover }}" data-anim-click="{{ b.cta_anim_click }}"{% endunless %} style="--anim-speed-cont: {{ b.cta_anim_speed_continuous | default: 3 }}s; --anim-speed-hover: {{ b.cta_anim_speed_hover | default: 2 }}s; --anim-speed-click: {{ b.cta_anim_speed_click | default: 1 }}s;">{{ b.slide_cta2_text }}</a>
                   {% endif %}
                 </div>
               </div>
@@ -328,10 +341,13 @@
   {"type":"url","id":"slide_cta2_link","label":"Secondary CTA link"},
   {"type":"select","id":"slide_cta2_variant","label":"Secondary CTA variant","default":"secondary","options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"ghost","label":"Ghost"}]},
   {"type":"select","id":"cta_size","label":"CTA size","default":"medium","options":[{"value":"small","label":"Small"},{"value":"medium","label":"Medium"},{"value":"large","label":"Large"}]},
-  {"type":"select","id":"cta_anim_style","label":"CTA animation style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Golden shimmer"}]},
+  {"type":"select","id":"cta_anim_style","label":"CTA animation style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Golden shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
   {"type":"checkbox","id":"cta_anim_continuous","label":"Continuous shimmer","default":false},
   {"type":"checkbox","id":"cta_anim_hover","label":"Shimmer on hover","default":true},
   {"type":"checkbox","id":"cta_anim_click","label":"Shimmer on click","default":true},
+  {"type":"range","id":"cta_anim_speed_continuous","label":"Continuous speed (s)","min":1,"max":10,"step":0.5,"default":3},
+  {"type":"range","id":"cta_anim_speed_hover","label":"Hover speed (s)","min":0.5,"max":6,"step":0.5,"default":2},
+  {"type":"range","id":"cta_anim_speed_click","label":"Click burst speed (s)","min":0.3,"max":3,"step":0.1,"default":1},
   {"type":"range","id":"headline_size","label":"Headline size override (px)","min":0,"max":120,"step":2,"default":0,"info":"0 = inherit global"},
   {"type":"range","id":"subheadline_size","label":"Subheadline size override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit global"},
   {"type":"color","id":"headline_color","label":"Headline color override"},
