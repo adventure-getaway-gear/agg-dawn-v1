@@ -165,7 +165,7 @@
                 <p class="hero-banner-agg__pieceSub">{{ b.slide_subheadline }}</p>
               </div>
             {%- endif -%}
-            {%- if any_cta -%}
+            {%- if s.show_slide_ctas and any_cta -%}
               <div class="hero-banner-agg__slidePiece pos-{{ ctas_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
                 {%- assign use_global_anim = b.use_global_cta_anim -%}
                 {%- if use_global_anim == nil %}{% assign use_global_anim = true %}{% endif %}
@@ -459,6 +459,7 @@
   {"type":"select","id":"global_ctas_position","label":"Global CTAs position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
   {"type":"checkbox","id":"show_global_headlines","label":"Show slide headlines","default":true},
   {"type":"checkbox","id":"show_global_subheadlines","label":"Show slide subheadlines","default":true},
+    {"type":"checkbox","id":"show_slide_ctas","label":"Show slide CTA buttons","default":true},
     {"type":"textarea","id":"custom_css","label":"Custom CSS"}
   ],
   "blocks": [
