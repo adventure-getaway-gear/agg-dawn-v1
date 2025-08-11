@@ -8,15 +8,15 @@
   elsif s.text_align == 'right'
     assign flex_align = 'flex-end'
   endif
--%}
 <section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;" data-slide-count="{{ section.blocks.size }}">
+<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
     .hero-banner-agg--slideshow .hero-banner-agg__media,.hero-banner-agg--slideshow .hero-banner-agg__slideshow{position:relative;width:100%;height:var(--hb-height)}
     .hero-banner-agg__slideshow{overflow:hidden}
     .hero-banner-agg__slides{position:absolute;inset:0;margin:0;padding:0;list-style:none}
-  .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;}
+    .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;will-change:opacity}
     .hero-banner-agg__slide.is-active{opacity:1;}
     .hero-banner-agg__slide img{width:100%;height:100%;object-fit:cover;display:block}
   .hero-banner-agg__navBtn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);color:#fff;border:0;padding:.65rem .9rem;cursor:pointer;font-size:14px;line-height:1;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:15}
@@ -116,7 +116,9 @@
       var announcer = root.querySelector('[data-carousel-announcer]');
       var idx=0;
       var autoplay = wrap.getAttribute('data-autoplay')==='true';
-      var interval = parseInt(wrap.getAttribute('data-interval'))||5000;
+    var autoplayAttr = wrap.getAttribute('data-autoplay');
+    var autoplay = (autoplayAttr==='' || autoplayAttr==='true' || autoplayAttr==='1');
+    var interval = parseInt(wrap.getAttribute('data-interval'),10) || 5000;
       var loop = {{ s.loop_slides | default: true }};
       var pauseOnHover = {{ s.pause_on_hover | default: true }};
       var timer=null; var pointerStartX=null; var pointerDelta=0; var SWIPE_THRESHOLD=40;
@@ -126,10 +128,14 @@
       function prevSlide(){ show(idx-1); }
       function start(){ if(!autoplay) return; stop(); timer=setInterval(nextSlide, interval); }
       function stop(){ if(timer){ clearInterval(timer); timer=null; } }
-  // Fallback RAF ticker in case setInterval throttled (background tabs / some mobile browsers)
-  var lastTs=null; var hovering=false; function rafTick(ts){ if(!autoplay || hovering){ requestAnimationFrame(rafTick); return; } if(lastTs==null) lastTs=ts; if(ts-lastTs >= interval){ lastTs=ts; nextSlide(); } requestAnimationFrame(rafTick); }
-  // Delayed start improves reliability when section loads above the fold during heavy main-thread work
-  setTimeout(function(){ start(); if(autoplay) requestAnimationFrame(rafTick); }, 60);
+    var hovering=false; var timer=null; var lastAdvance=Date.now();
+    function schedule(){ if(!autoplay || hovering) return; clearTimeout(timer); timer=setTimeout(function(){ nextSlide(); lastAdvance=Date.now(); schedule(); }, interval); }
+    function start(){ if(!autoplay) return; schedule(); }
+    function stop(){ clearTimeout(timer); timer=null; }
+    // RAF fallback detects stalls (if > 2*interval since last advance, force advance)
+    function rafTick(){ if(autoplay && !hovering){ var now=Date.now(); if(now - lastAdvance > interval*2){ nextSlide(); lastAdvance=now; schedule(); } } requestAnimationFrame(rafTick); }
+    requestAnimationFrame(rafTick); // begin loop immediately
+    start(); // immediate start (no interaction required)
       // Event delegation for buttons & dots (resilient to re-render)
       wrap.addEventListener('click', function(e){
         var t=e.target;
@@ -139,8 +145,8 @@
       });
       dots.forEach(function(d){ d.setAttribute('tabindex','0'); d.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); var n=parseInt(d.getAttribute('data-dot')); show(n); start(); }}); });
       if(pauseOnHover){
-        root.addEventListener('mouseenter', function(){ hovering=true; stop(); });
-        root.addEventListener('mouseleave', function(){ hovering=false; start(); });
+    root.addEventListener('mouseenter', function(){ hovering=true; stop(); }, {passive:true});
+    root.addEventListener('mouseleave', function(){ hovering=false; start(); }, {passive:true});
       }
       root.setAttribute('tabindex','0');
       root.addEventListener('keydown', function(e){ if(e.key==='ArrowRight'){ e.preventDefault(); nextSlide(); start(); } else if(e.key==='ArrowLeft'){ e.preventDefault(); prevSlide(); start(); } });
@@ -148,8 +154,10 @@
       root.addEventListener('pointermove', function(e){ if(pointerStartX!=null){ pointerDelta=e.clientX-pointerStartX; }});
       root.addEventListener('pointerup', function(){ if(pointerStartX!=null){ if(Math.abs(pointerDelta)>SWIPE_THRESHOLD){ if(pointerDelta<0){ nextSlide(); } else { prevSlide(); } start(); } pointerStartX=null; pointerDelta=0; }});
   document.addEventListener('visibilitychange', function(){ if(document.hidden){ stop(); } else { setTimeout(start,120); } });
+  document.addEventListener('visibilitychange', function(){ if(document.hidden){ stop(); } else { setTimeout(function(){ start(); },120); } });
   // Expose manual API for debugging (optional)
   root.__heroSlider = { next: nextSlide, prev: prevSlide, pause: function(){ autoplay=false; stop(); }, play: function(){ autoplay=true; start(); } };
+  root.__heroSlider = { next: nextSlide, prev: prevSlide, pause: function(){ autoplay=false; stop(); }, play: function(){ if(!autoplay){ autoplay=true; start(); } } };
     })();
   </script>
   {% endif %}
