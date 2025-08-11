@@ -1,0 +1,169 @@
+{% comment %} hero-banner-agg-slideshow v1.0 simple image slideshow hero 2025-08-11 {% endcomment %}
+{%- liquid
+  assign s = section.settings
+  assign overlay_opacity = s.overlay_opacity | divided_by: 100.0
+  assign flex_align = 'center'
+  if s.text_align == 'left'
+    assign flex_align = 'flex-start'
+  elsif s.text_align == 'right'
+    assign flex_align = 'flex-end'
+  endif
+-%}
+<section class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;">
+  <style>
+    .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px}
+    .hero-banner-agg--slideshow .hero-banner-agg__media,.hero-banner-agg--slideshow .hero-banner-agg__slideshow{position:relative;width:100%;height:var(--hb-height)}
+    .hero-banner-agg__slideshow{overflow:hidden}
+    .hero-banner-agg__slides{position:absolute;inset:0;margin:0;padding:0;list-style:none}
+    .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease;}
+    .hero-banner-agg__slide.is-active{opacity:1;}
+    .hero-banner-agg__slide img{width:100%;height:100%;object-fit:cover;display:block}
+    .hero-banner-agg__navBtn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);color:#fff;border:0;padding:.65rem .9rem;cursor:pointer;font-size:14px;line-height:1;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .hero-banner-agg__navBtn:hover{background:rgba(0,0,0,.65)}
+    .hero-banner-agg__navBtn:focus{outline:2px solid #fff}
+    .hero-banner-agg__navPrev{left:10px}
+    .hero-banner-agg__navNext{right:10px}
+    .hero-banner-agg__dots{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;justify-content:center;}
+    .hero-banner-agg__dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;border:2px solid rgba(0,0,0,.2);}
+    .hero-banner-agg__dot.is-active{background:#fff;}
+    @media (prefers-reduced-motion:reduce){.hero-banner-agg__slide{transition:none}}
+  </style>
+  {% if section.blocks.size > 0 %}
+    <div class="hero-banner-agg__slideshow" data-autoplay="{{ s.slideshow_autoplay }}" data-interval="{{ s.slideshow_interval | times: 1000 }}" data-transition="{{ s.slideshow_transition }}">
+      <ul class="hero-banner-agg__slides">
+        {% for block in section.blocks %}
+          {% assign b = block.settings %}
+          <li class="hero-banner-agg__slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            {% if b.slide_link != blank %}<a href="{{ b.slide_link }}" style="display:block;position:absolute;inset:0;">{% endif %}
+              {% if b.slide_image %}
+                <img src="{{ b.slide_image | img_url: '1600x' }}" alt="{{ b.slide_alt | default: s.headline | escape }}" loading="lazy">
+              {% else %}
+                <div style="background:#222;width:100%;height:100%;"></div>
+              {% endif %}
+            {% if b.slide_link != blank %}</a>{% endif %}
+            {% if s.enable_overlay %}<div class="hero-banner-agg__overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% if s.show_nav and section.blocks.size > 1 %}
+        <button type="button" class="hero-banner-agg__navBtn hero-banner-agg__navPrev" aria-label="Previous slide" data-prev>&lsaquo;</button>
+        <button type="button" class="hero-banner-agg__navBtn hero-banner-agg__navNext" aria-label="Next slide" data-next>&rsaquo;</button>
+      {% endif %}
+      {% if s.show_dots and section.blocks.size > 1 %}
+        <div class="hero-banner-agg__dots" role="tablist">
+          {% for block in section.blocks %}
+            <button type="button" class="hero-banner-agg__dot{% if forloop.first %} is-active{% endif %}" aria-label="Go to slide {{ forloop.index }}" data-dot="{{ forloop.index0 }}"></button>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="hero-banner-agg__media" style="position:relative;width:100%;height:{{ s.image_height }}px;">
+      {% if s.hero_image %}
+        {%- assign image = s.hero_image -%}
+        <img src="{{ image | img_url: '1600x' }}" alt="{{ s.image_alt | default: s.headline | escape }}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+        {% if s.enable_overlay %}
+          <div class="hero-banner-agg__overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>
+        {% endif %}
+      {% else %}
+        <div style="background:#222;height:100%;width:100%;"></div>
+      {% endif %}
+    </div>
+  {% endif %}
+  <div class="hero-banner-agg__inner" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:{{ flex_align }};text-align:{{ s.text_align }};padding:{{ s.padding_vertical }}px {{ s.padding_horizontal }}px;gap:1rem;">
+    <h1 style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;max-width:{{ s.text_max_width }}ch;">{{ s.headline }}</h1>
+    {% if s.subheadline != blank %}
+      <p style="margin:0 0 0.5rem 0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;max-width:{{ s.text_max_width }}ch;">{{ s.subheadline }}</p>
+    {% endif %}
+    {% if s.show_ctas %}
+      <div class="hero-banner-agg__ctas" style="display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:{{ flex_align }};">
+        {% if s.cta_link and s.cta_text != blank %}
+          <a href="{{ s.cta_link }}" class="btn" style="background:{{ s.cta_bg }};color:{{ s.cta_color }};padding:0.9rem 1.8rem;border-radius:{{ s.button_radius }}px;text-decoration:none;font-weight:600;">{{ s.cta_text }}</a>
+        {% endif %}
+        {% if s.cta_link_2 and s.cta_text_2 != blank %}
+          <a href="{{ s.cta_link_2 }}" class="btn" style="background:{{ s.cta2_bg }};color:{{ s.cta2_color }};padding:0.9rem 1.8rem;border-radius:{{ s.button_radius }}px;text-decoration:none;font-weight:600;">{{ s.cta_text_2 }}</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+  {% if s.custom_css %}<style>{{ s.custom_css }}</style>{% endif %}
+  {% if section.blocks.size > 1 %}
+  <script>
+    (function(){
+      var root=document.currentScript.closest('.hero-banner-agg--slideshow');
+      if(!root) return; var wrap=root.querySelector('.hero-banner-agg__slideshow'); if(!wrap) return;
+      var slides=[].slice.call(root.querySelectorAll('.hero-banner-agg__slide'));
+      var dots=[].slice.call(root.querySelectorAll('.hero-banner-agg__dot'));
+      var prev=root.querySelector('[data-prev]'); var next=root.querySelector('[data-next]');
+      var idx=0; var autoplay=wrap.getAttribute('data-autoplay')==='true';
+      var interval=parseInt(wrap.getAttribute('data-interval'))||5000; var timer=null;
+      function show(i){ if(i===idx) return; slides[idx].classList.remove('is-active'); if(dots[idx]) dots[idx].classList.remove('is-active'); idx=(i+slides.length)%slides.length; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); }
+      function nextSlide(){ show(idx+1); }
+      function start(){ if(!autoplay) return; stop(); timer=setInterval(nextSlide, interval); }
+      function stop(){ if(timer){clearInterval(timer); timer=null;} }
+      if(prev) prev.addEventListener('click', function(){ show(idx-1); start(); });
+      if(next) next.addEventListener('click', function(){ nextSlide(); start(); });
+      dots.forEach(function(d){ d.addEventListener('click', function(){ show(parseInt(d.getAttribute('data-dot'))); start(); }); });
+      root.addEventListener('mouseenter', stop); root.addEventListener('mouseleave', start);
+      start();
+    })();
+  </script>
+  {% endif %}
+</section>
+{% schema %}
+{
+  "name": "Hero Banner AGG Slideshow",
+  "settings": [
+    {"type": "image_picker", "id": "hero_image", "label": "Fallback Image"},
+    {"type": "text", "id": "image_alt", "label": "Fallback Image Alt"},
+    {"type": "range", "id": "image_height", "label": "Height (px)", "min": 240, "max": 900, "step": 20, "default": 520},
+    {"type": "checkbox", "id": "enable_overlay", "label": "Enable Overlay", "default": true},
+    {"type": "color", "id": "overlay_color", "label": "Overlay Color", "default": "#000000"},
+    {"type": "range", "id": "overlay_opacity", "label": "Overlay Opacity (%)", "min": 0, "max": 100, "step": 5, "default": 40},
+    {"type": "checkbox", "id": "slideshow_autoplay", "label": "Autoplay slides", "default": true},
+    {"type": "range", "id": "slideshow_interval", "label": "Autoplay interval (seconds)", "min": 2, "max": 15, "step": 1, "default": 5},
+    {"type": "select", "id": "slideshow_transition", "label": "Transition", "options": [
+      {"value": "fade", "label": "Fade"}
+    ], "default": "fade"},
+    {"type": "checkbox", "id": "show_nav", "label": "Show Prev/Next Arrows", "default": true},
+    {"type": "checkbox", "id": "show_dots", "label": "Show Dots", "default": true},
+    {"type": "select", "id": "text_align", "label": "Text Alignment", "options": [
+      {"value": "left", "label": "Left"},
+      {"value": "center", "label": "Center"},
+      {"value": "right", "label": "Right"}
+    ], "default": "center"},
+    {"type": "text", "id": "headline", "label": "Headline", "default": "Adventure Awaits"},
+    {"type": "text", "id": "section_aria", "label": "Aria Label Override"},
+    {"type": "text", "id": "subheadline", "label": "Subheadline", "default": "Gear up for your next getaway"},
+    {"type": "color", "id": "headline_color", "label": "Headline Color", "default": "#ffffff"},
+    {"type": "color", "id": "subheadline_color", "label": "Subheadline Color", "default": "#ffffff"},
+    {"type": "range", "id": "headline_size", "label": "Headline Size (px)", "min": 24, "max": 120, "step": 4, "default": 72},
+    {"type": "range", "id": "subheadline_size", "label": "Subheadline Size (px)", "min": 12, "max": 60, "step": 2, "default": 24},
+    {"type": "range", "id": "text_max_width", "label": "Text Max Width (ch)", "min": 20, "max": 80, "step": 2, "default": 60},
+    {"type": "range", "id": "padding_vertical", "label": "Vertical Padding (px)", "min": 0, "max": 160, "step": 8, "default": 40},
+    {"type": "range", "id": "padding_horizontal", "label": "Horizontal Padding (px)", "min": 0, "max": 160, "step": 8, "default": 40},
+    {"type": "checkbox", "id": "show_ctas", "label": "Show CTAs", "default": true},
+    {"type": "url", "id": "cta_link", "label": "Primary CTA Link"},
+    {"type": "text", "id": "cta_text", "label": "Primary CTA Text", "default": "Shop Now"},
+    {"type": "color", "id": "cta_bg", "label": "Primary CTA Background", "default": "#ffffff"},
+    {"type": "color", "id": "cta_color", "label": "Primary CTA Text Color", "default": "#000000"},
+    {"type": "url", "id": "cta_link_2", "label": "Secondary CTA Link"},
+    {"type": "text", "id": "cta_text_2", "label": "Secondary CTA Text", "default": "Learn More"},
+    {"type": "color", "id": "cta2_bg", "label": "Secondary CTA Background", "default": "#000000"},
+    {"type": "color", "id": "cta2_color", "label": "Secondary CTA Text Color", "default": "#ffffff"},
+    {"type": "range", "id": "button_radius", "label": "Button Radius (px)", "min": 0, "max": 60, "step": 2, "default": 4},
+    {"type": "range", "id": "top_spacing", "label": "Top Spacing (px)", "min": 0, "max": 160, "step": 8, "default": 0},
+    {"type": "textarea", "id": "custom_css", "label": "Custom CSS"}
+  ],
+  "blocks": [
+    {"type": "image", "name": "Slide", "settings": [
+      {"type": "image_picker", "id": "slide_image", "label": "Slide Image"},
+      {"type": "text", "id": "slide_alt", "label": "Slide Alt Text"},
+      {"type": "url", "id": "slide_link", "label": "Slide Link"}
+    ]}
+  ],
+  "presets": [
+    {"name": "Hero Banner AGG Slideshow"}
+  ]
+}
+{% endschema %}
