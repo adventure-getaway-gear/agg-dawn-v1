@@ -1,0 +1,48 @@
+{
+  // VS Code tasks to assist with Git commit/pull --rebase/push
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "git: commit-pull-rebase-push (prompt)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy", "Bypass",
+        "-File", "scripts/git-commit-push.ps1"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "git: commit-pull-rebase-push (message)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy", "Bypass",
+        "-File", "scripts/git-commit-push.ps1",
+        "-Message", "${input:gitMessage}",
+        "-NoPrompt"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "git: pull --rebase and push (no commit)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy", "Bypass",
+        "-File", "scripts/git-commit-push.ps1",
+        "-NoCommit",
+        "-NoPrompt"
+      ],
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "gitMessage",
+      "type": "promptString",
+      "description": "Commit message",
+      "default": "chore: update"
+    }
+  ]
+}
