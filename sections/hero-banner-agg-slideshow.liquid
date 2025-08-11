@@ -127,7 +127,7 @@
       function start(){ if(!autoplay) return; stop(); timer=setInterval(nextSlide, interval); }
       function stop(){ if(timer){ clearInterval(timer); timer=null; } }
   // Fallback RAF ticker in case setInterval throttled (background tabs / some mobile browsers)
-  var lastTs=null; function rafTick(ts){ if(!autoplay){ return; } if(lastTs==null) lastTs=ts; if(ts-lastTs >= interval){ lastTs=ts; nextSlide(); } requestAnimationFrame(rafTick); }
+  var lastTs=null; var hovering=false; function rafTick(ts){ if(!autoplay || hovering){ requestAnimationFrame(rafTick); return; } if(lastTs==null) lastTs=ts; if(ts-lastTs >= interval){ lastTs=ts; nextSlide(); } requestAnimationFrame(rafTick); }
   // Delayed start improves reliability when section loads above the fold during heavy main-thread work
   setTimeout(function(){ start(); if(autoplay) requestAnimationFrame(rafTick); }, 60);
       // Event delegation for buttons & dots (resilient to re-render)
@@ -138,7 +138,10 @@
         else if(t.classList.contains('hero-banner-agg__dot')){ e.preventDefault(); var n=parseInt(t.getAttribute('data-dot')); show(n); start(); }
       });
       dots.forEach(function(d){ d.setAttribute('tabindex','0'); d.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); var n=parseInt(d.getAttribute('data-dot')); show(n); start(); }}); });
-      if(pauseOnHover){ root.addEventListener('mouseenter', stop); root.addEventListener('mouseleave', start); }
+      if(pauseOnHover){
+        root.addEventListener('mouseenter', function(){ hovering=true; stop(); });
+        root.addEventListener('mouseleave', function(){ hovering=false; start(); });
+      }
       root.setAttribute('tabindex','0');
       root.addEventListener('keydown', function(e){ if(e.key==='ArrowRight'){ e.preventDefault(); nextSlide(); start(); } else if(e.key==='ArrowLeft'){ e.preventDefault(); prevSlide(); start(); } });
       root.addEventListener('pointerdown', function(e){ pointerStartX=e.clientX; pointerDelta=0; });
