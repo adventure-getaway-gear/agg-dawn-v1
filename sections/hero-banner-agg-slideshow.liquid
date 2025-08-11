@@ -8,7 +8,8 @@
   elsif s.text_align == 'right'
     assign flex_align = 'flex-end'
   endif
-<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;" data-slide-count="{{ section.blocks.size }}">
+-%}
+<!-- Hero Slideshow Section -->
 <section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
@@ -115,27 +116,23 @@
       var dots=[].slice.call(root.querySelectorAll('.hero-banner-agg__dot'));
       var announcer = root.querySelector('[data-carousel-announcer]');
       var idx=0;
-      var autoplay = wrap.getAttribute('data-autoplay')==='true';
-    var autoplayAttr = wrap.getAttribute('data-autoplay');
-    var autoplay = (autoplayAttr==='' || autoplayAttr==='true' || autoplayAttr==='1');
-    var interval = parseInt(wrap.getAttribute('data-interval'),10) || 5000;
+  var autoplayAttr = wrap.getAttribute('data-autoplay');
+  var autoplay = (autoplayAttr==='' || autoplayAttr==='true' || autoplayAttr==='1');
+  var interval = parseInt(wrap.getAttribute('data-interval'),10) || 5000;
       var loop = {{ s.loop_slides | default: true }};
       var pauseOnHover = {{ s.pause_on_hover | default: true }};
-      var timer=null; var pointerStartX=null; var pointerDelta=0; var SWIPE_THRESHOLD=40;
+  var pointerStartX=null; var pointerDelta=0; var SWIPE_THRESHOLD=40;
       function setAria(oldI,newI){ if(dots[oldI]){dots[oldI].setAttribute('aria-selected','false');} if(dots[newI]){dots[newI].setAttribute('aria-selected','true');} if(announcer){announcer.textContent='Slide '+(newI+1)+' of '+slides.length;} }
       function show(i){ if(i===idx) return; var old=idx; if(i>=slides.length){ if(loop){ i=0;} else {return stop();} } if(i<0){ if(loop){ i=slides.length-1;} else {return;} } slides[old].classList.remove('is-active'); if(dots[old]) dots[old].classList.remove('is-active'); idx=i; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); setAria(old,idx); }
       function nextSlide(){ show(idx+1); }
       function prevSlide(){ show(idx-1); }
-      function start(){ if(!autoplay) return; stop(); timer=setInterval(nextSlide, interval); }
-      function stop(){ if(timer){ clearInterval(timer); timer=null; } }
-    var hovering=false; var timer=null; var lastAdvance=Date.now();
-    function schedule(){ if(!autoplay || hovering) return; clearTimeout(timer); timer=setTimeout(function(){ nextSlide(); lastAdvance=Date.now(); schedule(); }, interval); }
-    function start(){ if(!autoplay) return; schedule(); }
-    function stop(){ clearTimeout(timer); timer=null; }
-    // RAF fallback detects stalls (if > 2*interval since last advance, force advance)
-    function rafTick(){ if(autoplay && !hovering){ var now=Date.now(); if(now - lastAdvance > interval*2){ nextSlide(); lastAdvance=now; schedule(); } } requestAnimationFrame(rafTick); }
-    requestAnimationFrame(rafTick); // begin loop immediately
-    start(); // immediate start (no interaction required)
+  var hovering=false; var timer=null; var lastAdvance=Date.now();
+  function schedule(){ if(!autoplay || hovering) return; clearTimeout(timer); timer=setTimeout(function(){ nextSlide(); lastAdvance=Date.now(); schedule(); }, interval); }
+  function start(){ if(!autoplay) return; schedule(); }
+  function stop(){ clearTimeout(timer); timer=null; }
+  function rafTick(){ if(autoplay && !hovering){ var now=Date.now(); if(now - lastAdvance > interval*2){ nextSlide(); lastAdvance=now; schedule(); } } requestAnimationFrame(rafTick); }
+  requestAnimationFrame(rafTick);
+  start();
       // Event delegation for buttons & dots (resilient to re-render)
       wrap.addEventListener('click', function(e){
         var t=e.target;
@@ -153,10 +150,7 @@
       root.addEventListener('pointerdown', function(e){ pointerStartX=e.clientX; pointerDelta=0; });
       root.addEventListener('pointermove', function(e){ if(pointerStartX!=null){ pointerDelta=e.clientX-pointerStartX; }});
       root.addEventListener('pointerup', function(){ if(pointerStartX!=null){ if(Math.abs(pointerDelta)>SWIPE_THRESHOLD){ if(pointerDelta<0){ nextSlide(); } else { prevSlide(); } start(); } pointerStartX=null; pointerDelta=0; }});
-  document.addEventListener('visibilitychange', function(){ if(document.hidden){ stop(); } else { setTimeout(start,120); } });
   document.addEventListener('visibilitychange', function(){ if(document.hidden){ stop(); } else { setTimeout(function(){ start(); },120); } });
-  // Expose manual API for debugging (optional)
-  root.__heroSlider = { next: nextSlide, prev: prevSlide, pause: function(){ autoplay=false; stop(); }, play: function(){ autoplay=true; start(); } };
   root.__heroSlider = { next: nextSlide, prev: prevSlide, pause: function(){ autoplay=false; stop(); }, play: function(){ if(!autoplay){ autoplay=true; start(); } } };
     })();
   </script>
