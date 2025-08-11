@@ -13,6 +13,94 @@
 <section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
+      {
+        "type": "color",
+        "id": "primary_bg_color",
+        "label": "Primary CTA background color override",
+        "default": "#1a1a1a"
+      },
+      {
+        "type": "text",
+        "id": "primary_bg_gradient",
+        "label": "Primary CTA background gradient (CSS)"
+      },
+      {
+        "type": "color",
+        "id": "primary_text_color",
+        "label": "Primary CTA text color override",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "secondary_bg_color",
+        "label": "Secondary CTA background color override",
+        "default": "#1a1a1a"
+      },
+      {
+        "type": "text",
+        "id": "secondary_bg_gradient",
+        "label": "Secondary CTA background gradient (CSS)"
+      },
+      {
+        "type": "color",
+        "id": "secondary_text_color",
+        "label": "Secondary CTA text color override",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "cta_border_width",
+        "min": 0,
+        "max": 8,
+        "step": 1,
+        "default": 0,
+        "label": "CTA border width (px)"
+      },
+      {
+        "type": "select",
+        "id": "cta_border_style",
+        "label": "CTA border style",
+        "default": "none",
+        "options": [
+          {"value": "none", "label": "None"},
+          {"value": "solid", "label": "Solid"},
+          {"value": "dashed", "label": "Dashed"},
+          {"value": "dotted", "label": "Dotted"}
+        ]
+      },
+      {
+        "type": "color",
+        "id": "cta_border_color",
+        "label": "CTA border color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "cta_radius_override",
+        "min": 0,
+        "max": 64,
+        "step": 2,
+        "default": 0,
+        "label": "CTA border radius (px)"
+      },
+      {
+        "type": "range",
+        "id": "cta_fixed_width",
+        "min": 0,
+        "max": 400,
+        "step": 10,
+        "default": 0,
+        "label": "CTA fixed width (px, 0 = auto)"
+      },
+      {
+        "type": "range",
+        "id": "cta_fixed_height",
+        "min": 0,
+        "max": 140,
+        "step": 4,
+        "default": 0,
+        "label": "CTA fixed height (px, 0 = auto)"
+      },
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
     .hero-banner-agg--slideshow .hero-banner-agg__media,.hero-banner-agg--slideshow .hero-banner-agg__slideshow{position:relative;width:100%;height:var(--hb-height)}
     .hero-banner-agg__slideshow{overflow:hidden}
@@ -212,12 +300,30 @@
                 {%- if speed_click_secondary == 0 or speed_click_secondary == blank %}{% assign speed_click_secondary = b.cta_anim_speed_click | default: s.cta_global_anim_speed_click %}{% endif %}
                 {%- assign prim_3d = b.primary_3d_style | default: b.cta_style | default: s.cta_global_style | default: 'raised' -%}
                 {%- assign sec_3d = b.secondary_3d_style | default: b.cta_style | default: s.cta_global_style | default: 'raised' -%}
+        {%- comment %} Per-slide CTA visual overrides (color, gradient, border, radius, sizing) {%- endcomment -%}
+        {%- assign cta_border_w = b.cta_border_width | default: 0 -%}
+        {%- assign cta_border_style = b.cta_border_style | default: 'none' -%}
+        {%- assign cta_border_color = b.cta_border_color | default: '#ffffff' -%}
+        {%- assign cta_radius = b.cta_radius_override | default: 0 -%}
+        {%- assign cta_fixed_w = b.cta_fixed_width | default: 0 -%}
+        {%- assign cta_fixed_h = b.cta_fixed_height | default: 0 -%}
+        {%- assign prim_bg_color = b.primary_bg_color | default: b.slide_cta_bg | default: s.cta_bg -%}
+        {%- assign prim_bg_grad = b.primary_bg_gradient -%}
+        {%- assign prim_text_color = b.primary_text_color | default: s.cta_color -%}
+        {%- assign sec_bg_color = b.secondary_bg_color | default: b.slide_cta2_bg | default: s.cta2_bg -%}
+        {%- assign sec_bg_grad = b.secondary_bg_gradient -%}
+        {%- assign sec_text_color = b.secondary_text_color | default: s.cta2_color -%}
+        {%- capture base_border_style -%}{% if cta_border_w > 0 and cta_border_style != 'none' %}border:{{ cta_border_w }}px {{ cta_border_style }} {{ cta_border_color }};{% else %}border:none;{% endif %}{%- endcapture -%}
+        {%- capture base_radius_style -%}{% if cta_radius > 0 %}border-radius:{{ cta_radius }}px;{% endif %}{%- endcapture -%}
+        {%- capture base_dim_style -%}{% if cta_fixed_w > 0 %}min-width:{{ cta_fixed_w }}px;width:{{ cta_fixed_w }}px;{% endif %}{% if cta_fixed_h > 0 %}height:{{ cta_fixed_h }}px;{% endif %}{%- endcapture -%}
+        {%- capture prim_bg_style -%}{% if prim_bg_grad != blank %}background:{{ prim_bg_grad }};{% else %}background:{{ prim_bg_color }};{% endif %}color:{{ prim_text_color }};{%- endcapture -%}
+        {%- capture sec_bg_style -%}{% if sec_bg_grad != blank %}background:{{ sec_bg_grad }};{% else %}background:{{ sec_bg_color }};{% endif %}color:{{ sec_text_color }};{%- endcapture -%}
                 <div class="hero-banner-agg__slideButtons" style="justify-content:{% if b.ctas_inline_align == 'start' %}flex-start{% elsif b.ctas_inline_align == 'end' %}flex-end{% else %}center{% endif %};--cta-gap:{{ gap_px }}px;--cta-gap-m:{{ gap_px_m }}px;">
                   {% if has_cta_primary %}
-                    <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}" data-style="{{ prim_3d }}"{% if prim_style_cont != 'none' or prim_style_hover != 'none' or prim_style_click != 'none' %} data-anim-style-cont="{{ prim_style_cont }}" data-anim-style-hover="{{ prim_style_hover }}" data-anim-style-click="{{ prim_style_click }}" data-anim-cont="{{ prim_cont }}" data-anim-hover="{{ prim_hover }}" data-anim-click="{{ prim_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_primary | default: 3 }}s; --anim-speed-hover: {{ speed_hover_primary | default: 2 }}s; --anim-speed-click: {{ speed_click_primary | default: 1 }}s;">{{ b.slide_cta_text }}</a>
+          <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}" data-style="{{ prim_3d }}"{% if prim_style_cont != 'none' or prim_style_hover != 'none' or prim_style_click != 'none' %} data-anim-style-cont="{{ prim_style_cont }}" data-anim-style-hover="{{ prim_style_hover }}" data-anim-style-click="{{ prim_style_click }}" data-anim-cont="{{ prim_cont }}" data-anim-hover="{{ prim_hover }}" data-anim-click="{{ prim_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_primary | default: 3 }}s; --anim-speed-hover: {{ speed_hover_primary | default: 2 }}s; --anim-speed-click: {{ speed_click_primary | default: 1 }}s; {{ prim_bg_style }} {{ base_border_style }} {{ base_radius_style }} {{ base_dim_style }}">{{ b.slide_cta_text }}</a>
                   {% endif %}
                   {% if has_cta_secondary %}
-                    <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}" data-style="{{ sec_3d }}"{% if sec_style_cont != 'none' or sec_style_hover != 'none' or sec_style_click != 'none' %} data-anim-style-cont="{{ sec_style_cont }}" data-anim-style-hover="{{ sec_style_hover }}" data-anim-style-click="{{ sec_style_click }}" data-anim-cont="{{ sec_cont }}" data-anim-hover="{{ sec_hover }}" data-anim-click="{{ sec_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_secondary | default: 3 }}s; --anim-speed-hover: {{ speed_hover_secondary | default: 2 }}s; --anim-speed-click: {{ speed_click_secondary | default: 1 }}s;">{{ b.slide_cta2_text }}</a>
+          <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}" data-style="{{ sec_3d }}"{% if sec_style_cont != 'none' or sec_style_hover != 'none' or sec_style_click != 'none' %} data-anim-style-cont="{{ sec_style_cont }}" data-anim-style-hover="{{ sec_style_hover }}" data-anim-style-click="{{ sec_style_click }}" data-anim-cont="{{ sec_cont }}" data-anim-hover="{{ sec_hover }}" data-anim-click="{{ sec_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_secondary | default: 3 }}s; --anim-speed-hover: {{ speed_hover_secondary | default: 2 }}s; --anim-speed-click: {{ speed_click_secondary | default: 1 }}s; {{ sec_bg_style }} {{ base_border_style }} {{ base_radius_style }} {{ base_dim_style }}">{{ b.slide_cta2_text }}</a>
                   {% endif %}
                 </div>
               </div>
