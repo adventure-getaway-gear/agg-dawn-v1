@@ -29,9 +29,10 @@
   .hero-banner-agg__slideButtons{display:flex;flex-wrap:wrap;gap:.85rem;margin-top:.35rem}
   .hero-banner-agg__slideBtn{background:{{ s.cta_bg }};color:{{ s.cta_color }};padding:var(--btn-pad-y,.85rem) var(--btn-pad-x,1.6rem);border-radius:{{ s.button_radius }}px;font-weight:600;text-decoration:none;font-size:var(--btn-font,.95rem);line-height:1;box-shadow:0 2px 4px rgba(0,0,0,.35);transition:background .3s ease,opacity .3s ease,transform .25s ease;display:inline-flex;align-items:center;justify-content:center;min-width:140px}
   /* CTA size scale increased */
-  .hero-banner-agg__slideBtn[data-size="small"]{--btn-pad-y:.75rem;--btn-pad-x:1.4rem;--btn-font:.9rem;min-width:140px}
-  .hero-banner-agg__slideBtn[data-size="medium"], .hero-banner-agg__slideBtn:not([data-size]){--btn-pad-y:1rem;--btn-pad-x:1.9rem;--btn-font:1.05rem;min-width:170px}
-  .hero-banner-agg__slideBtn[data-size="large"]{--btn-pad-y:1.3rem;--btn-pad-x:2.6rem;--btn-font:1.2rem;min-width:210px}
+  /* CTA size tiers balanced: small ~= old medium, medium ~= old large, large expanded */
+  .hero-banner-agg__slideBtn[data-size="small"]{--btn-pad-y:1rem;--btn-pad-x:1.9rem;--btn-font:1.05rem;min-width:175px}
+  .hero-banner-agg__slideBtn[data-size="medium"], .hero-banner-agg__slideBtn:not([data-size]){--btn-pad-y:1.3rem;--btn-pad-x:2.6rem;--btn-font:1.18rem;min-width:215px}
+  .hero-banner-agg__slideBtn[data-size="large"]{--btn-pad-y:1.55rem;--btn-pad-x:3.1rem;--btn-font:1.32rem;min-width:255px}
   .hero-banner-agg__slideBtn:active{transform:scale(.97)}
   /* 9-point positioning utility classes */
   .pos-tl{top:{{ s.padding_vertical }}px;left:{{ s.padding_horizontal }}px;text-align:left}
