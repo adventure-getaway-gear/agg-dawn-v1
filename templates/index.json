@@ -42,7 +42,7 @@
         "overlay_color": "#000000",
         "overlay_opacity": 40,
         "slideshow_autoplay": true,
-        "slideshow_interval": 2,
+        "slideshow_interval": 5,
         "pause_on_hover": true,
         "loop_slides": true,
         "slideshow_transition": "fade",
