@@ -10,7 +10,7 @@
   endif
 -%}
 <!-- Hero Slideshow Section -->
-<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}">
+<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
@@ -50,7 +50,9 @@
   @keyframes hbTextFadeRight { 0%{ opacity:0; transform: translateX(calc(var(--txt-shift, 20px) * -1)); } 100%{ opacity:1; transform: translateX(0); } }
   /* Text shimmer */
   @keyframes hbTextShimmer { 0%{ background-position: -200% 0; } 100%{ background-position: 200% 0; } }
-  .hb-text-shimmer{ background-image: linear-gradient(110deg, rgba(255,255,255,0) 0%, var(--txt-shimmer-color, rgba(255,255,255,0.7)) 35%, rgba(255,255,255,0) 70%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: hbTextShimmer var(--txt-shimmer-speed, 2200ms) linear infinite; }
+  .hb-text-shimmer{ background-image: linear-gradient(110deg, rgba(255,255,255,0) 0%, var(--txt-shimmer-color, rgba(255,255,255,0.7)) 35%, rgba(255,255,255,0) 70%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: hbTextShimmer var(--txt-shimmer-speed, 2200ms) linear infinite; }
+  .hb-text-shimmer-hover{ position: relative; }
+  .hb-text-shimmer-hover:hover{ background-image: linear-gradient(110deg, rgba(255,255,255,0) 0%, var(--txt-shimmer-color, rgba(255,255,255,0.7)) 35%, rgba(255,255,255,0) 70%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: hbTextShimmer var(--txt-shimmer-speed, 2200ms) linear infinite; }
   /* Overlays */
   .hb-anim-overlay { position:absolute; inset:0; pointer-events:none; z-index:5; mix-blend-mode:screen; }
   .hb-anim-overlay.hb-mist { background: radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.06) 60%, rgba(255,255,255,0) 100%); filter: blur(12px); opacity: .35; animation: hbMist 6s ease-in-out infinite alternate; }
@@ -618,6 +620,7 @@
         el.style.animation = 'none';
         el.style.opacity = '1';
         el.classList.remove('hb-text-shimmer');
+        el.classList.remove('hb-text-shimmer-hover');
         switch(t){
           case 'fade_in':
             el.style.animation = 'hbTextFadeIn '+ts+'ms '+textEasing+' 1 both';
@@ -635,10 +638,30 @@
             el.style.animation = 'hbTextFadeRight '+ts+'ms '+textEasing+' 1 both';
             break;
           case 'shimmer':
-            var col = el.getAttribute('data-text-shimmer-color') || root.getAttribute('data-txt-shimmer-color') || '#ffffff';
-            el.classList.add('hb-text-shimmer');
-            el.style.setProperty('--txt-shimmer-color', col);
-            el.style.setProperty('--txt-shimmer-speed', Math.max(ts*1.2, 1600)+'ms');
+            var allow = (root.getAttribute('data-allow-text-shimmer') === 'true' || root.getAttribute('data-allow-text-shimmer') === '1');
+            if (allow) {
+              var hoverOnly = (root.getAttribute('data-text-shimmer-hover-only') === 'true' || root.getAttribute('data-text-shimmer-hover-only') === '1');
+              var once = (root.getAttribute('data-text-shimmer-once') === 'true' || root.getAttribute('data-text-shimmer-once') === '1');
+              var col = el.getAttribute('data-text-shimmer-color') || root.getAttribute('data-txt-shimmer-color') || '#ffffff';
+              var speed = Math.max(ts*1.1, 1600)+'ms';
+              el.style.setProperty('--txt-shimmer-color', col);
+              el.style.setProperty('--txt-shimmer-speed', speed);
+              if (hoverOnly) {
+                el.classList.add('hb-text-shimmer-hover');
+              } else {
+                el.classList.add('hb-text-shimmer');
+                if (once) {
+                  // Run shimmer briefly then freeze to final
+                  setTimeout(function(){
+                    el.style.animationPlayState = 'paused';
+                    el.classList.remove('hb-text-shimmer');
+                    // leave text visible with final color
+                    el.style.removeProperty('-webkit-text-fill-color');
+                    el.style.color = '';
+                  }, Math.max(2200, parseInt(ts,10)+1200));
+                }
+              }
+            }
             break;
         }
       });
@@ -723,6 +746,9 @@
   {"type":"header","content":"Ambient & Text Shimmer"},
   {"type":"range","id":"ambient_subtlety","label":"Ambient subtlety (global)","min":0,"max":100,"step":5,"default":50},
   {"type":"color","id":"text_shimmer_color","label":"Default text shimmer color","default":"#ffffff"},
+  {"type":"checkbox","id":"enable_text_shimmer","label":"Enable text shimmer globally","default":true},
+  {"type":"checkbox","id":"text_shimmer_hover_only","label":"Text shimmer: hover only","default":false},
+  {"type":"checkbox","id":"text_shimmer_once","label":"Text shimmer: run once then stop","default":false},
   {"type":"header","content":"Global CTA animation defaults"},
   {"type":"select","id":"cta_global_anim_style_cont","label":"Global continuous style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
   {"type":"select","id":"cta_global_anim_style_hover","label":"Global hover style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
@@ -796,7 +822,8 @@
         {"value":"fade_up","label":"Fade Up"},
         {"value":"fade_down","label":"Fade Down"},
         {"value":"fade_left","label":"Fade Left"},
-        {"value":"fade_right","label":"Fade Right"}
+        {"value":"fade_right","label":"Fade Right"},
+        {"value":"shimmer","label":"Shimmer (uses color setting)"}
       ]},
       {"type":"range","id":"headline_anim_intensity","label":"Headline Animation Intensity","min":0,"max":100,"step":1,"default":50},
       {"type":"select","id":"headline_anim_speed","label":"Headline Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
@@ -820,7 +847,8 @@
         {"value":"fade_up","label":"Fade Up"},
         {"value":"fade_down","label":"Fade Down"},
         {"value":"fade_left","label":"Fade Left"},
-        {"value":"fade_right","label":"Fade Right"}
+        {"value":"fade_right","label":"Fade Right"},
+        {"value":"shimmer","label":"Shimmer (uses color setting)"}
       ]},
       {"type":"range","id":"sub_anim_intensity","label":"Subheadline Animation Intensity","min":0,"max":100,"step":1,"default":40},
       {"type":"select","id":"sub_anim_speed","label":"Subheadline Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
