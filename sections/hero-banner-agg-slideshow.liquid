@@ -34,6 +34,16 @@
   .hero-banner-agg__slideBtn[data-size="medium"], .hero-banner-agg__slideBtn:not([data-size]){--btn-pad-y:1.3rem;--btn-pad-x:2.6rem;--btn-font:1.18rem;min-width:215px}
   .hero-banner-agg__slideBtn[data-size="large"]{--btn-pad-y:1.55rem;--btn-pad-x:3.1rem;--btn-font:1.32rem;min-width:255px}
   .hero-banner-agg__slideBtn:active{transform:scale(.97)}
+  /* Shimmer animation framework */
+  @keyframes ctaShimmer { 0%{background-position:-200% 0;}100%{background-position:200% 0;} }
+  .hero-banner-agg__slideBtn[data-anim-style="shimmer"]{position:relative;overflow:hidden}
+  .hero-banner-agg__slideBtn[data-anim-style="shimmer"]::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,215,128,0) 0%,rgba(255,215,128,.12) 35%,rgba(255,215,128,.45) 50%,rgba(255,215,128,.12) 65%,rgba(255,215,128,0) 100%);background-size:200% 100%;mix-blend-mode:screen;pointer-events:none;opacity:0;transition:opacity .3s ease}
+  /* Continuous */
+  .hero-banner-agg__slideBtn[data-anim-style="shimmer"][data-anim-cont="true"]::before{animation:ctaShimmer 3.2s linear infinite;opacity:1}
+  /* Hover */
+  .hero-banner-agg__slideBtn[data-anim-style="shimmer"][data-anim-hover="true"]:hover::before{animation:ctaShimmer 1.8s linear infinite;opacity:1}
+  /* Click */
+  .hero-banner-agg__slideBtn[data-anim-style="shimmer"][data-anim-click="true"]:active::before{animation:ctaShimmer 1.2s linear 1;opacity:1}
   /* 9-point positioning utility classes */
   .pos-tl{top:{{ s.padding_vertical }}px;left:{{ s.padding_horizontal }}px;text-align:left}
   .pos-tc{top:{{ s.padding_vertical }}px;left:50%;transform:translateX(-50%);text-align:center}
@@ -120,10 +130,10 @@
               <div class="hero-banner-agg__slidePiece pos-{{ ctas_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
                 <div class="hero-banner-agg__slideButtons" style="justify-content:{% if b.ctas_inline_align == 'start' %}flex-start{% elsif b.ctas_inline_align == 'end' %}flex-end{% else %}center{% endif %};">
                   {% if has_cta_primary %}
-                    <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}">{{ b.slide_cta_text }}</a>
+                    <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}"{% unless b.cta_anim_style == 'none' %} data-anim-style="{{ b.cta_anim_style }}" data-anim-cont="{{ b.cta_anim_continuous }}" data-anim-hover="{{ b.cta_anim_hover }}" data-anim-click="{{ b.cta_anim_click }}"{% endunless %}>{{ b.slide_cta_text }}</a>
                   {% endif %}
                   {% if has_cta_secondary %}
-                    <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}">{{ b.slide_cta2_text }}</a>
+                    <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}"{% unless b.cta_anim_style == 'none' %} data-anim-style="{{ b.cta_anim_style }}" data-anim-cont="{{ b.cta_anim_continuous }}" data-anim-hover="{{ b.cta_anim_hover }}" data-anim-click="{{ b.cta_anim_click }}"{% endunless %}>{{ b.slide_cta2_text }}</a>
                   {% endif %}
                 </div>
               </div>
@@ -318,6 +328,10 @@
   {"type":"url","id":"slide_cta2_link","label":"Secondary CTA link"},
   {"type":"select","id":"slide_cta2_variant","label":"Secondary CTA variant","default":"secondary","options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"ghost","label":"Ghost"}]},
   {"type":"select","id":"cta_size","label":"CTA size","default":"medium","options":[{"value":"small","label":"Small"},{"value":"medium","label":"Medium"},{"value":"large","label":"Large"}]},
+  {"type":"select","id":"cta_anim_style","label":"CTA animation style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Golden shimmer"}]},
+  {"type":"checkbox","id":"cta_anim_continuous","label":"Continuous shimmer","default":false},
+  {"type":"checkbox","id":"cta_anim_hover","label":"Shimmer on hover","default":true},
+  {"type":"checkbox","id":"cta_anim_click","label":"Shimmer on click","default":true},
   {"type":"range","id":"headline_size","label":"Headline size override (px)","min":0,"max":120,"step":2,"default":0,"info":"0 = inherit global"},
   {"type":"range","id":"subheadline_size","label":"Subheadline size override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit global"},
   {"type":"color","id":"headline_color","label":"Headline color override"},
