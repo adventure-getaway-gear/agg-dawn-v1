@@ -28,8 +28,10 @@
   .hero-banner-agg__pieceSub{color:var(--sub-color,#fff);margin:0;font-size:var(--sub-size,clamp(1rem,1.6vw,{{ s.subheadline_size }}px));line-height:1.45;text-shadow:0 2px 4px rgba(0,0,0,.55);}
   .hero-banner-agg__slideButtons{display:flex;flex-wrap:wrap;gap:.85rem;margin-top:.35rem}
   .hero-banner-agg__slideBtn{background:{{ s.cta_bg }};color:{{ s.cta_color }};padding:var(--btn-pad-y,.85rem) var(--btn-pad-x,1.6rem);border-radius:{{ s.button_radius }}px;font-weight:600;text-decoration:none;font-size:var(--btn-font,.95rem);line-height:1;box-shadow:0 2px 4px rgba(0,0,0,.35);transition:background .3s ease,opacity .3s ease,transform .25s ease;display:inline-flex;align-items:center;justify-content:center;min-width:140px}
-  .hero-banner-agg__slideBtn[data-size="small"]{--btn-pad-y:.6rem;--btn-pad-x:1.2rem;--btn-font:.85rem;min-width:120px}
-  .hero-banner-agg__slideBtn[data-size="large"]{--btn-pad-y:1.2rem;--btn-pad-x:2.4rem;--btn-font:1.1rem;min-width:190px}
+  /* CTA size scale increased */
+  .hero-banner-agg__slideBtn[data-size="small"]{--btn-pad-y:.75rem;--btn-pad-x:1.4rem;--btn-font:.9rem;min-width:140px}
+  .hero-banner-agg__slideBtn[data-size="medium"], .hero-banner-agg__slideBtn:not([data-size]){--btn-pad-y:1rem;--btn-pad-x:1.9rem;--btn-font:1.05rem;min-width:170px}
+  .hero-banner-agg__slideBtn[data-size="large"]{--btn-pad-y:1.3rem;--btn-pad-x:2.6rem;--btn-font:1.2rem;min-width:210px}
   .hero-banner-agg__slideBtn:active{transform:scale(.97)}
   /* 9-point positioning utility classes */
   .pos-tl{top:{{ s.padding_vertical }}px;left:{{ s.padding_horizontal }}px;text-align:left}
@@ -60,6 +62,9 @@
   .hero-banner-agg__progress{position:absolute;left:0;bottom:0;width:100%;height:{{ s.progress_bar_height | default: 4 }}px;background:rgba(255,255,255,.25);overflow:hidden;z-index:17}
   .hero-banner-agg__progressFill{display:block;width:100%;height:100%;background:{{ s.progress_bar_color | default: '#ffffff' }};transform:scaleX(0);transform-origin:left center;will-change:transform}
     @media (prefers-reduced-motion:reduce){.hero-banner-agg__slide{transition:none}}
+  /* Global overlay container placed below per-slide pieces to preserve clickability */
+  .hero-banner-agg__inner{z-index:8;pointer-events:none}
+  .hero-banner-agg__inner a{pointer-events:auto}
   </style>
   {% if section.blocks.size > 0 %}
     <div class="hero-banner-agg__slideshow" data-autoplay="{{ s.slideshow_autoplay }}" data-interval="{{ s.slideshow_interval | times: 1000 }}" data-transition="{{ s.slideshow_transition }}" aria-roledescription="carousel">
