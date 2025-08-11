@@ -117,7 +117,7 @@
             "cta_gap_mobile": 32,
             "cta_style": "glass",
             "enable_cta_visual_overrides": true,
-            "reset_slide_overrides": false,
+            "reset_slide_overrides": true,
             "primary_bg_color": "#1a1a1a",
             "primary_bg_gradient": "",
             "primary_text_color": "#ffffff",
