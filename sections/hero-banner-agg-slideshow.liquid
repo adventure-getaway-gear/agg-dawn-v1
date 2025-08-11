@@ -184,13 +184,40 @@
                 {%- endif -%}
                 {%- assign gap_px = b.cta_gap | default: s.cta_global_cta_gap | default: 14 -%}
                 {%- assign gap_px_m = b.cta_gap_mobile | default: s.cta_global_cta_gap_mobile | default: gap_px -%}
-                {%- assign style_3d = b.cta_style | default: s.cta_global_style | default: 'raised' -%}
+                {%- assign style_3d_global = b.cta_style | default: s.cta_global_style | default: 'raised' -%}
+                {%- comment %} Per-button animation/style override resolution (Option A) {%- endcomment -%}
+                {%- assign prim_style_cont = b.primary_anim_style_cont | default: b.cta_anim_style_cont | default: b.cta_anim_style | default: s.cta_global_anim_style_cont -%}
+                {%- assign prim_style_hover = b.primary_anim_style_hover | default: b.cta_anim_style_hover | default: prim_style_cont | default: s.cta_global_anim_style_hover -%}
+                {%- assign prim_style_click = b.primary_anim_style_click | default: b.cta_anim_style_click | default: prim_style_cont | default: s.cta_global_anim_style_click -%}
+                {%- assign sec_style_cont = b.secondary_anim_style_cont | default: b.cta_anim_style_cont | default: b.cta_anim_style | default: s.cta_global_anim_style_cont -%}
+                {%- assign sec_style_hover = b.secondary_anim_style_hover | default: b.cta_anim_style_hover | default: sec_style_cont | default: s.cta_global_anim_style_hover -%}
+                {%- assign sec_style_click = b.secondary_anim_style_click | default: b.cta_anim_style_click | default: sec_style_cont | default: s.cta_global_anim_style_click -%}
+                {%- assign prim_cont = b.primary_anim_continuous | default: b.cta_anim_continuous -%}
+                {%- assign prim_hover = b.primary_anim_hover | default: b.cta_anim_hover -%}
+                {%- assign prim_click = b.primary_anim_click | default: b.cta_anim_click -%}
+                {%- assign sec_cont = b.secondary_anim_continuous | default: b.cta_anim_continuous -%}
+                {%- assign sec_hover = b.secondary_anim_hover | default: b.cta_anim_hover -%}
+                {%- assign sec_click = b.secondary_anim_click | default: b.cta_anim_click -%}
+                {%- assign speed_cont_primary = b.primary_anim_speed_continuous -%}
+                {%- if speed_cont_primary == 0 or speed_cont_primary == blank %}{% assign speed_cont_primary = b.cta_anim_speed_continuous | default: s.cta_global_anim_speed_continuous %}{% endif %}
+                {%- assign speed_hover_primary = b.primary_anim_speed_hover -%}
+                {%- if speed_hover_primary == 0 or speed_hover_primary == blank %}{% assign speed_hover_primary = b.cta_anim_speed_hover | default: s.cta_global_anim_speed_hover %}{% endif %}
+                {%- assign speed_click_primary = b.primary_anim_speed_click -%}
+                {%- if speed_click_primary == 0 or speed_click_primary == blank %}{% assign speed_click_primary = b.cta_anim_speed_click | default: s.cta_global_anim_speed_click %}{% endif %}
+                {%- assign speed_cont_secondary = b.secondary_anim_speed_continuous -%}
+                {%- if speed_cont_secondary == 0 or speed_cont_secondary == blank %}{% assign speed_cont_secondary = b.cta_anim_speed_continuous | default: s.cta_global_anim_speed_continuous %}{% endif %}
+                {%- assign speed_hover_secondary = b.secondary_anim_speed_hover -%}
+                {%- if speed_hover_secondary == 0 or speed_hover_secondary == blank %}{% assign speed_hover_secondary = b.cta_anim_speed_hover | default: s.cta_global_anim_speed_hover %}{% endif %}
+                {%- assign speed_click_secondary = b.secondary_anim_speed_click -%}
+                {%- if speed_click_secondary == 0 or speed_click_secondary == blank %}{% assign speed_click_secondary = b.cta_anim_speed_click | default: s.cta_global_anim_speed_click %}{% endif %}
+                {%- assign prim_3d = b.primary_3d_style | default: b.cta_style | default: s.cta_global_style | default: 'raised' -%}
+                {%- assign sec_3d = b.secondary_3d_style | default: b.cta_style | default: s.cta_global_style | default: 'raised' -%}
                 <div class="hero-banner-agg__slideButtons" style="justify-content:{% if b.ctas_inline_align == 'start' %}flex-start{% elsif b.ctas_inline_align == 'end' %}flex-end{% else %}center{% endif %};--cta-gap:{{ gap_px }}px;--cta-gap-m:{{ gap_px_m }}px;">
                   {% if has_cta_primary %}
-                    <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}" data-style="{{ style_3d }}"{% if style_cont != 'none' or style_hover != 'none' or style_click != 'none' %} data-anim-style-cont="{{ style_cont }}" data-anim-style-hover="{{ style_hover }}" data-anim-style-click="{{ style_click }}" data-anim-cont="{{ b.cta_anim_continuous }}" data-anim-hover="{{ b.cta_anim_hover }}" data-anim-click="{{ b.cta_anim_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont | default: 3 }}s; --anim-speed-hover: {{ speed_hover | default: 2 }}s; --anim-speed-click: {{ speed_click | default: 1 }}s;">{{ b.slide_cta_text }}</a>
+                    <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}" data-style="{{ prim_3d }}"{% if prim_style_cont != 'none' or prim_style_hover != 'none' or prim_style_click != 'none' %} data-anim-style-cont="{{ prim_style_cont }}" data-anim-style-hover="{{ prim_style_hover }}" data-anim-style-click="{{ prim_style_click }}" data-anim-cont="{{ prim_cont }}" data-anim-hover="{{ prim_hover }}" data-anim-click="{{ prim_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_primary | default: 3 }}s; --anim-speed-hover: {{ speed_hover_primary | default: 2 }}s; --anim-speed-click: {{ speed_click_primary | default: 1 }}s;">{{ b.slide_cta_text }}</a>
                   {% endif %}
                   {% if has_cta_secondary %}
-                    <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}" data-style="{{ style_3d }}"{% if style_cont != 'none' or style_hover != 'none' or style_click != 'none' %} data-anim-style-cont="{{ style_cont }}" data-anim-style-hover="{{ style_hover }}" data-anim-style-click="{{ style_click }}" data-anim-cont="{{ b.cta_anim_continuous }}" data-anim-hover="{{ b.cta_anim_hover }}" data-anim-click="{{ b.cta_anim_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont | default: 3 }}s; --anim-speed-hover: {{ speed_hover | default: 2 }}s; --anim-speed-click: {{ speed_click | default: 1 }}s;">{{ b.slide_cta2_text }}</a>
+                    <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}" data-style="{{ sec_3d }}"{% if sec_style_cont != 'none' or sec_style_hover != 'none' or sec_style_click != 'none' %} data-anim-style-cont="{{ sec_style_cont }}" data-anim-style-hover="{{ sec_style_hover }}" data-anim-style-click="{{ sec_style_click }}" data-anim-cont="{{ sec_cont }}" data-anim-hover="{{ sec_hover }}" data-anim-click="{{ sec_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_secondary | default: 3 }}s; --anim-speed-hover: {{ speed_hover_secondary | default: 2 }}s; --anim-speed-click: {{ speed_click_secondary | default: 1 }}s;">{{ b.slide_cta2_text }}</a>
                   {% endif %}
                 </div>
               </div>
@@ -409,6 +436,28 @@
   {"type":"range","id":"cta_gap","label":"CTA gap override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit"},
   {"type":"range","id":"cta_gap_mobile","label":"CTA gap mobile override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit"},
   {"type":"select","id":"cta_style","label":"CTA 3D style override","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
+  {"type":"header","content":"Primary CTA specific overrides"},
+  {"type":"checkbox","id":"primary_anim_continuous","label":"Primary: continuous enabled"},
+  {"type":"checkbox","id":"primary_anim_hover","label":"Primary: hover enabled"},
+  {"type":"checkbox","id":"primary_anim_click","label":"Primary: click enabled"},
+  {"type":"select","id":"primary_anim_style_cont","label":"Primary continuous style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+  {"type":"select","id":"primary_anim_style_hover","label":"Primary hover style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+  {"type":"select","id":"primary_anim_style_click","label":"Primary click style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+  {"type":"range","id":"primary_anim_speed_continuous","label":"Primary continuous speed (s)","min":1,"max":10,"step":0.5,"default":0,"info":"0 = inherit"},
+  {"type":"range","id":"primary_anim_speed_hover","label":"Primary hover speed (s)","min":0.5,"max":6,"step":0.5,"default":0,"info":"0 = inherit"},
+  {"type":"range","id":"primary_anim_speed_click","label":"Primary click speed (s)","min":0.3,"max":3,"step":0.1,"default":0,"info":"0 = inherit"},
+  {"type":"select","id":"primary_3d_style","label":"Primary 3D style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
+  {"type":"header","content":"Secondary CTA specific overrides"},
+  {"type":"checkbox","id":"secondary_anim_continuous","label":"Secondary: continuous enabled"},
+  {"type":"checkbox","id":"secondary_anim_hover","label":"Secondary: hover enabled"},
+  {"type":"checkbox","id":"secondary_anim_click","label":"Secondary: click enabled"},
+  {"type":"select","id":"secondary_anim_style_cont","label":"Secondary continuous style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+  {"type":"select","id":"secondary_anim_style_hover","label":"Secondary hover style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+  {"type":"select","id":"secondary_anim_style_click","label":"Secondary click style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+  {"type":"range","id":"secondary_anim_speed_continuous","label":"Secondary continuous speed (s)","min":1,"max":10,"step":0.5,"default":0,"info":"0 = inherit"},
+  {"type":"range","id":"secondary_anim_speed_hover","label":"Secondary hover speed (s)","min":0.5,"max":6,"step":0.5,"default":0,"info":"0 = inherit"},
+  {"type":"range","id":"secondary_anim_speed_click","label":"Secondary click speed (s)","min":0.3,"max":3,"step":0.1,"default":0,"info":"0 = inherit"},
+  {"type":"select","id":"secondary_3d_style","label":"Secondary 3D style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
   {"type":"range","id":"headline_size","label":"Headline size override (px)","min":0,"max":120,"step":2,"default":0,"info":"0 = inherit global"},
   {"type":"range","id":"subheadline_size","label":"Subheadline size override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit global"},
   {"type":"color","id":"headline_color","label":"Headline color override"},
