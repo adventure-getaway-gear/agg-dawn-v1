@@ -19,10 +19,19 @@
             "slide_alt": "",
             "slide_link": ""
           }
+        },
+        "image_Qeph3R": {
+          "type": "image",
+          "settings": {
+            "slide_image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
+            "slide_alt": "",
+            "slide_link": ""
+          }
         }
       },
       "block_order": [
-        "image_VEqTNU"
+        "image_VEqTNU",
+        "image_Qeph3R"
       ],
       "name": "Hero Banner AGG Slideshow",
       "settings": {
