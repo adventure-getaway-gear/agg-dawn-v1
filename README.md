@@ -33,5 +33,8 @@ This provides a lean hero banner ready for renewed polish pass.
 ## Notes
 If you need to fast-forward back to the advanced hero version, we can cherry-pick or revert the revert commits.
 
+### 2025-08-10 Reset (Image-only Hero)
+Simplified `hero-banner-agg.liquid` back to an image-only banner (removed video logic, 9-point positioning, mobile auto layout) to start a new approach. Previous advanced version preserved on branch `backup-hero-banner-agg-advanced`.
+
 ---
 Contact: Internal build documentation. 
