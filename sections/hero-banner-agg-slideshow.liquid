@@ -149,9 +149,12 @@
               {% endif %}
             {% if wrap_slide_link %}</a>{% endif %}
             {% if s.enable_overlay %}<div class="hero-banner-agg__overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>{% endif %}
-            {%- assign headline_pos = b.headline_position | default: 'mc' -%}
-            {%- assign sub_pos = b.subheadline_position | default: headline_pos -%}
-            {%- assign ctas_pos = b.ctas_position | default: headline_pos -%}
+            {%- assign global_headline_pos = s.global_headline_position | default: 'mc' -%}
+            {%- assign global_sub_pos = s.global_subheadline_position | default: global_headline_pos -%}
+            {%- assign global_ctas_pos = s.global_ctas_position | default: global_headline_pos -%}
+            {%- assign headline_pos = b.headline_position | default: global_headline_pos -%}
+            {%- assign sub_pos = b.subheadline_position | default: headline_pos | default: global_sub_pos -%}
+            {%- assign ctas_pos = b.ctas_position | default: headline_pos | default: global_ctas_pos -%}
             {%- if b.slide_headline != blank -%}
               <div class="hero-banner-agg__slidePiece pos-{{ headline_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--headline-color:{{ b.headline_color | default: s.headline_color }};--headline-size:{% if b.headline_size > 0 %}{{ b.headline_size }}px{% endif %};--headline-size-m:{% if b.headline_size > 0 %}{{ b.headline_size | divided_by: 1.6 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
                 <h3 class="hero-banner-agg__pieceHeadline">{{ b.slide_headline }}</h3>
@@ -219,6 +222,7 @@
                   {%- assign cta_border_color = b.cta_border_color | default: '#ffffff' -%}
                   {%- assign cta_radius = b.cta_radius_override | default: 0 -%}
                   {%- assign cta_fixed_w = b.cta_fixed_width | default: 0 -%}
+                  {%- assign cta_width_scale = b.cta_width_scale | default: 0 -%}
                   {%- assign cta_fixed_h = b.cta_fixed_height | default: 0 -%}
                   {%- assign prim_bg_color = b.primary_bg_color | default: b.slide_cta_bg | default: s.cta_bg -%}
                   {%- assign prim_bg_grad = b.primary_bg_gradient -%}
@@ -232,6 +236,7 @@
                   {%- assign cta_border_color = '' -%}
                   {%- assign cta_radius = 0 -%}
                   {%- assign cta_fixed_w = 0 -%}
+                  {%- assign cta_width_scale = 0 -%}
                   {%- assign cta_fixed_h = 0 -%}
                   {%- assign prim_bg_color = b.slide_cta_bg | default: s.cta_bg -%}
                   {%- assign prim_bg_grad = '' -%}
@@ -242,7 +247,12 @@
                 {%- endif -%}
         {%- capture base_border_style -%}{% if cta_border_w > 0 and cta_border_style != 'none' %}border:{{ cta_border_w }}px {{ cta_border_style }} {{ cta_border_color }};{% else %}border:none;{% endif %}{%- endcapture -%}
         {%- capture base_radius_style -%}{% if cta_radius > 0 %}border-radius:{{ cta_radius }}px;{% endif %}{%- endcapture -%}
-        {%- capture base_dim_style -%}{% if cta_fixed_w > 0 %}min-width:{{ cta_fixed_w }}px;width:{{ cta_fixed_w }}px;{% endif %}{% if cta_fixed_h > 0 %}height:{{ cta_fixed_h }}px;{% endif %}{%- endcapture -%}
+                {%- assign scale_factor = 1 -%}
+                {%- if cta_width_scale != 0 -%}
+                  {%- assign scale_factor = 1.0 | plus: 0 -%}
+                  {%- assign scale_factor = scale_factor | plus: cta_width_scale | divided_by: 100.0 -%}
+                {%- endif -%}
+                {%- capture base_dim_style -%}{% if cta_fixed_w > 0 %}min-width:{{ cta_fixed_w }}px;width:{{ cta_fixed_w }}px;{% endif %}{% if cta_fixed_h > 0 %}height:{{ cta_fixed_h }}px;{% endif %}{% if cta_width_scale != 0 %}--wscale:{{ scale_factor }};transform:scaleX(var(--wscale));{% endif %}{%- endcapture -%}
         {%- capture prim_bg_style -%}{% if prim_bg_grad != blank %}background:{{ prim_bg_grad }};{% else %}background:{{ prim_bg_color }};{% endif %}color:{{ prim_text_color }};{%- endcapture -%}
         {%- capture sec_bg_style -%}{% if sec_bg_grad != blank %}background:{{ sec_bg_grad }};{% else %}background:{{ sec_bg_color }};{% endif %}color:{{ sec_text_color }};{%- endcapture -%}
                 <div class="hero-banner-agg__slideButtons" style="justify-content:{% if b.ctas_inline_align == 'start' %}flex-start{% elsif b.ctas_inline_align == 'end' %}flex-end{% else %}center{% endif %};--cta-gap:{{ gap_px }}px;--cta-gap-m:{{ gap_px_m }}px;">
@@ -439,6 +449,13 @@
   {"type":"range","id":"cta_global_cta_gap","label":"Global CTA gap (px)","min":4,"max":60,"step":2,"default":14},
   {"type":"range","id":"cta_global_cta_gap_mobile","label":"Global CTA gap mobile (px)","min":4,"max":60,"step":2,"default":12},
   {"type":"select","id":"cta_global_style","label":"Global CTA 3D style","default":"raised","options":[{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
+  {"type":"header","content":"Global Content Positioning"},
+  {"type":"checkbox","id":"enable_overlay","label":"Enable overlay","default":true},
+  {"type":"color","id":"overlay_color","label":"Overlay color","default":"rgba(0,0,0,0.45)"},
+  {"type":"range","id":"overlay_opacity","label":"Overlay opacity (%)","min":0,"max":100,"step":5,"default":45},
+  {"type":"select","id":"global_headline_position","label":"Global headline position","default":"mc","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+  {"type":"select","id":"global_subheadline_position","label":"Global subheadline position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+  {"type":"select","id":"global_ctas_position","label":"Global CTAs position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
     {"type":"textarea","id":"custom_css","label":"Custom CSS"}
   ],
   "blocks": [
@@ -483,6 +500,7 @@
   {"type":"color","id":"cta_border_color","label":"CTA border color","default":"#ffffff"},
   {"type":"range","id":"cta_radius_override","label":"CTA border radius (px)","min":0,"max":64,"step":2,"default":0},
   {"type":"range","id":"cta_fixed_width","label":"CTA fixed width (px, 0 = auto)","min":0,"max":400,"step":10,"default":0},
+  {"type":"range","id":"cta_width_scale","label":"CTA width scale (% - shrink or expand)","min":-60,"max":120,"step":5,"default":0,"info":"Negative shrinks width visually using scaleX"},
   {"type":"range","id":"cta_fixed_height","label":"CTA fixed height (px, 0 = auto)","min":0,"max":140,"step":4,"default":0},
   {"type":"header","content":"Primary CTA specific overrides"},
   {"type":"checkbox","id":"primary_anim_continuous","label":"Primary: continuous enabled"},
