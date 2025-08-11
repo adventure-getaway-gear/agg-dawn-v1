@@ -155,12 +155,12 @@
             {%- assign headline_pos = b.headline_position | default: global_headline_pos -%}
             {%- assign sub_pos = b.subheadline_position | default: headline_pos | default: global_sub_pos -%}
             {%- assign ctas_pos = b.ctas_position | default: headline_pos | default: global_ctas_pos -%}
-            {%- if b.slide_headline != blank -%}
+            {%- if s.show_global_headlines and b.slide_headline != blank -%}
               <div class="hero-banner-agg__slidePiece pos-{{ headline_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--headline-color:{{ b.headline_color | default: s.headline_color }};--headline-size:{% if b.headline_size > 0 %}{{ b.headline_size }}px{% endif %};--headline-size-m:{% if b.headline_size > 0 %}{{ b.headline_size | divided_by: 1.6 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
                 <h3 class="hero-banner-agg__pieceHeadline">{{ b.slide_headline }}</h3>
               </div>
             {%- endif -%}
-            {%- if b.slide_subheadline != blank -%}
+            {%- if s.show_global_subheadlines and b.slide_subheadline != blank -%}
               <div class="hero-banner-agg__slidePiece pos-{{ sub_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--sub-color:{{ b.subheadline_color | default: s.subheadline_color }};--sub-size:{% if b.subheadline_size > 0 %}{{ b.subheadline_size }}px{% endif %};--sub-size-m:{% if b.subheadline_size > 0 %}{{ b.subheadline_size | divided_by: 1.1 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
                 <p class="hero-banner-agg__pieceSub">{{ b.slide_subheadline }}</p>
               </div>
@@ -453,6 +453,8 @@
   {"type":"select","id":"global_headline_position","label":"Global headline position","default":"mc","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
   {"type":"select","id":"global_subheadline_position","label":"Global subheadline position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
   {"type":"select","id":"global_ctas_position","label":"Global CTAs position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+  {"type":"checkbox","id":"show_global_headlines","label":"Show slide headlines","default":true},
+  {"type":"checkbox","id":"show_global_subheadlines","label":"Show slide subheadlines","default":true},
     {"type":"textarea","id":"custom_css","label":"Custom CSS"}
   ],
   "blocks": [
