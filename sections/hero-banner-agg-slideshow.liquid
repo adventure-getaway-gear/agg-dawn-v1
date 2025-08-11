@@ -10,7 +10,7 @@
   endif
 -%}
 <!-- Hero Slideshow Section -->
-<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}">
+<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
@@ -48,11 +48,22 @@
   @keyframes hbTextFadeDown { 0%{ opacity:0; transform: translateY(calc(var(--txt-shift, 16px) * -1)); } 100%{ opacity:1; transform: translateY(0); } }
   @keyframes hbTextFadeLeft { 0%{ opacity:0; transform: translateX(var(--txt-shift, 20px)); } 100%{ opacity:1; transform: translateX(0); } }
   @keyframes hbTextFadeRight { 0%{ opacity:0; transform: translateX(calc(var(--txt-shift, 20px) * -1)); } 100%{ opacity:1; transform: translateX(0); } }
-  /* Text shimmer */
-  @keyframes hbTextShimmer { 0%{ background-position: -200% 0; } 100%{ background-position: 200% 0; } }
-  .hb-text-shimmer{ background-image: linear-gradient(110deg, rgba(255,255,255,0) 0%, var(--txt-shimmer-color, rgba(255,255,255,0.7)) 35%, rgba(255,255,255,0) 70%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: hbTextShimmer var(--txt-shimmer-speed, 2200ms) linear infinite; }
+  /* Text shimmer (enhanced glint + sparkles) */
+  @keyframes hbTextShimmer { 0%{ background-position: -200% 0, -220% 0, -240% 0; } 100%{ background-position: 200% 0, 220% 0, 240% 0; } }
+  .hb-text-shimmer,
+  .hb-text-shimmer-hover:hover{
+    --_glint: color-mix(in srgb, var(--txt-shimmer-color, #ffffff) 85%, white 35%);
+    background-image:
+      linear-gradient(110deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 35%, var(--_glint) 50%, rgba(255,255,255,0) 65%, rgba(255,255,255,0) 100%),
+      radial-gradient(circle at 10% 55%, rgba(255,255,255,0.55) 0 1px, rgba(255,255,255,0) 2px),
+      radial-gradient(circle at 30% 45%, rgba(255,255,255,0.45) 0 1px, rgba(255,255,255,0) 2px);
+    background-size: 200% 100%, 220% 100%, 240% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 6px rgba(255,255,255,0.25), 0 0 2px rgba(255,255,255,0.15);
+    animation: hbTextShimmer var(--txt-shimmer-speed, 2200ms) linear infinite;
+  }
   .hb-text-shimmer-hover{ position: relative; }
-  .hb-text-shimmer-hover:hover{ background-image: linear-gradient(110deg, rgba(255,255,255,0) 0%, var(--txt-shimmer-color, rgba(255,255,255,0.7)) 35%, rgba(255,255,255,0) 70%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: hbTextShimmer var(--txt-shimmer-speed, 2200ms) linear infinite; }
   /* Overlays */
   .hb-anim-overlay { position:absolute; inset:0; pointer-events:none; z-index:5; mix-blend-mode:screen; }
   .hb-anim-overlay.hb-mist { background: radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.06) 60%, rgba(255,255,255,0) 100%); filter: blur(12px); opacity: .35; animation: hbMist 6s ease-in-out infinite alternate; }
@@ -222,7 +233,7 @@
               {% assign h_anim_speed_val = h_anim_speed_custom %}
               {% if h_anim_speed == 'slow' %}{% assign h_anim_speed_val = 1800 %}{% elsif h_anim_speed == 'medium' %}{% assign h_anim_speed_val = 900 %}{% elsif h_anim_speed == 'fast' %}{% assign h_anim_speed_val = 500 %}{% endif %}
               <div class="hero-banner-agg__slidePiece pos-{{ headline_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--headline-color:{{ b.headline_color | default: s.headline_color }};--headline-size:{% if b.headline_size > 0 %}{{ b.headline_size }}px{% endif %};--headline-size-m:{% if b.headline_size > 0 %}{{ b.headline_size | divided_by: 1.6 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <h3 class="hero-banner-agg__pieceHeadline" data-text-anim-type="{{ h_anim_type }}" data-text-anim-intensity="{{ h_anim_intensity }}" data-text-anim-speed-val="{{ h_anim_speed_val }}" data-text-anim-ease="{{ b.headline_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.headline_anim_ease_custom }}" data-text-shimmer-color="{{ b.headline_shimmer_color | default: s.text_shimmer_color }}">{{ b.slide_headline }}</h3>
+                <h3 class="hero-banner-agg__pieceHeadline" data-text-anim-type="{{ h_anim_type }}" data-text-anim-intensity="{{ h_anim_intensity }}" data-text-anim-speed-val="{{ h_anim_speed_val }}" data-text-anim-ease="{{ b.headline_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.headline_anim_ease_custom }}" data-text-shimmer-color="{{ b.headline_shimmer_color | default: s.text_shimmer_color }}" data-text-shimmer-speed="{{ b.headline_shimmer_speed_ms }}">{{ b.slide_headline }}</h3>
               </div>
             {%- endif -%}
             {%- if s.show_global_subheadlines and b.slide_subheadline != blank -%}
@@ -233,7 +244,7 @@
               {% assign s_anim_speed_val = s_anim_speed_custom %}
               {% if s_anim_speed == 'slow' %}{% assign s_anim_speed_val = 1800 %}{% elsif s_anim_speed == 'medium' %}{% assign s_anim_speed_val = 900 %}{% elsif s_anim_speed == 'fast' %}{% assign s_anim_speed_val = 500 %}{% endif %}
               <div class="hero-banner-agg__slidePiece pos-{{ sub_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--sub-color:{{ b.subheadline_color | default: s.subheadline_color }};--sub-size:{% if b.subheadline_size > 0 %}{{ b.subheadline_size }}px{% endif %};--sub-size-m:{% if b.subheadline_size > 0 %}{{ b.subheadline_size | divided_by: 1.1 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <p class="hero-banner-agg__pieceSub" data-text-anim-type="{{ s_anim_type }}" data-text-anim-intensity="{{ s_anim_intensity }}" data-text-anim-speed-val="{{ s_anim_speed_val }}" data-text-anim-ease="{{ b.sub_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.sub_anim_ease_custom }}" data-text-shimmer-color="{{ b.sub_shimmer_color | default: s.text_shimmer_color }}">{{ b.slide_subheadline }}</p>
+                <p class="hero-banner-agg__pieceSub" data-text-anim-type="{{ s_anim_type }}" data-text-anim-intensity="{{ s_anim_intensity }}" data-text-anim-speed-val="{{ s_anim_speed_val }}" data-text-anim-ease="{{ b.sub_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.sub_anim_ease_custom }}" data-text-shimmer-color="{{ b.sub_shimmer_color | default: s.text_shimmer_color }}" data-text-shimmer-speed="{{ b.sub_shimmer_speed_ms }}">{{ b.slide_subheadline }}</p>
               </div>
             {%- endif -%}
             {%- if s.show_slide_ctas and any_cta -%}
@@ -643,7 +654,11 @@
               var hoverOnly = (root.getAttribute('data-text-shimmer-hover-only') === 'true' || root.getAttribute('data-text-shimmer-hover-only') === '1');
               var once = (root.getAttribute('data-text-shimmer-once') === 'true' || root.getAttribute('data-text-shimmer-once') === '1');
               var col = el.getAttribute('data-text-shimmer-color') || root.getAttribute('data-txt-shimmer-color') || '#ffffff';
-              var speed = Math.max(ts*1.1, 1600)+'ms';
+              // global default shimmer speed may override
+              var gSpeed = parseInt(root.getAttribute('data-txt-shimmer-speed')||'0',10);
+              var pSpeed = parseInt(el.getAttribute('data-text-shimmer-speed')||'0',10);
+              var computedSpeed = (pSpeed>0 ? pSpeed : (gSpeed>0 ? gSpeed : Math.max(ts*1.1, 1600)));
+              var speed = computedSpeed + 'ms';
               el.style.setProperty('--txt-shimmer-color', col);
               el.style.setProperty('--txt-shimmer-speed', speed);
               if (hoverOnly) {
@@ -746,6 +761,7 @@
   {"type":"header","content":"Ambient & Text Shimmer"},
   {"type":"range","id":"ambient_subtlety","label":"Ambient subtlety (global)","min":0,"max":100,"step":5,"default":50},
   {"type":"color","id":"text_shimmer_color","label":"Default text shimmer color","default":"#ffffff"},
+  {"type":"range","id":"text_shimmer_speed_ms","label":"Default text shimmer speed (ms)","min":800,"max":6000,"step":100,"default":2200},
   {"type":"checkbox","id":"enable_text_shimmer","label":"Enable text shimmer globally","default":true},
   {"type":"checkbox","id":"text_shimmer_hover_only","label":"Text shimmer: hover only","default":false},
   {"type":"checkbox","id":"text_shimmer_once","label":"Text shimmer: run once then stop","default":false},
@@ -839,6 +855,7 @@
       {"type":"text","id":"headline_anim_ease_custom","label":"Custom cubic-bezier(...) for Headline"},
       {"type":"select","id":"headline_shimmer","label":"Headline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
       {"type":"color","id":"headline_shimmer_color","label":"Headline shimmer color"},
+  {"type":"range","id":"headline_shimmer_speed_ms","label":"Headline shimmer speed (ms)","min":800,"max":6000,"step":100,"default":0,"info":"0 = use global"},
       {"type":"range","id":"headline_anim_speed_custom","label":"Headline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900},
       {"type":"header","content":"Subheadline Animation"},
       {"type":"select","id":"sub_anim_type","label":"Subheadline Animation","default":"none","options":[
@@ -864,6 +881,7 @@
       {"type":"text","id":"sub_anim_ease_custom","label":"Custom cubic-bezier(...) for Subheadline"},
       {"type":"select","id":"sub_shimmer","label":"Subheadline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
       {"type":"color","id":"sub_shimmer_color","label":"Subheadline shimmer color"},
+  {"type":"range","id":"sub_shimmer_speed_ms","label":"Subheadline shimmer speed (ms)","min":800,"max":6000,"step":100,"default":0,"info":"0 = use global"},
       {"type":"range","id":"sub_anim_speed_custom","label":"Subheadline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900},
       {"type":"text","id":"slide_alt","label":"Alt text"},
       {"type":"url","id":"slide_link","label":"Full-slide link"},
