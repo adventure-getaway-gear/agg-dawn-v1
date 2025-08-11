@@ -13,94 +13,6 @@
 <section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
-      {
-        "type": "color",
-        "id": "primary_bg_color",
-        "label": "Primary CTA background color override",
-        "default": "#1a1a1a"
-      },
-      {
-        "type": "text",
-        "id": "primary_bg_gradient",
-        "label": "Primary CTA background gradient (CSS)"
-      },
-      {
-        "type": "color",
-        "id": "primary_text_color",
-        "label": "Primary CTA text color override",
-        "default": "#ffffff"
-      },
-      {
-        "type": "color",
-        "id": "secondary_bg_color",
-        "label": "Secondary CTA background color override",
-        "default": "#1a1a1a"
-      },
-      {
-        "type": "text",
-        "id": "secondary_bg_gradient",
-        "label": "Secondary CTA background gradient (CSS)"
-      },
-      {
-        "type": "color",
-        "id": "secondary_text_color",
-        "label": "Secondary CTA text color override",
-        "default": "#ffffff"
-      },
-      {
-        "type": "range",
-        "id": "cta_border_width",
-        "min": 0,
-        "max": 8,
-        "step": 1,
-        "default": 0,
-        "label": "CTA border width (px)"
-      },
-      {
-        "type": "select",
-        "id": "cta_border_style",
-        "label": "CTA border style",
-        "default": "none",
-        "options": [
-          {"value": "none", "label": "None"},
-          {"value": "solid", "label": "Solid"},
-          {"value": "dashed", "label": "Dashed"},
-          {"value": "dotted", "label": "Dotted"}
-        ]
-      },
-      {
-        "type": "color",
-        "id": "cta_border_color",
-        "label": "CTA border color",
-        "default": "#ffffff"
-      },
-      {
-        "type": "range",
-        "id": "cta_radius_override",
-        "min": 0,
-        "max": 64,
-        "step": 2,
-        "default": 0,
-        "label": "CTA border radius (px)"
-      },
-      {
-        "type": "range",
-        "id": "cta_fixed_width",
-        "min": 0,
-        "max": 400,
-        "step": 10,
-        "default": 0,
-        "label": "CTA fixed width (px, 0 = auto)"
-      },
-      {
-        "type": "range",
-        "id": "cta_fixed_height",
-        "min": 0,
-        "max": 140,
-        "step": 4,
-        "default": 0,
-        "label": "CTA fixed height (px, 0 = auto)"
-      },
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
     .hero-banner-agg--slideshow .hero-banner-agg__media,.hero-banner-agg--slideshow .hero-banner-agg__slideshow{position:relative;width:100%;height:var(--hb-height)}
     .hero-banner-agg__slideshow{overflow:hidden}
@@ -300,19 +212,34 @@
                 {%- if speed_click_secondary == 0 or speed_click_secondary == blank %}{% assign speed_click_secondary = b.cta_anim_speed_click | default: s.cta_global_anim_speed_click %}{% endif %}
                 {%- assign prim_3d = b.primary_3d_style | default: b.cta_style | default: s.cta_global_style | default: 'raised' -%}
                 {%- assign sec_3d = b.secondary_3d_style | default: b.cta_style | default: s.cta_global_style | default: 'raised' -%}
-        {%- comment %} Per-slide CTA visual overrides (color, gradient, border, radius, sizing) {%- endcomment -%}
-        {%- assign cta_border_w = b.cta_border_width | default: 0 -%}
-        {%- assign cta_border_style = b.cta_border_style | default: 'none' -%}
-        {%- assign cta_border_color = b.cta_border_color | default: '#ffffff' -%}
-        {%- assign cta_radius = b.cta_radius_override | default: 0 -%}
-        {%- assign cta_fixed_w = b.cta_fixed_width | default: 0 -%}
-        {%- assign cta_fixed_h = b.cta_fixed_height | default: 0 -%}
-        {%- assign prim_bg_color = b.primary_bg_color | default: b.slide_cta_bg | default: s.cta_bg -%}
-        {%- assign prim_bg_grad = b.primary_bg_gradient -%}
-        {%- assign prim_text_color = b.primary_text_color | default: s.cta_color -%}
-        {%- assign sec_bg_color = b.secondary_bg_color | default: b.slide_cta2_bg | default: s.cta2_bg -%}
-        {%- assign sec_bg_grad = b.secondary_bg_gradient -%}
-        {%- assign sec_text_color = b.secondary_text_color | default: s.cta2_color -%}
+                {%- comment %} Consolidated per-slide CTA visual overrides with enable/reset flags {%- endcomment -%}
+                {%- if b.enable_cta_visual_overrides and b.reset_slide_overrides != true -%}
+                  {%- assign cta_border_w = b.cta_border_width | default: 0 -%}
+                  {%- assign cta_border_style = b.cta_border_style | default: 'none' -%}
+                  {%- assign cta_border_color = b.cta_border_color | default: '#ffffff' -%}
+                  {%- assign cta_radius = b.cta_radius_override | default: 0 -%}
+                  {%- assign cta_fixed_w = b.cta_fixed_width | default: 0 -%}
+                  {%- assign cta_fixed_h = b.cta_fixed_height | default: 0 -%}
+                  {%- assign prim_bg_color = b.primary_bg_color | default: b.slide_cta_bg | default: s.cta_bg -%}
+                  {%- assign prim_bg_grad = b.primary_bg_gradient -%}
+                  {%- assign prim_text_color = b.primary_text_color | default: s.cta_color -%}
+                  {%- assign sec_bg_color = b.secondary_bg_color | default: b.slide_cta2_bg | default: s.cta2_bg -%}
+                  {%- assign sec_bg_grad = b.secondary_bg_gradient -%}
+                  {%- assign sec_text_color = b.secondary_text_color | default: s.cta2_color -%}
+                {%- else -%}
+                  {%- assign cta_border_w = 0 -%}
+                  {%- assign cta_border_style = 'none' -%}
+                  {%- assign cta_border_color = '' -%}
+                  {%- assign cta_radius = 0 -%}
+                  {%- assign cta_fixed_w = 0 -%}
+                  {%- assign cta_fixed_h = 0 -%}
+                  {%- assign prim_bg_color = b.slide_cta_bg | default: s.cta_bg -%}
+                  {%- assign prim_bg_grad = '' -%}
+                  {%- assign prim_text_color = s.cta_color -%}
+                  {%- assign sec_bg_color = b.slide_cta2_bg | default: s.cta2_bg -%}
+                  {%- assign sec_bg_grad = '' -%}
+                  {%- assign sec_text_color = s.cta2_color -%}
+                {%- endif -%}
         {%- capture base_border_style -%}{% if cta_border_w > 0 and cta_border_style != 'none' %}border:{{ cta_border_w }}px {{ cta_border_style }} {{ cta_border_color }};{% else %}border:none;{% endif %}{%- endcapture -%}
         {%- capture base_radius_style -%}{% if cta_radius > 0 %}border-radius:{{ cta_radius }}px;{% endif %}{%- endcapture -%}
         {%- capture base_dim_style -%}{% if cta_fixed_w > 0 %}min-width:{{ cta_fixed_w }}px;width:{{ cta_fixed_w }}px;{% endif %}{% if cta_fixed_h > 0 %}height:{{ cta_fixed_h }}px;{% endif %}{%- endcapture -%}
@@ -542,6 +469,21 @@
   {"type":"range","id":"cta_gap","label":"CTA gap override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit"},
   {"type":"range","id":"cta_gap_mobile","label":"CTA gap mobile override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit"},
   {"type":"select","id":"cta_style","label":"CTA 3D style override","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
+  {"type":"header","content":"CTA Visual Overrides"},
+  {"type":"checkbox","id":"enable_cta_visual_overrides","label":"Enable CTA visual overrides"},
+  {"type":"checkbox","id":"reset_slide_overrides","label":"Reset (ignore all overrides)"},
+  {"type":"color","id":"primary_bg_color","label":"Primary CTA background color","default":"#1a1a1a"},
+  {"type":"text","id":"primary_bg_gradient","label":"Primary CTA background gradient (CSS)"},
+  {"type":"color","id":"primary_text_color","label":"Primary CTA text color","default":"#ffffff"},
+  {"type":"color","id":"secondary_bg_color","label":"Secondary CTA background color","default":"#1a1a1a"},
+  {"type":"text","id":"secondary_bg_gradient","label":"Secondary CTA background gradient (CSS)"},
+  {"type":"color","id":"secondary_text_color","label":"Secondary CTA text color","default":"#ffffff"},
+  {"type":"range","id":"cta_border_width","label":"CTA border width (px)","min":0,"max":8,"step":1,"default":0},
+  {"type":"select","id":"cta_border_style","label":"CTA border style","default":"none","options":[{"value":"none","label":"None"},{"value":"solid","label":"Solid"},{"value":"dashed","label":"Dashed"},{"value":"dotted","label":"Dotted"}]},
+  {"type":"color","id":"cta_border_color","label":"CTA border color","default":"#ffffff"},
+  {"type":"range","id":"cta_radius_override","label":"CTA border radius (px)","min":0,"max":64,"step":2,"default":0},
+  {"type":"range","id":"cta_fixed_width","label":"CTA fixed width (px, 0 = auto)","min":0,"max":400,"step":10,"default":0},
+  {"type":"range","id":"cta_fixed_height","label":"CTA fixed height (px, 0 = auto)","min":0,"max":140,"step":4,"default":0},
   {"type":"header","content":"Primary CTA specific overrides"},
   {"type":"checkbox","id":"primary_anim_continuous","label":"Primary: continuous enabled"},
   {"type":"checkbox","id":"primary_anim_hover","label":"Primary: hover enabled"},
