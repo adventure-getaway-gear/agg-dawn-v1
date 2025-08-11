@@ -9,7 +9,7 @@
     assign flex_align = 'flex-end'
   endif
 -%}
-<section class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;" data-slide-count="{{ section.blocks.size }}">
+<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;" data-slide-count="{{ section.blocks.size }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
@@ -40,11 +40,13 @@
               {% if b.slide_image %}
                 {% assign widths = '400,600,800,1200,1600,2048' | split: ',' %}
                 {% capture srcset %}{% for w in widths %}{{ b.slide_image | image_url: width: w | append: ' ' | append: w | append: 'w' }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
+                {% if forloop.first %}<link rel="preload" as="image" href="{{ b.slide_image | image_url: width: 1600 }}">{% endif %}
                 <img
+                  id="hero-slide-img-{{ section.id }}-{{ forloop.index0 }}"
                   src="{{ b.slide_image | image_url: width: 1600 }}"
                   srcset="{{ srcset | strip }}"
                   sizes="100vw"
-                  alt="{{ b.slide_alt | default: s.headline | escape }}"
+                  alt="{{ b.slide_alt | default: s.image_alt | default: s.subheadline | default: s.headline | escape }}"
                   loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
                   fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
                   decoding="async"
@@ -104,9 +106,11 @@
   {% if section.blocks.size > 1 %}
   <script>
     (function(){
-      var root=document.currentScript.closest('.hero-banner-agg--slideshow'); if(!root) return;
+      var root=document.getElementById('hero-slideshow-{{ section.id }}'); if(!root) return;
+      var initialized = root.getAttribute('data-enhanced'); if(initialized) return; root.setAttribute('data-enhanced','true');
       var wrap=root.querySelector('.hero-banner-agg__slideshow'); if(!wrap) return;
       var slides=[].slice.call(root.querySelectorAll('.hero-banner-agg__slide'));
+      if(slides.length<2) return; // nothing to do
       var dots=[].slice.call(root.querySelectorAll('.hero-banner-agg__dot'));
       var prev=root.querySelector('[data-prev]');
       var next=root.querySelector('[data-next]');
@@ -118,28 +122,49 @@
       var pauseOnHover = {{ s.pause_on_hover | default: true }};
       var timer=null; var pointerStartX=null; var pointerDelta=0; var SWIPE_THRESHOLD=40;
       function setAria(oldI,newI){ if(dots[oldI]){dots[oldI].setAttribute('aria-selected','false');} if(dots[newI]){dots[newI].setAttribute('aria-selected','true');} if(announcer){announcer.textContent='Slide '+(newI+1)+' of '+slides.length;} }
-      function show(i){ if(i===idx) return; var old=idx; if(i>=slides.length){ if(loop){ i=0;} else {return stop();} } if(i<0){ if(loop){ i=slides.length-1;} else {return;} } slides[idx].classList.remove('is-active'); if(dots[idx]) dots[idx].classList.remove('is-active'); idx=i; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); setAria(old,idx); }
+      function show(i){ if(i===idx) return; var old=idx; if(i>=slides.length){ if(loop){ i=0;} else {return stop();} } if(i<0){ if(loop){ i=slides.length-1;} else {return;} } slides[old].classList.remove('is-active'); if(dots[old]) dots[old].classList.remove('is-active'); idx=i; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); setAria(old,idx); }
       function nextSlide(){ show(idx+1); }
       function prevSlide(){ show(idx-1); }
       function start(){ if(!autoplay) return; stop(); timer=setInterval(nextSlide, interval); }
       function stop(){ if(timer){ clearInterval(timer); timer=null; } }
-      if(prev) prev.addEventListener('click', function(){ prevSlide(); start(); });
-      if(next) next.addEventListener('click', function(){ nextSlide(); start(); });
-      dots.forEach(function(d){ d.addEventListener('click', function(){ var n=parseInt(d.getAttribute('data-dot')); show(n); start(); }); });
+      if(prev) prev.addEventListener('click', function(e){ e.preventDefault(); prevSlide(); start(); });
+      if(next) next.addEventListener('click', function(e){ e.preventDefault(); nextSlide(); start(); });
+      dots.forEach(function(d){ d.addEventListener('click', function(e){ e.preventDefault(); var n=parseInt(d.getAttribute('data-dot')); show(n); start(); }); });
       if(pauseOnHover){ root.addEventListener('mouseenter', stop); root.addEventListener('mouseleave', start); }
-      // Keyboard
+      root.setAttribute('tabindex','0');
       root.addEventListener('keydown', function(e){ if(e.key==='ArrowRight'){ e.preventDefault(); nextSlide(); start(); } else if(e.key==='ArrowLeft'){ e.preventDefault(); prevSlide(); start(); } });
-      // Swipe / drag
       root.addEventListener('pointerdown', function(e){ pointerStartX=e.clientX; pointerDelta=0; });
       root.addEventListener('pointermove', function(e){ if(pointerStartX!=null){ pointerDelta=e.clientX-pointerStartX; }});
       root.addEventListener('pointerup', function(){ if(pointerStartX!=null){ if(Math.abs(pointerDelta)>SWIPE_THRESHOLD){ if(pointerDelta<0){ nextSlide(); } else { prevSlide(); } start(); } pointerStartX=null; pointerDelta=0; }});
-      // Visibility pause (tab inactive)
       document.addEventListener('visibilitychange', function(){ if(document.hidden){ stop(); } else { start(); } });
       start();
     })();
   </script>
   {% endif %}
 </section>
+{% comment %} SEO: Structured data for image gallery / single image {% endcomment %}
+{% if section.blocks.size > 1 %}
+  <script type="application/ld+json">{
+    "@context":"https://schema.org",
+    "@type":"ImageGallery",
+    "name": {{ s.headline | json }},
+    "description": {{ s.subheadline | default: s.headline | json }},
+    "image": [
+      {% for block in section.blocks %}{% assign b = block.settings %}{% if b.slide_image %}{{ b.slide_image | image_url: width: 1600 | json }}{% if forloop.last == false %}, {% endif %}{% endif %}{% endfor %}
+    ]
+  }</script>
+{% elsif section.blocks.size == 1 %}
+  {% for block in section.blocks %}{% assign b = block.settings %}{% if b.slide_image %}
+  <script type="application/ld+json">{
+    "@context":"https://schema.org",
+    "@type":"ImageObject",
+    "name": {{ s.headline | json }},
+    "description": {{ s.subheadline | default: s.headline | json }},
+    "contentUrl": {{ b.slide_image | image_url: width: 1600 | json }},
+    "caption": {{ b.slide_alt | default: s.subheadline | default: s.headline | json }}
+  }</script>
+  {% endif %}{% endfor %}
+{% endif %}
 {% schema %}
 {
   "name": "Hero Banner AGG Slideshow",
