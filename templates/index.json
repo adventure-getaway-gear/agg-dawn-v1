@@ -16,10 +16,10 @@
           "type": "image",
           "settings": {
             "slide_image": "shopify://shop_images/hero-banner-straight-road.png",
-            "image_anim_type": "none",
-            "image_anim_intensity": 50,
-            "image_anim_speed": "medium",
-            "image_anim_speed_custom": 800,
+            "image_anim_type": "mouse_parallax",
+            "image_anim_intensity": 100,
+            "image_anim_speed": "custom",
+            "image_anim_speed_custom": 3000,
             "slide_alt": "",
             "slide_link": "",
             "slide_headline": "",
@@ -99,9 +99,9 @@
           "type": "image",
           "settings": {
             "slide_image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
-            "image_anim_type": "ken_burns",
+            "image_anim_type": "lens_flare",
             "image_anim_intensity": 92,
-            "image_anim_speed": "fast",
+            "image_anim_speed": "custom",
             "image_anim_speed_custom": 2700,
             "slide_alt": "Hello!",
             "slide_link": "shopify://collections/check-this-out",
@@ -247,26 +247,7 @@
     "hero_body_agg_zBMDEg": {
       "type": "hero-body-agg",
       "name": "Hero Body AGG",
-      "settings": {
-        "headline": "Welcome to Adventure Getaway Gear",
-        "subheadline": "Your journey starts here.",
-        "body_text": "<p>Discover top gear, accessories, and inspiration for every adventure.</p>",
-        "media_type": "video",
-        "body_image": "shopify://shop_images/hero_background_resized.png",
-        "body_image_alt": "Adventure Body Image",
-        "video_url": "https://www.youtube.com/embed/MD4r8nOpDBg",
-        "video_title": "Adventure Getaway Gear Video",
-        "video_autoplay": false,
-        "video_muted": true,
-        "video_controls": true,
-        "video_loop": true,
-        "image_position": "left",
-        "background_color": "#f8f8f8",
-        "cta_link": "shopify://products/sample-coconut-bar-soap",
-        "cta_text": "Shop Now",
-        "cta_aria_label": "Shop Adventure Gear",
-        "custom_css": ""
-      }
+      "settings": {}
     },
     "featured_collection": {
       "type": "featured-collection",
