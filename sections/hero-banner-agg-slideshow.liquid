@@ -299,10 +299,12 @@
     </div>
   {% endif %}
   <div class="hero-banner-agg__inner" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:{{ flex_align }};text-align:{{ s.text_align }};padding:{{ s.padding_vertical }}px {{ s.padding_horizontal }}px;gap:1rem;">
-  <h1 itemprop="headline" style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;max-width:{{ s.text_max_width }}ch;">{{ s.headline }}</h1>
-    {% if s.subheadline != blank %}
-      <p style="margin:0 0 0.5rem 0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;max-width:{{ s.text_max_width }}ch;">{{ s.subheadline }}</p>
-    {% endif %}
+  {% if s.show_global_section_headline and s.headline != blank %}
+    <h1 itemprop="headline" style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;max-width:{{ s.text_max_width }}ch;">{{ s.headline }}</h1>
+  {% endif %}
+  {% if s.show_global_section_subheadline and s.subheadline != blank %}
+    <p style="margin:0 0 0.5rem 0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;max-width:{{ s.text_max_width }}ch;">{{ s.subheadline }}</p>
+  {% endif %}
     {% if s.show_ctas %}
       <div class="hero-banner-agg__ctas" style="display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:{{ flex_align }};">
         {% if s.cta_link and s.cta_text != blank %}
@@ -402,8 +404,10 @@
   "settings": [
     {"type":"image_picker","id":"hero_image","label":"Fallback image"},
     {"type":"text","id":"image_alt","label":"Global fallback alt text"},
-    {"type":"text","id":"headline","label":"Headline","default":"Explore Your Next Adventure"},
-    {"type":"text","id":"subheadline","label":"Subheadline","default":"Premium gear curated for unforgettable getaways."},
+  {"type":"text","id":"headline","label":"Headline","default":"Explore Your Next Adventure"},
+  {"type":"checkbox","id":"show_global_section_headline","label":"Show section headline","default":true},
+  {"type":"text","id":"subheadline","label":"Subheadline","default":"Premium gear curated for unforgettable getaways."},
+  {"type":"checkbox","id":"show_global_section_subheadline","label":"Show section subheadline","default":true},
     {"type":"text","id":"section_aria","label":"ARIA label override"},
     {"type":"select","id":"text_align","label":"Text alignment","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}],"default":"center"},
     {"type":"range","id":"headline_size","label":"Headline size (px)","min":24,"max":120,"step":4,"default":72},
