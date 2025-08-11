@@ -11,6 +11,19 @@
   "sections": {
     "hero_banner_agg_slideshow_QLcNb7": {
       "type": "hero-banner-agg-slideshow",
+      "blocks": {
+        "image_VEqTNU": {
+          "type": "image",
+          "settings": {
+            "slide_image": "shopify://shop_images/hero-banner-straight-road.png",
+            "slide_alt": "",
+            "slide_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_VEqTNU"
+      ],
       "name": "Hero Banner AGG Slideshow",
       "settings": {
         "hero_image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
@@ -21,7 +34,11 @@
         "overlay_opacity": 40,
         "slideshow_autoplay": true,
         "slideshow_interval": 5,
+        "pause_on_hover": true,
+        "loop_slides": true,
         "slideshow_transition": "fade",
+        "transition_speed": 800,
+        "mobile_height": 480,
         "show_nav": true,
         "show_dots": true,
         "text_align": "center",
