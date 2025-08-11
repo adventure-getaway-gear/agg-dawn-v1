@@ -65,10 +65,15 @@
         {% for block in section.blocks %}
           {% assign b = block.settings %}
           {% assign slide_id = 'slide-' | append: section.id | append: '-' | append: forloop.index0 %}
-          {% assign has_cta_primary = b.slide_cta_text != blank and b.slide_cta_link != blank %}
-          {% assign has_cta_secondary = b.slide_cta2_text != blank and b.slide_cta2_link != blank %}
-          {% assign any_cta = has_cta_primary or has_cta_secondary %}
-          {% assign wrap_slide_link = b.slide_link != blank and any_cta == false %}
+          {%- comment -%} Boolean assignments rewritten via if blocks to avoid Shopify parser error with inline comparisons {%- endcomment -%}
+          {% assign has_cta_primary = false %}
+          {% if b.slide_cta_text != blank and b.slide_cta_link != blank %}{% assign has_cta_primary = true %}{% endif %}
+          {% assign has_cta_secondary = false %}
+          {% if b.slide_cta2_text != blank and b.slide_cta2_link != blank %}{% assign has_cta_secondary = true %}{% endif %}
+          {% assign any_cta = false %}
+          {% if has_cta_primary or has_cta_secondary %}{% assign any_cta = true %}{% endif %}
+          {% assign wrap_slide_link = false %}
+          {% if b.slide_link != blank and any_cta == false %}{% assign wrap_slide_link = true %}{% endif %}
           <li id="{{ slide_id }}" class="hero-banner-agg__slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.index0 }}" data-duration="{{ b.slide_duration | default: s.slideshow_interval | times: 1000 }}" role="group" aria-roledescription="slide" aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}" {{ block.shopify_attributes }}>
             {% if wrap_slide_link %}<a href="{{ b.slide_link }}" style="display:block;position:absolute;inset:0;" tabindex="-1" aria-label="{{ b.slide_alt | default: s.image_alt | escape }}">{% endif %}
               {% if b.slide_image %}
