@@ -1,11 +1,10 @@
 {%- liquid
   assign s = section.settings
   assign overlay_opacity = s.overlay_opacity | divided_by: 100.0
-  assign template_name = template.name
-  if template_name != 'index' and s.heading_tag == 'h1'
+  assign heading_tag = s.heading_tag | default: 'h1'
+  assign is_home = template.name == 'index'
+  if is_home == false and heading_tag == 'h1'
     assign heading_tag = 'h2'
-  else
-    assign heading_tag = s.heading_tag | default: 'h1'
   endif
 -%}
 
