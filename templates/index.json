@@ -23,6 +23,9 @@
             "slide_cta_text": "",
             "slide_cta_link": "shopify://collections",
             "slide_cta_variant": "primary",
+            "slide_cta2_text": "",
+            "slide_cta2_link": "",
+            "slide_cta2_variant": "secondary",
             "slide_duration": 0
           }
         },
@@ -37,6 +40,9 @@
             "slide_cta_text": "frfrfrfr",
             "slide_cta_link": "shopify://collections",
             "slide_cta_variant": "secondary",
+            "slide_cta2_text": "ghghjgg",
+            "slide_cta2_link": "shopify://collections/all",
+            "slide_cta2_variant": "secondary",
             "slide_duration": 0
           }
         }
