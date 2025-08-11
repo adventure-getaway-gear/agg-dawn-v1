@@ -28,6 +28,12 @@
   .hero-banner-agg__slideImg.anim-crossfade { opacity: 0; transition: opacity var(--img-anim-speed,800ms) ease-in-out; will-change: opacity; }
   .hero-banner-agg__slide.is-active .hero-banner-agg__slideImg.anim-crossfade { opacity: 1; }
   .hero-banner-agg__slideImg.anim-light_sweep { position: relative; overflow: hidden; }
+  .hero-banner-agg__slideImg.is-animating { will-change: transform, filter, opacity; }
+  /* Keyframes using CSS vars for per-slide control */
+  @keyframes hbKenBurns { 0%{ transform: scale(var(--kb-scale,1.18)); } 100%{ transform: scale(1); } }
+  @keyframes hbZoomPulse { 0%{ transform: scale(1); } 50%{ transform: scale(var(--zoom-scale,1.12)); } 100%{ transform: scale(1); } }
+  @keyframes hbParallaxUp { 0%{ transform: translateY(var(--parallax-shift,12px)); } 100%{ transform: translateY(0); } }
+  @keyframes hbBlurFocus { 0%{ filter: blur(var(--blur-amt,2px)); } 100%{ filter: blur(0px); } }
   /* Overlays */
   .hb-anim-overlay { position:absolute; inset:0; pointer-events:none; z-index:5; mix-blend-mode:screen; }
   .hb-anim-overlay.hb-mist { background: radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.06) 60%, rgba(255,255,255,0) 100%); filter: blur(12px); opacity: .35; animation: hbMist 6s ease-in-out infinite alternate; }
@@ -416,35 +422,40 @@
       img.style.setProperty('--img-anim-speed', speed + 'ms');
       img.style.transitionDuration = speed + 'ms';
       clearOverlays(slide);
+      img.classList.remove('is-animating');
+      img.style.animation = 'none';
       // Only animate active slide
       if (i !== slideIdx) return;
+      var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
       switch(type) {
         case 'ken_burns':
-          var scale = 1 + (intensity/200);
-          img.style.transition = 'transform ' + speed + 'ms ease-in-out';
-          img.style.transform = 'scale(' + scale + ')';
-          setTimeout(function(){ img.style.transform = 'scale(1)'; }, speed);
+          var scale = (1 + (intensity/180)).toFixed(3);
+          img.style.setProperty('--kb-scale', scale);
+          img.classList.add('is-animating');
+          img.style.animation = 'hbKenBurns ' + (speed*1.8) + 'ms ease-in-out 1 both';
           break;
         case 'parallax':
-          img.style.transition = 'transform ' + speed + 'ms ease-in-out';
-          img.style.transform = 'translateY(' + (intensity/5) + 'px)';
-          setTimeout(function(){ img.style.transform = 'translateY(0)'; }, speed);
+          var shift = (Math.max(6, intensity/4)).toFixed(2) + 'px';
+          img.style.setProperty('--parallax-shift', shift);
+          img.classList.add('is-animating');
+          img.style.animation = 'hbParallaxUp ' + (speed*1.2) + 'ms ease-out 1 both';
           break;
         case 'crossfade':
           img.style.transition = 'opacity ' + speed + 'ms ease-in-out';
           img.style.opacity = '1';
           break;
         case 'zoom':
-          var z = 1 + (intensity/100);
-          img.style.transition = 'transform ' + speed + 'ms ease-in-out';
-          img.style.transform = 'scale(' + z + ')';
-          setTimeout(function(){ img.style.transform = 'scale(1)'; }, speed);
+          var z = (1 + (intensity/90)).toFixed(3);
+          img.style.setProperty('--zoom-scale', z);
+          img.classList.add('is-animating');
+          img.style.animation = 'hbZoomPulse ' + (speed*1.6) + 'ms ease-in-out 1 both';
           break;
         case 'blur_focus':
-          var blur = (intensity/20).toFixed(1);
-          img.style.transition = 'filter ' + speed + 'ms ease-in-out';
-          img.style.filter = 'blur(' + blur + 'px)';
-          setTimeout(function(){ img.style.filter = 'blur(0px)'; }, speed);
+          var blur = (Math.max(1, intensity/12)).toFixed(1) + 'px';
+          img.style.setProperty('--blur-amt', blur);
+          img.classList.add('is-animating');
+          img.style.animation = 'hbBlurFocus ' + (speed*1.2) + 'ms ease-in-out 1 both';
           break;
         case 'light_sweep':
           // Simple shimmer effect using box-shadow
