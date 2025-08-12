@@ -17,8 +17,8 @@
     .hero-banner-agg--slideshow .hero-banner-agg__media,.hero-banner-agg--slideshow .hero-banner-agg__slideshow{position:relative;width:100%;height:var(--hb-height)}
     .hero-banner-agg__slideshow{overflow:hidden}
     /* Allow slideshow to tuck under sticky header if enabled */
-    :root{--header-bottom-margin:48px}
-    @media (max-width:989px){:root{--header-bottom-margin:56px}}
+    :root{--header-bottom-margin:{{ s.header_offset_px | default: 48 }}px}
+    @media (max-width:989px){:root{--header-bottom-margin:{{ s.header_offset_px | default: 56 }}px}}
     .hero-banner-agg__slides{position:absolute;inset:0;margin:0;padding:0;list-style:none}
     .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;will-change:opacity}
     .hero-banner-agg__slide.is-active{opacity:1;}
@@ -655,7 +655,8 @@
         var textEasing = (easeSel==='custom' && easeCustom) ? easeCustom : (easingMap[easeSel] || 'cubic-bezier(.22,.61,.36,1)');
         var shift = Math.max(6, ti/2);
         el.style.setProperty('--txt-shift', shift+'px');
-        el.style.animation = 'none';
+  // Clear inline animation so class-based animations (e.g., shimmer) can apply
+  el.style.removeProperty('animation');
         el.style.opacity = '1';
         el.classList.remove('hb-text-shimmer');
         el.classList.remove('hb-text-shimmer-hover');
@@ -685,6 +686,9 @@
               var hoverOnly = (root.getAttribute('data-text-shimmer-hover-only') === 'true' || root.getAttribute('data-text-shimmer-hover-only') === '1');
               var once = (root.getAttribute('data-text-shimmer-once') === 'true' || root.getAttribute('data-text-shimmer-once') === '1');
               var col = el.getAttribute('data-text-shimmer-color') || root.getAttribute('data-txt-shimmer-color') || '#ffffff';
+              if (col && col.toLowerCase && col.toLowerCase() === 'transparent') {
+                col = root.getAttribute('data-txt-shimmer-color') || '#ffffff';
+              }
               // global default shimmer speed may override
               var gSpeed = parseInt(root.getAttribute('data-txt-shimmer-speed')||'0',10);
               var pSpeed = parseInt(el.getAttribute('data-text-shimmer-speed')||'0',10);
@@ -707,6 +711,8 @@
         el.style.setProperty('--txt-glint-strength', glintNorm);
               el.style.setProperty('--txt-glint-width', glintW);
               el.style.setProperty('--txt-twinkle-speed', Math.max(600, twk)+'ms');
+              // Ensure no inline animation overrides class-based shimmer
+              el.style.removeProperty('animation');
               if (hoverOnly) {
                 el.classList.add('hb-text-shimmer-hover');
               } else {
@@ -725,8 +731,9 @@
               // Optional combo: subtle fade-up with shimmer if enabled on this block
               var combo = el.closest('.hero-banner-agg__slide')?.getAttribute('data-combo-shimmer-fade') === 'true';
               if (combo) {
-                // add a short fade-up that doesn't interfere with shimmer paint
-                el.style.animation = (el.style.animation ? el.style.animation + ', ' : '') + 'hbTextFadeUp ' + Math.min(computedSpeed, 900) + 'ms ease-out 1 both';
+                // Compose shimmer + fade-up inline so shimmer is not lost
+                var fadeDur = Math.min(computedSpeed, 900);
+                el.style.animation = 'hbTextShimmer var(--txt-shimmer-speed, '+speed+') linear infinite, hbTextFadeUp '+fadeDur+'ms ease-out 1 both';
               }
             }
             break;
@@ -823,6 +830,7 @@
   {"type":"checkbox","id":"enable_text_shimmer_twinkle","label":"Enable twinkle overlay","default":true,"info":"Slides can also force twinkle on."},
   {"type":"range","id":"text_shimmer_twinkle_speed_ms","label":"Twinkle speed (ms)","min":400,"max":4000,"step":100,"default":1800},
   {"type":"checkbox","id":"tuck_under_header","label":"Tuck under sticky header (remove top gap)","default":true},
+  {"type":"range","id":"header_offset_px","label":"Header bottom offset (px)","min":0,"max":120,"step":2,"default":48,"info":"Adjust if a small gap remains."},
   {"type":"header","content":"Global CTA animation defaults"},
   {"type":"select","id":"cta_global_anim_style_cont","label":"Global continuous style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
   {"type":"select","id":"cta_global_anim_style_hover","label":"Global hover style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
