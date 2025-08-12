@@ -1,0 +1,397 @@
+{% comment %} Cloned from hero-banner-agg-slideshow to force Shopify schema refresh (short type). {% endcomment %}
+{%- liquid
+  assign s = section.settings
+  assign overlay_opacity = s.overlay_opacity | divided_by: 100.0
+  assign flex_align = 'center'
+  if s.text_align == 'left'
+    assign flex_align = 'flex-start'
+  elsif s.text_align == 'right'
+    assign flex_align = 'flex-end'
+  endif
+-%}
+<!-- Hero Slideshow Section (Ambient) -->
+<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-amb-default-direction="{{ s.ambient_default_direction | default: 'diagonal' }}" data-amb-default-loop="{{ s.ambient_default_loop_style | default: 'ease-in-out' }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}" data-global-img-effect="{{ s.global_image_effect_default | default: 'none' }}" data-global-img-effect-force="{{ s.global_image_effect_force | default: false }}" data-global-sparkle-color="{{ s.global_sparkle_color | default: '#ffffff' }}" data-global-sparkle-density="{{ s.global_sparkle_density | default: 60 }}" data-global-sparkle-speed="{{ s.global_sparkle_speed_ms | default: 6000 }}" data-global-glitter-color="{{ s.global_glitter_color | default: '#ffffff' }}" data-global-glitter-intensity="{{ s.global_glitter_intensity | default: 45 }}" data-global-glitter-speed="{{ s.global_glitter_speed_ms | default: 8000 }}" data-global-text-fx="{{ s.global_text_fx_default | default: 'none' }}" data-global-text-fx-force="{{ s.global_text_fx_force | default: false }}" data-global-text-fx-color="{{ s.global_text_fx_color | default: '#ffffff' }}" data-global-text-fx-intensity="{{ s.global_text_fx_intensity | default: 50 }}" data-global-text-fx-speed="{{ s.global_text_fx_speed_ms | default: 6000 }}" data-global-text-fx-pos="{{ s.global_text_fx_position | default: 'mc' }}" data-global-text-fx-size="{{ s.global_text_fx_size | default: 16 }}" data-global-text-fx-frequency="{{ s.global_text_fx_frequency | default: 10 }}">
+  <style>
+  .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms;--cta-shimmer-band-w:{{ s.cta_global_shimmer_band_width | default: 200 }}px}
+  @media (max-width:749px){ .hero-banner-agg--slideshow{ --cta-shimmer-band-w: calc({{ s.cta_global_shimmer_band_width | default: 200 }}px * 0.85); } }
+  @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
+  .hero-banner-agg--slideshow .hero-banner-agg__media,.hero-banner-agg--slideshow .hero-banner-agg__slideshow{position:relative;width:100%;height:var(--hb-height)}
+  .hero-banner-agg__slideshow{overflow:hidden}
+  :root{--header-bottom-margin:{{ s.header_offset_px | default: 48 }}px}
+  @media (max-width:989px){:root{--header-bottom-margin:{{ s.header_offset_px | default: 56 }}px}}
+  .hero-banner-agg__slides{position:absolute;inset:0;margin:0;padding:0;list-style:none}
+  .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;will-change:opacity}
+  .hero-banner-agg__slide.is-active{opacity:1;}
+  .hero-banner-agg__slide img{width:100%;height:100%;object-fit:cover;display:block}
+  @keyframes hbKenBurns { 0%{ transform: scale(var(--kb-scale,1.18)); } 100%{ transform: scale(1); } }
+  @keyframes hbZoomPulse { 0%{ transform: scale(1); } 50%{ transform: scale(var(--zoom-scale,1.12)); } 100%{ transform: scale(1); } }
+  @keyframes hbParallaxUp { 0%{ transform: translateY(var(--parallax-shift,12px)); } 100%{ transform: translateY(0); } }
+  @keyframes hbBlurFocus { 0%{ filter: blur(var(--blur-amt,2px)); } 100%{ filter: blur(0px); } }
+  @keyframes hbAmbientDrift {
+    0% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
+    25% { transform: translate3d(calc(var(--amb-x, 6px) * .5), calc(var(--amb-y, 4px) * -.8), 0) scale(var(--amb-scale,1.035)); }
+    50% { transform: translate3d(calc(var(--amb-x, 6px)), calc(var(--amb-y, 4px)), 0) scale(var(--amb-scale,1.04)); }
+    75% { transform: translate3d(calc(var(--amb-x, 6px) * .4), calc(var(--amb-y, 4px) * .8), 0) scale(var(--amb-scale,1.035)); }
+    100% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
+  }
+  @keyframes hbAmbientDriftBounce {
+    0% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
+    20% { transform: translate3d(calc(var(--amb-x, 6px) * -.2), calc(var(--amb-y, 4px) * -.3), 0) scale(var(--amb-scale,1.035)); }
+    50% { transform: translate3d(calc(var(--amb-x, 6px) * 1.05), calc(var(--amb-y, 4px) * 1.05), 0) scale(calc(var(--amb-scale,1.03) * 1.005)); }
+    80% { transform: translate3d(calc(var(--amb-x, 6px) * .3), calc(var(--amb-y, 4px) * .5), 0) scale(var(--amb-scale,1.035)); }
+    100% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
+  }
+  </style>
+
+  <div class="hero-banner-agg__slideshow" data-reduced-motion="{{ settings.animations_reduced_motion }}">
+    <ul class="hero-banner-agg__slides" role="list">
+      {%- for block in section.blocks -%}
+        {%- liquid assign b = block.settings -%}
+        <li class="hero-banner-agg__slide" id="slide-{{ section.id }}-{{ forloop.index }}" data-index="{{ forloop.index0 }}">
+          <img class="hero-banner-agg__slideImg" src="{{ b.slide_image | image_url: width: 1600 }}" alt="{{ b.slide_alt | escape }}" loading="lazy" decoding="async"
+               data-anim-type="{{ b.image_anim_type | default: 'none' }}"
+               data-anim-intensity="{{ b.image_anim_intensity | default: 50 }}"
+               data-anim-speed="{{ b.image_anim_speed | default: 'medium' }}"
+               data-anim-speed-val="{{ b.image_anim_speed_custom | default: 800 }}"
+               data-amb-direction="{{ b.ambient_direction | default: s.ambient_default_direction | default: 'diagonal' }}"
+               data-amb-loop="{{ b.ambient_loop_style | default: s.ambient_default_loop_style | default: 'ease-in-out' }}"
+          />
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+  <script>
+  (function(){
+    var root = document.getElementById('hero-slideshow-{{ section.id }}');
+    if (!root) return;
+    var slides = root.querySelectorAll('.hero-banner-agg__slideImg');
+    function applyImageAnimation(idx){
+      var img = slides[idx]; if(!img) return;
+      var type = img.getAttribute('data-anim-type') || 'none';
+      var speed = (img.getAttribute('data-anim-speed')||'medium');
+      var custom = parseInt(img.getAttribute('data-anim-speed-val')||'800',10);
+      var prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var duration = speed==='slow'?1200: speed==='fast'?600: speed==='custom'?custom:800;
+      img.style.setProperty('--img-anim-speed', duration+'ms');
+      switch(type){
+        case 'ambient_drift':
+          if (prefersReduce) { img.style.removeProperty('animation'); break; }
+          var subt = parseInt(root.getAttribute('data-amb-subtlety')||'50',10);
+          var dir = img.getAttribute('data-amb-direction') || root.getAttribute('data-amb-default-direction') || 'diagonal';
+          var loop = img.getAttribute('data-amb-loop') || root.getAttribute('data-amb-default-loop') || 'ease-in-out';
+          var mag = Math.max(2, Math.round( (subt/100)*8 ));
+          var ambX = mag, ambY = Math.max(1, Math.round(mag*0.66));
+          if (dir==='horizontal'){ ambY = 0; }
+          else if (dir==='vertical'){ ambX = 0; }
+          img.style.setProperty('--amb-x', ambX+'px');
+          img.style.setProperty('--amb-y', ambY+'px');
+          img.style.setProperty('--amb-scale', (1 + (subt/1000*5)).toFixed(3));
+          var animName = (loop==='bounce') ? 'hbAmbientDriftBounce' : 'hbAmbientDrift';
+          var timing = (loop==='linear') ? 'linear' : 'ease-in-out';
+          img.style.animation = animName + ' ' + Math.max(5000, duration*8) + 'ms ' + timing + ' infinite';
+          break;
+        default:
+          break;
+      }
+    }
+    for (var i=0;i<slides.length;i++){ applyImageAnimation(i); }
+  })();
+  </script>
+</section>
+{% schema %}
+{
+  "name": "AGG Hero Slideshow",
+  "tag": "section",
+  "class": "section hero-banner-agg hero-banner-agg--slideshow",
+  "settings": [
+    {"type":"header","content":"SEO & Accessibility"},
+    {"type":"image_picker","id":"hero_image","label":"Fallback image"},
+    {"type":"text","id":"image_alt","label":"Global fallback alt text"},
+    {"type":"text","id":"headline","label":"Headline","default":"Explore Your Next Adventure"},
+    {"type":"checkbox","id":"show_global_section_headline","label":"Show section headline","default":true},
+    {"type":"text","id":"subheadline","label":"Subheadline","default":"Premium gear curated for unforgettable getaways."},
+    {"type":"checkbox","id":"show_global_section_subheadline","label":"Show section subheadline","default":true},
+    {"type":"text","id":"section_aria","label":"ARIA label override"},
+    {"type":"select","id":"text_align","label":"Text alignment","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}],"default":"center"},
+    {"type":"range","id":"headline_size","label":"Headline size (px)","min":24,"max":120,"step":4,"default":72},
+    {"type":"range","id":"subheadline_size","label":"Subheadline size (px)","min":12,"max":60,"step":2,"default":24},
+    {"type":"range","id":"text_max_width","label":"Text max width (ch)","min":20,"max":80,"step":2,"default":60},
+    {"type":"color","id":"headline_color","label":"Headline color","default":"#ffffff"},
+    {"type":"color","id":"subheadline_color","label":"Subheadline color","default":"#ffffff"},
+    {"type":"range","id":"padding_vertical","label":"Vertical padding (px)","min":0,"max":160,"step":8,"default":40},
+    {"type":"range","id":"padding_horizontal","label":"Horizontal padding (px)","min":0,"max":160,"step":8,"default":40},
+    {"type":"checkbox","id":"show_ctas","label":"Show global CTAs","default":true},
+    {"type":"url","id":"cta_link","label":"Primary CTA link"},
+    {"type":"text","id":"cta_text","label":"Primary CTA text","default":"Shop Now"},
+    {"type":"color","id":"cta_bg","label":"Primary CTA background","default":"#ff6a1a"},
+    {"type":"color","id":"cta_color","label":"Primary CTA text color","default":"#ffffff"},
+    {"type":"url","id":"cta_link_2","label":"Secondary CTA link"},
+    {"type":"text","id":"cta_text_2","label":"Secondary CTA text","default":"Learn More"},
+    {"type":"color","id":"cta2_bg","label":"Secondary CTA background","default":"#004b80"},
+    {"type":"color","id":"cta2_color","label":"Secondary CTA text color","default":"#ffffff"},
+    {"type":"range","id":"button_radius","label":"Button radius","min":0,"max":32,"step":2,"default":6},
+    {"type":"range","id":"top_spacing","label":"Top spacing (px)","min":0,"max":160,"step":8,"default":0},
+    {"type":"range","id":"image_height","label":"Desktop height (px)","min":300,"max":1000,"step":20,"default":600},
+    {"type":"range","id":"mobile_height","label":"Mobile height (px)","min":300,"max":900,"step":20,"default":480},
+    {"type":"checkbox","id":"enable_overlay","label":"Enable color overlay","default":true},
+    {"type":"color","id":"overlay_color","label":"Overlay color","default":"#000000"},
+    {"type":"range","id":"overlay_opacity","label":"Overlay opacity","min":0,"max":100,"step":5,"unit":"%","default":35},
+    {"type":"checkbox","id":"show_nav","label":"Show navigation arrows","default":true},
+    {"type":"checkbox","id":"show_dots","label":"Show pagination dots","default":true},
+    {"type":"checkbox","id":"show_progress_bar","label":"Show progress bar","default":true},
+    {"type":"range","id":"progress_bar_height","label":"Progress bar height (px)","min":2,"max":12,"step":1,"default":4},
+    {"type":"color","id":"progress_bar_color","label":"Progress bar color","default":"#ffffff"},
+    {"type":"checkbox","id":"slideshow_autoplay","label":"Autoplay","default":true},
+    {"type":"range","id":"slideshow_interval","label":"Default slide duration (s)","min":2,"max":15,"step":1,"default":5},
+    {"type":"range","id":"transition_speed","label":"Fade transition (ms)","min":100,"max":2000,"step":50,"default":800},
+    {"type":"checkbox","id":"pause_on_hover","label":"Pause on hover","default":true},
+    {"type":"checkbox","id":"loop_slides","label":"Loop slides","default":true},
+    {"type":"header","content":"Ambient & Text Shimmer"},
+    {"type":"range","id":"ambient_subtlety","label":"Ambient subtlety (global)","min":0,"max":100,"step":5,"default":50},
+    {"type":"select","id":"ambient_default_direction","label":"Ambient direction (global)","default":"diagonal","options":[{"value":"diagonal","label":"Diagonal"},{"value":"horizontal","label":"Horizontal"},{"value":"vertical","label":"Vertical"}]},
+    {"type":"select","id":"ambient_default_loop_style","label":"Ambient loop style (global)","default":"ease-in-out","options":[{"value":"ease-in-out","label":"Ease-in-out"},{"value":"linear","label":"Linear"},{"value":"bounce","label":"Gentle bounce"}],"info":"Controls timing curve for ambient drift. "},
+    {"type":"color","id":"text_shimmer_color","label":"Default text shimmer color","default":"#ffffff","info":"Used if a slide doesn’t override color."},
+    {"type":"range","id":"text_shimmer_speed_ms","label":"Default text shimmer speed (ms)","min":800,"max":6000,"step":100,"default":2200,"info":"0 in slide = use this global speed."},
+    {"type":"checkbox","id":"enable_text_shimmer","label":"Enable text shimmer globally","default":true,"info":"Slides can also force shimmer on individually."},
+    {"type":"checkbox","id":"text_shimmer_hover_only","label":"Text shimmer: hover only","default":false},
+    {"type":"checkbox","id":"text_shimmer_once","label":"Text shimmer: run once then stop","default":false},
+    {"type":"range","id":"text_shimmer_sparkle_density","label":"Sparkle density","min":0,"max":100,"step":5,"default":50,"info":"Higher = more sparkles."},
+    {"type":"range","id":"text_shimmer_glint_strength","label":"Glint strength","min":0,"max":100,"step":5,"default":35},
+    {"type":"range","id":"text_shimmer_glint_width","label":"Glint width","min":5,"max":50,"step":1,"default":35},
+    {"type":"checkbox","id":"enable_text_shimmer_twinkle","label":"Enable twinkle overlay","default":true,"info":"Slides can also force twinkle on."},
+    {"type":"range","id":"text_shimmer_twinkle_speed_ms","label":"Twinkle speed (ms)","min":400,"max":4000,"step":100,"default":1800},
+    {"type":"checkbox","id":"tuck_under_header","label":"Tuck under sticky header (remove top gap)","default":true},
+    {"type":"range","id":"header_offset_px","label":"Header bottom offset (px)","min":0,"max":120,"step":2,"default":48,"info":"Adjust if a small gap remains."},
+    {"type":"header","content":"Effect Customization Controls"},
+    {"type":"header","content":"Global Image Effects"},
+    {"type":"select","id":"global_image_effect_default","label":"Default image effect","default":"none","options":[{"value":"none","label":"None"},{"value":"sparkle_overlay","label":"Sparkle overlay"},{"value":"glitter_overlay","label":"Glitter overlay"}],"info":"Applies when a slide selects 'none' or when forced below."},
+    {"type":"checkbox","id":"global_image_effect_force","label":"Force global image effect (override slide)","default":false},
+    {"type":"color","id":"global_sparkle_color","label":"Default sparkle color","default":"#ffffff"},
+    {"type":"range","id":"global_sparkle_density","label":"Default sparkle density","min":10,"max":100,"step":5,"default":60},
+    {"type":"range","id":"global_sparkle_speed_ms","label":"Default sparkle speed (ms)","min":1000,"max":9000,"step":250,"default":6000},
+    {"type":"color","id":"global_glitter_color","label":"Default glitter color","default":"#ffffff"},
+    {"type":"range","id":"global_glitter_intensity","label":"Default glitter intensity","min":10,"max":100,"step":5,"default":45},
+    {"type":"range","id":"global_glitter_speed_ms","label":"Default glitter speed (ms)","min":1000,"max":9000,"step":250,"default":8000},
+    {"type":"header","content":"Global Text Effects (Sparkle/Glitter)"},
+    {"type":"select","id":"global_text_fx_default","label":"Default text effect","default":"none","options":[{"value":"none","label":"None"},{"value":"sparkle","label":"Sparkle"},{"value":"glitter","label":"Glitter"}]},
+    {"type":"checkbox","id":"global_text_fx_force","label":"Force global text effect (override slide)","default":false},
+    {"type":"color","id":"global_text_fx_color","label":"Default text FX color","default":"#ffffff"},
+    {"type":"range","id":"global_text_fx_intensity","label":"Default text FX intensity","min":0,"max":100,"step":5,"default":50},
+    {"type":"range","id":"global_text_fx_speed_ms","label":"Default text FX speed (ms)","min":1000,"max":9000,"step":250,"default":6000},
+    {"type":"range","id":"global_text_fx_size","label":"Default text FX size (px)","min":8,"max":64,"step":1,"default":16,"info":"Tile size for sparkle/glitter pattern (canvas)."},
+    {"type":"range","id":"global_text_fx_frequency","label":"Default text FX frequency","min":4,"max":40,"step":1,"default":10,"info":"Number of sparkles per tile (approx)."},
+    {"type":"select","id":"global_text_fx_position","label":"Default text FX position","default":"mc","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"},{"value":"cover","label":"Cover (full text)"}]},
+    {"type":"header","content":"Button Effects"},
+    {"type":"select","id":"cta_global_anim_style_cont","label":"Global continuous style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+    {"type":"select","id":"cta_global_anim_style_hover","label":"Global hover style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+    {"type":"select","id":"cta_global_anim_style_click","label":"Global click style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+    {"type":"range","id":"cta_global_anim_speed_continuous","label":"Global continuous speed (s)","min":1,"max":10,"step":0.5,"default":3},
+    {"type":"range","id":"cta_global_anim_speed_hover","label":"Global hover speed (s)","min":0.5,"max":6,"step":0.5,"default":2},
+    {"type":"range","id":"cta_global_anim_speed_click","label":"Global click speed (s)","min":0.3,"max":3,"step":0.1,"default":1},
+    {"type":"range","id":"cta_shimmer_speed_multiplier_primary","label":"Primary shimmer speed multiplier (%)","min":50,"max":400,"step":5,"default":100,"unit":"%","info":"Applies only to shimmer speeds; 100% = unchanged"},
+    {"type":"range","id":"cta_shimmer_speed_multiplier_secondary","label":"Secondary shimmer speed multiplier (%)","min":50,"max":400,"step":5,"default":120,"unit":"%","info":"Applies only to shimmer speeds; 100% = unchanged"},
+    {"type":"range","id":"cta_global_shimmer_band_width","label":"CTA shimmer band width (px) (fallback)","min":50,"max":400,"step":10,"default":200,"info":"Fallback width if no variant-specific width is set."},
+    {"type":"range","id":"cta_shimmer_band_width_primary","label":"Primary button shimmer width (px)","min":0,"max":400,"step":10,"default":0,"info":"0 = use global fallback"},
+    {"type":"range","id":"cta_shimmer_band_width_secondary","label":"Secondary button shimmer width (px)","min":0,"max":400,"step":10,"default":0,"info":"0 = use global fallback"},
+    {"type":"range","id":"cta_global_cta_gap","label":"Global CTA gap (px)","min":4,"max":60,"step":2,"default":14},
+    {"type":"range","id":"cta_global_cta_gap_mobile","label":"Global CTA gap mobile (px)","min":4,"max":60,"step":2,"default":12},
+    {"type":"select","id":"cta_global_style","label":"Global CTA 3D style","default":"raised","options":[{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
+    {"type":"header","content":"Global Content Positioning"},
+    {"type":"select","id":"global_headline_position","label":"Global headline position","default":"mc","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+    {"type":"select","id":"global_subheadline_position","label":"Global subheadline position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+    {"type":"select","id":"global_ctas_position","label":"Global CTAs position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+    {"type":"checkbox","id":"show_global_headlines","label":"Show slide headlines","default":true},
+    {"type":"checkbox","id":"show_global_subheadlines","label":"Show slide subheadlines","default":true},
+    {"type":"checkbox","id":"show_slide_ctas","label":"Show slide CTA buttons","default":true},
+    {"type":"checkbox","id":"show_advanced_settings","label":"Show Advanced Settings","default":false,"info":"Reveal additional technical controls for fine-tuning effects."},
+    {"type":"textarea","id":"custom_css","label":"Custom CSS"}
+  ],
+  "blocks": [
+    {"type":"image","name":"Slide","settings":[
+      {"type":"header","content":"Slide Basics"},
+      {"type":"image_picker","id":"slide_image","label":"Image"},
+      {"type":"text","id":"slide_alt","label":"Alt text","info":"Describe the image for accessibility and SEO."},
+      {"type":"url","id":"slide_link","label":"Full-slide link"},
+      {"type":"header","content":"Image Animation"},
+      {"type":"header","content":"Image Animation Settings"},
+      {"type":"select","id":"image_anim_type","label":"Image Animation Type","default":"none","options":[
+        {"value":"none","label":"None"},
+        {"value":"ambient_drift","label":"Ambient Drift (subtle looping)"},
+        {"value":"ken_burns","label":"Ken Burns Effect"},
+        {"value":"parallax","label":"Parallax Movement"},
+        {"value":"crossfade","label":"Crossfade / Soft Fade"},
+        {"value":"zoom","label":"Zoom In / Zoom Out"},
+        {"value":"blur_focus","label":"Ambient Blur / Focus Shift"},
+        {"value":"light_sweep","label":"Light Sweep / Shimmer Overlay"},
+        {"value":"mist_fog","label":"Floating Mist / Fog Overlay"},
+        {"value":"gradient_drift","label":"Gradient Drift"},
+        {"value":"lens_flare","label":"Lens Flare / Glow"},
+        {"value":"mouse_parallax","label":"Mouse Parallax / Tilt"},
+        {"value":"sparkle_overlay","label":"Sparkle Overlay"},
+        {"value":"glitter_overlay","label":"Glitter Overlay"}
+      ]},
+      {"type":"header","content":"Sparkle Options"},
+      {"type":"color","id":"image_sparkle_color","label":"Sparkle color","default":"#ffffff"},
+      {"type":"range","id":"image_sparkle_density","label":"Sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+      {"type":"range","id":"image_sparkle_speed_ms","label":"Sparkle speed (ms, 0 = inherit)","min":0,"max":9000,"step":250,"default":0},
+      {"type":"header","content":"Glitter Options"},
+      {"type":"color","id":"image_glitter_color","label":"Glitter color","default":"#ffffff"},
+      {"type":"range","id":"image_glitter_intensity","label":"Glitter intensity (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+      {"type":"range","id":"image_glitter_speed_ms","label":"Glitter speed (ms, 0 = inherit)","min":0,"max":9000,"step":250,"default":0},
+      {"type":"range","id":"image_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
+      {"type":"select","id":"image_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
+      {"type":"range","id":"image_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800,"info":"Only used when speed = Custom"},
+      {"type":"select","id":"ambient_direction","label":"Ambient direction (slide)","default":"","options":[{"value":"","label":"Inherit global"},{"value":"diagonal","label":"Diagonal"},{"value":"horizontal","label":"Horizontal"},{"value":"vertical","label":"Vertical"}]},
+      {"type":"select","id":"ambient_loop_style","label":"Ambient loop style (slide)","default":"","options":[{"value":"","label":"Inherit global"},{"value":"ease-in-out","label":"Ease-in-out"},{"value":"linear","label":"Linear"},{"value":"bounce","label":"Gentle bounce"}]},
+      {"type":"header","content":"Directional Image Slide-in"},
+      {"type":"select","id":"image_slide_style","label":"Image Slide-in Style","default":"none","options":[
+        {"value":"none","label":"None"},
+        {"value":"slide_in_left","label":"Slide-in from Left"},
+        {"value":"slide_in_right","label":"Slide-in from Right"},
+        {"value":"slide_in_top","label":"Slide-in from Top"},
+        {"value":"slide_in_bottom","label":"Slide-in from Bottom"},
+        {"value":"swipe_cover_left","label":"Cover swipe Left→Right"},
+        {"value":"swipe_cover_right","label":"Cover swipe Right→Left"},
+        {"value":"swipe_cover_top","label":"Cover swipe Top→Bottom"},
+        {"value":"swipe_cover_bottom","label":"Cover swipe Bottom→Top"},
+        {"value":"swipe_uncover_left","label":"Uncover swipe Left→Right"},
+        {"value":"swipe_uncover_right","label":"Uncover swipe Right→Left"},
+        {"value":"swipe_uncover_top","label":"Uncover swipe Top→Bottom"},
+        {"value":"swipe_uncover_bottom","label":"Uncover swipe Bottom→Top"}
+      ]},
+      {"type":"select","id":"image_slide_ease","label":"Image Slide-in Easing","default":"smooth","options":[{"value":"smooth","label":"Smooth"},{"value":"ease","label":"Ease"},{"value":"ease-in","label":"Ease-in"},{"value":"ease-out","label":"Ease-out"},{"value":"ease-in-out","label":"Ease-in-out"},{"value":"linear","label":"Linear"},{"value":"custom","label":"Custom cubic-bezier()"}]},
+      {"type":"text","id":"image_slide_ease_custom","label":"Custom cubic-bezier(...) for Image Slide-in"},
+      {"type":"header","content":"Headline Animation"},
+      {"type":"select","id":"headline_anim_type","label":"Headline Animation","default":"none","options":[{"value":"none","label":"None"},{"value":"fade_in","label":"Fade In"},{"value":"fade_up","label":"Fade Up"},{"value":"fade_down","label":"Fade Down"},{"value":"fade_left","label":"Fade Left"},{"value":"fade_right","label":"Fade Right"},{"value":"shimmer","label":"Shimmer (uses color setting)"}]},
+      {"type":"range","id":"headline_anim_intensity","label":"Headline Animation Intensity","min":0,"max":100,"step":1,"default":50},
+      {"type":"select","id":"headline_anim_speed","label":"Headline Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
+      {"type":"select","id":"headline_anim_ease","label":"Headline Easing","default":"smooth","options":[{"value":"smooth","label":"Smooth"},{"value":"ease","label":"Ease"},{"value":"ease-in","label":"Ease-in"},{"value":"ease-out","label":"Ease-out"},{"value":"ease-in-out","label":"Ease-in-out"},{"value":"linear","label":"Linear"},{"value":"custom","label":"Custom cubic-bezier()"}]},
+      {"type":"text","id":"headline_anim_ease_custom","label":"Custom cubic-bezier(...) for Headline"},
+      {"type":"select","id":"headline_shimmer","label":"Headline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
+      {"type":"color","id":"headline_shimmer_color","label":"Headline shimmer color"},
+      {"type":"range","id":"headline_shimmer_speed_ms","label":"Headline shimmer speed (ms)","min":0,"max":6000,"step":100,"default":0,"info":"0 = use global"},
+      {"type":"range","id":"headline_sparkle_density","label":"Headline sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+      {"type":"range","id":"headline_glint_strength","label":"Headline glint strength (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+      {"type":"range","id":"headline_glint_width","label":"Headline glint width (0 = inherit)","min":0,"max":50,"step":1,"default":0},
+      {"type":"checkbox","id":"headline_enable_twinkle","label":"Headline: enable twinkle overlay (override global)","default":false},
+      {"type":"range","id":"headline_anim_speed_custom","label":"Headline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900,"info":"Only used when speed = Custom"},
+      {"type":"header","content":"Subheadline Animation"},
+      {"type":"select","id":"sub_anim_type","label":"Subheadline Animation","default":"none","options":[{"value":"none","label":"None"},{"value":"fade_in","label":"Fade In"},{"value":"fade_up","label":"Fade Up"},{"value":"fade_down","label":"Fade Down"},{"value":"fade_left","label":"Fade Left"},{"value":"fade_right","label":"Fade Right"},{"value":"shimmer","label":"Shimmer (uses color setting)"}]},
+      {"type":"range","id":"sub_anim_intensity","label":"Subheadline Animation Intensity","min":0,"max":100,"step":1,"default":40},
+      {"type":"select","id":"sub_anim_speed","label":"Subheadline Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
+      {"type":"select","id":"sub_anim_ease","label":"Subheadline Easing","default":"smooth","options":[{"value":"smooth","label":"Smooth"},{"value":"ease","label":"Ease"},{"value":"ease-in","label":"Ease-in"},{"value":"ease-out","label":"Ease-out"},{"value":"ease-in-out","label":"Ease-in-out"},{"value":"linear","label":"Linear"},{"value":"custom","label":"Custom cubic-bezier()"}]},
+      {"type":"text","id":"sub_anim_ease_custom","label":"Custom cubic-bezier(...) for Subheadline"},
+      {"type":"select","id":"sub_shimmer","label":"Subheadline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
+      {"type":"color","id":"sub_shimmer_color","label":"Subheadline shimmer color"},
+      {"type":"range","id":"sub_shimmer_speed_ms","label":"Subheadline shimmer speed (ms)","min":0,"max":6000,"step":100,"default":0,"info":"0 = use global"},
+      {"type":"range","id":"sub_sparkle_density","label":"Subheadline sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+      {"type":"range","id":"sub_glint_strength","label":"Subheadline glint strength (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+      {"type":"range","id":"sub_glint_width","label":"Subheadline glint width (0 = inherit)","min":0,"max":50,"step":1,"default":0},
+      {"type":"checkbox","id":"sub_enable_twinkle","label":"Subheadline: enable twinkle overlay (override global)","default":false},
+      {"type":"checkbox","id":"enable_text_shimmer_slide","label":"Enable text shimmer for this slide (override global)","default":false},
+      {"type":"checkbox","id":"enable_text_twinkle_slide","label":"Enable sparkle twinkle for this slide (override global)","default":false},
+      {"type":"checkbox","id":"combine_text_shimmer_with_fade","label":"Combine shimmer with subtle fade-up on activate","default":false},
+      {"type":"range","id":"sub_anim_speed_custom","label":"Subheadline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900,"info":"Only used when speed = Custom"},
+      {"type":"header","content":"Slide Content"},
+      {"type":"text","id":"slide_headline","label":"Slide headline"},
+      {"type":"text","id":"slide_subheadline","label":"Slide subheadline"},
+      {"type":"header","content":"Headline Text FX (Sparkle/Glitter)"},
+      {"type":"select","id":"headline_text_fx","label":"Headline text effect","default":"none","options":[{"value":"none","label":"None"},{"value":"sparkle","label":"Sparkle"},{"value":"glitter","label":"Glitter"}]},
+      {"type":"color","id":"headline_text_fx_color","label":"Headline FX color","default":"#ffffff"},
+      {"type":"range","id":"headline_text_fx_intensity","label":"Headline FX intensity","min":0,"max":100,"step":5,"default":0},
+      {"type":"range","id":"headline_text_fx_speed","label":"Headline FX speed (ms)","min":0,"max":9000,"step":250,"default":0},
+      {"type":"range","id":"headline_text_fx_size","label":"Headline FX size (px)","min":0,"max":64,"step":1,"default":0,"info":"0 = inherit global"},
+      {"type":"range","id":"headline_text_fx_frequency","label":"Headline FX frequency","min":0,"max":40,"step":1,"default":0,"info":"0 = inherit global"},
+      {"type":"select","id":"headline_text_fx_position","label":"Headline FX position","default":"mc","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"},{"value":"cover","label":"Cover (full text)"}]},
+      {"type":"header","content":"Subheadline Text FX (Sparkle/Glitter)"},
+      {"type":"select","id":"sub_text_fx","label":"Subheadline text effect","default":"none","options":[{"value":"none","label":"None"},{"value":"sparkle","label":"Sparkle"},{"value":"glitter","label":"Glitter"}]},
+      {"type":"color","id":"sub_text_fx_color","label":"Subheadline FX color","default":"#ffffff"},
+      {"type":"range","id":"sub_text_fx_intensity","label":"Subheadline FX intensity","min":0,"max":100,"step":5,"default":0},
+      {"type":"range","id":"sub_text_fx_speed","label":"Subheadline FX speed (ms)","min":0,"max":9000,"step":250,"default":0},
+      {"type":"range","id":"sub_text_fx_size","label":"Subheadline FX size (px)","min":0,"max":64,"step":1,"default":0,"info":"0 = inherit global"},
+      {"type":"range","id":"sub_text_fx_frequency","label":"Subheadline FX frequency","min":0,"max":40,"step":1,"default":0,"info":"0 = inherit global"},
+      {"type":"select","id":"sub_text_fx_position","label":"Subheadline FX position","default":"mc","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"},{"value":"cover","label":"Cover (full text)"}]},
+      {"type":"header","content":"CTA Buttons"},
+      {"type":"text","id":"slide_cta_text","label":"Slide CTA text"},
+      {"type":"url","id":"slide_cta_link","label":"Slide CTA link"},
+      {"type":"select","id":"slide_cta_variant","label":"Slide CTA variant","default":"primary","options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"ghost","label":"Ghost"}]},
+      {"type":"text","id":"slide_cta2_text","label":"Secondary CTA text"},
+      {"type":"url","id":"slide_cta2_link","label":"Secondary CTA link"},
+      {"type":"select","id":"slide_cta2_variant","label":"Secondary CTA variant","default":"secondary","options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"ghost","label":"Ghost"}]},
+      {"type":"header","content":"CTA Visual Overrides"},
+      {"type":"checkbox","id":"enable_cta_visual_overrides","label":"Enable CTA visual overrides for this slide","default":false},
+      {"type":"range","id":"cta_border_width","label":"CTA border width (px)","min":0,"max":8,"step":1,"default":0},
+      {"type":"select","id":"cta_border_style","label":"CTA border style","default":"none","options":[{"value":"none","label":"None"},{"value":"solid","label":"Solid"},{"value":"dashed","label":"Dashed"},{"value":"dotted","label":"Dotted"}]},
+      {"type":"color","id":"cta_border_color","label":"CTA border color"},
+      {"type":"range","id":"cta_radius_override","label":"CTA border radius override (px)","min":0,"max":32,"step":1,"default":0},
+      {"type":"range","id":"cta_fixed_width","label":"CTA fixed width (px)","min":0,"max":600,"step":10,"default":0,"info":"0 = auto"},
+      {"type":"range","id":"cta_width_scale","label":"CTA width scale (%)","min":-50,"max":200,"step":5,"default":0},
+      {"type":"range","id":"cta_fixed_height","label":"CTA fixed height (px)","min":0,"max":200,"step":5,"default":0},
+      {"type":"color","id":"primary_bg_color","label":"Primary CTA background color"},
+      {"type":"text","id":"primary_bg_gradient","label":"Primary CTA background gradient CSS"},
+      {"type":"color","id":"primary_text_color","label":"Primary CTA text color"},
+      {"type":"color","id":"secondary_bg_color","label":"Secondary CTA background color"},
+      {"type":"text","id":"secondary_bg_gradient","label":"Secondary CTA background gradient CSS"},
+      {"type":"color","id":"secondary_text_color","label":"Secondary CTA text color"},
+      {"type":"header","content":"Layout & Position"},
+      {"type":"select","id":"cta_size","label":"CTA size","default":"medium","options":[{"value":"small","label":"Small"},{"value":"medium","label":"Medium"},{"value":"large","label":"Large"}]},
+      {"type":"select","id":"cta_anim_style","label":"CTA animation style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer / Sheen"},{"value":"hover_shimmer","label":"Hover Shimmer"},{"value":"pulse","label":"Pulse / Glow"},{"value":"ripple","label":"Ripple"},{"value":"gradient_shift","label":"Gradient Shift"},{"value":"border_reveal","label":"Border Reveal"},{"value":"micro_pulse","label":"Micro Pulse (gentle scale)"},{"value":"soft_glow_fade","label":"Soft Glow Fade"},{"value":"gradient_drift","label":"Gradient Drift"},{"value":"shadow_shift","label":"Shadow Shift"},{"value":"color_tint_pulse","label":"Color Tint Pulse"}]},
+      {"type":"range","id":"cta_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
+      {"type":"select","id":"cta_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
+      {"type":"range","id":"cta_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800},
+      {"type":"checkbox","id":"cta_anim_continuous","label":"Continuous shimmer","default":false},
+      {"type":"checkbox","id":"cta_anim_hover","label":"Shimmer on hover","default":true},
+      {"type":"checkbox","id":"cta_anim_click","label":"Shimmer on click","default":true},
+      {"type":"range","id":"cta_anim_speed_continuous","label":"Continuous speed (s)","min":1,"max":10,"step":0.5,"default":3},
+      {"type":"range","id":"cta_anim_speed_hover","label":"Hover speed (s)","min":0.5,"max":6,"step":0.5,"default":2},
+      {"type":"range","id":"cta_anim_speed_click","label":"Click burst speed (s)","min":0.3,"max":3,"step":0.1,"default":1},
+      {"type":"checkbox","id":"use_global_cta_anim","label":"Use global animation defaults","default":true},
+      {"type":"select","id":"cta_anim_style_cont","label":"Override continuous style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+      {"type":"select","id":"cta_anim_style_hover","label":"Override hover style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+      {"type":"select","id":"cta_anim_style_click","label":"Override click style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+      {"type":"range","id":"cta_gap","label":"CTA gap override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit"},
+      {"type":"range","id":"cta_gap_mobile","label":"CTA gap mobile override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit"},
+      {"type":"select","id":"cta_style","label":"CTA 3D style override","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
+      {"type":"header","content":"Primary Button Options"},
+      {"type":"range","id":"primary_shimmer_band_width","label":"Primary shimmer width (px)","min":0,"max":400,"step":10,"default":0,"info":"0 = use variant/global"},
+      {"type":"checkbox","id":"primary_anim_continuous","label":"Primary: continuous enabled"},
+      {"type":"checkbox","id":"primary_anim_hover","label":"Primary: hover enabled"},
+      {"type":"checkbox","id":"primary_anim_click","label":"Primary: click enabled"},
+      {"type":"select","id":"primary_anim_style_cont","label":"Primary continuous style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+      {"type":"select","id":"primary_anim_style_hover","label":"Primary hover style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+      {"type":"select","id":"primary_anim_style_click","label":"Primary click style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+      {"type":"range","id":"primary_anim_speed_continuous","label":"Primary continuous speed (s)","min":0,"max":10,"step":0.5,"default":0,"info":"0 = inherit"},
+      {"type":"range","id":"primary_anim_speed_hover","label":"Primary hover speed (s)","min":0,"max":6,"step":0.5,"default":0,"info":"0 = inherit"},
+      {"type":"range","id":"primary_anim_speed_click","label":"Primary click speed (s)","min":0,"max":3,"step":0.1,"default":0,"info":"0 = inherit"},
+      {"type":"select","id":"primary_3d_style","label":"Primary 3D style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
+      {"type":"header","content":"Secondary Button Options"},
+      {"type":"range","id":"secondary_shimmer_band_width","label":"Secondary shimmer width (px)","min":0,"max":400,"step":10,"default":0,"info":"0 = use variant/global"},
+      {"type":"checkbox","id":"secondary_anim_continuous","label":"Secondary: continuous enabled"},
+      {"type":"checkbox","id":"secondary_anim_hover","label":"Secondary: hover enabled"},
+      {"type":"checkbox","id":"secondary_anim_click","label":"Secondary: click enabled"},
+      {"type":"select","id":"secondary_anim_style_cont","label":"Secondary continuous style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+      {"type":"select","id":"secondary_anim_style_hover","label":"Secondary hover style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+      {"type":"select","id":"secondary_anim_style_click","label":"Secondary click style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
+      {"type":"range","id":"secondary_anim_speed_continuous","label":"Secondary continuous speed (s)","min":0,"max":10,"step":0.5,"default":0,"info":"0 = inherit"},
+      {"type":"range","id":"secondary_anim_speed_hover","label":"Secondary hover speed (s)","min":0,"max":6,"step":0.5,"default":0,"info":"0 = inherit"},
+      {"type":"range","id":"secondary_anim_speed_click","label":"Secondary click speed (s)","min":0,"max":3,"step":0.1,"default":0,"info":"0 = inherit"},
+      {"type":"select","id":"secondary_3d_style","label":"Secondary 3D style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
+      {"type":"header","content":"Reset"},
+      {"type":"checkbox","id":"reset_slide_overrides","label":"Reset to global defaults","info":"Disables slide-level overrides (shimmer/twinkle/CTA)","default":false},
+      {"type":"range","id":"headline_size","label":"Headline size override (px)","min":0,"max":120,"step":2,"default":0,"info":"0 = inherit global"},
+      {"type":"range","id":"subheadline_size","label":"Subheadline size override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit global"},
+      {"type":"color","id":"headline_color","label":"Headline color override"},
+      {"type":"color","id":"subheadline_color","label":"Subheadline color override"},
+      {"type":"range","id":"max_width_ch","label":"Max text width (ch)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit global"},
+      {"type":"select","id":"headline_position","label":"Headline position","default":"mc","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+      {"type":"select","id":"subheadline_position","label":"Subheadline position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+      {"type":"select","id":"ctas_position","label":"CTAs position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
+      {"type":"select","id":"ctas_inline_align","label":"CTAs inline alignment","default":"center","options":[{"value":"start","label":"Start"},{"value":"center","label":"Center"},{"value":"end","label":"End"}]},
+      {"type":"range","id":"slide_duration","label":"Custom duration (s)","min":0,"max":25,"step":1,"default":0,"info":"0 uses default duration"}
+    ]}
+  ],
+  "presets": [
+    {"name": "AGG Hero Slideshow", "category":"Hero", "blocks":[{"type":"image"}]}
+  ]
+}
+{% endschema %}
