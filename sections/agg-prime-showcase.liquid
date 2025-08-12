@@ -146,7 +146,8 @@ README:
     align-items: stretch;
   }
 }
-.agg-prime-showcase__button {
+.agg-prime-showcase__button,
+.agg-prime-showcase__button--secondary {
   background: var(--agg-brand-primary);
   color: var(--agg-brand-button-text);
   border: none;
@@ -162,10 +163,23 @@ README:
   min-width: 120px;
   min-height: 48px;
   will-change: transform, box-shadow;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none !important;
 }
 .agg-prime-showcase__button--secondary {
   background: var(--agg-brand-secondary);
-  color: var(--agg-brand-button-text);
+}
+
+/* Remove underline from all links inside the section */
+.agg-prime-showcase a {
+  text-decoration: none !important;
+}
+
+/* Add more customization hooks for future styling */
+.agg-prime-showcase__button[data-custom-style] {
+  /* Example: custom style for future use */
 }
 .agg-prime-showcase__button:focus {
   box-shadow: 0 0 0 3px rgba(255,106,26,0.3);
