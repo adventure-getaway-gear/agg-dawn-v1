@@ -12,7 +12,7 @@
 <!-- Hero Slideshow Section -->
 <section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}" data-global-img-effect="{{ s.global_image_effect_default | default: 'none' }}" data-global-img-effect-force="{{ s.global_image_effect_force | default: false }}" data-global-sparkle-color="{{ s.global_sparkle_color | default: '#ffffff' }}" data-global-sparkle-density="{{ s.global_sparkle_density | default: 60 }}" data-global-sparkle-speed="{{ s.global_sparkle_speed_ms | default: 6000 }}" data-global-glitter-color="{{ s.global_glitter_color | default: '#ffffff' }}" data-global-glitter-intensity="{{ s.global_glitter_intensity | default: 45 }}" data-global-glitter-speed="{{ s.global_glitter_speed_ms | default: 8000 }}" data-global-text-fx="{{ s.global_text_fx_default | default: 'none' }}" data-global-text-fx-force="{{ s.global_text_fx_force | default: false }}" data-global-text-fx-color="{{ s.global_text_fx_color | default: '#ffffff' }}" data-global-text-fx-intensity="{{ s.global_text_fx_intensity | default: 50 }}" data-global-text-fx-speed="{{ s.global_text_fx_speed_ms | default: 6000 }}" data-global-text-fx-pos="{{ s.global_text_fx_position | default: 'mc' }}" data-global-text-fx-size="{{ s.global_text_fx_size | default: 16 }}" data-global-text-fx-frequency="{{ s.global_text_fx_frequency | default: 10 }}">
   <style>
-  .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
+  .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms;--cta-shimmer-band-w:{{ s.cta_global_shimmer_band_width | default: 200 }}px}
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
     .hero-banner-agg--slideshow .hero-banner-agg__media,.hero-banner-agg--slideshow .hero-banner-agg__slideshow{position:relative;width:100%;height:var(--hb-height)}
     .hero-banner-agg__slideshow{overflow:hidden}
@@ -207,7 +207,13 @@
   .hero-banner-agg__slideBtn[data-anim-style="shimmer"]::before,
   .hero-banner-agg__slideBtn[data-anim-style-cont="shimmer"]::before,
   .hero-banner-agg__slideBtn[data-anim-style-hover="shimmer"]::before,
-  .hero-banner-agg__slideBtn[data-anim-style-click="shimmer"]::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,215,128,0) 0%,rgba(255,215,128,.12) 35%,rgba(255,215,128,.45) 50%,rgba(255,215,128,.12) 65%,rgba(255,215,128,0) 100%);background-size:200% 100%;mix-blend-mode:screen;pointer-events:none;opacity:0;transition:opacity .3s ease}
+  .hero-banner-agg__slideBtn[data-anim-style-click="shimmer"]::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,
+    rgba(255,215,128,0) calc(50% - (var(--cta-shimmer-band-w,200px) / 2)),
+    rgba(255,215,128,.12) calc(50% - (var(--cta-shimmer-band-w,200px) / 4)),
+    rgba(255,215,128,.45) 50%,
+    rgba(255,215,128,.12) calc(50% + (var(--cta-shimmer-band-w,200px) / 4)),
+    rgba(255,215,128,0) calc(50% + (var(--cta-shimmer-band-w,200px) / 2))
+  );background-size:200% 100%;mix-blend-mode:screen;pointer-events:none;opacity:0;transition:opacity .3s ease}
   .hero-banner-agg__slideBtn[data-anim-style-cont="shimmer"][data-anim-cont="true"]::before{animation:ctaShimmer var(--anim-speed-cont,3s) linear infinite;opacity:1}
   .hero-banner-agg__slideBtn[data-anim-style-hover="shimmer"][data-anim-hover="true"]:hover::before{animation:ctaShimmer var(--anim-speed-hover,2s) linear infinite;opacity:1}
   .hero-banner-agg__slideBtn[data-anim-style-click="shimmer"][data-anim-click="true"]:active::before{animation:ctaShimmer var(--anim-speed-click,1s) linear 1;opacity:1}
@@ -1008,6 +1014,7 @@
   {"type":"range","id":"text_shimmer_twinkle_speed_ms","label":"Twinkle speed (ms)","min":400,"max":4000,"step":100,"default":1800},
   {"type":"checkbox","id":"tuck_under_header","label":"Tuck under sticky header (remove top gap)","default":true},
   {"type":"range","id":"header_offset_px","label":"Header bottom offset (px)","min":0,"max":120,"step":2,"default":48,"info":"Adjust if a small gap remains."},
+  {"type":"header","content":"Effect Customization Controls"},
   {"type":"header","content":"Global Image Effects"},
   {"type":"select","id":"global_image_effect_default","label":"Default image effect","default":"none","options":[
     {"value":"none","label":"None"},
@@ -1042,6 +1049,7 @@
   {"type":"range","id":"cta_global_anim_speed_continuous","label":"Global continuous speed (s)","min":1,"max":10,"step":0.5,"default":3},
   {"type":"range","id":"cta_global_anim_speed_hover","label":"Global hover speed (s)","min":0.5,"max":6,"step":0.5,"default":2},
   {"type":"range","id":"cta_global_anim_speed_click","label":"Global click speed (s)","min":0.3,"max":3,"step":0.1,"default":1},
+  {"type":"range","id":"cta_global_shimmer_band_width","label":"CTA shimmer band width (px)","min":50,"max":400,"step":10,"default":200,"info":"Controls the width of the shimmer gradient band."},
   {"type":"range","id":"cta_global_cta_gap","label":"Global CTA gap (px)","min":4,"max":60,"step":2,"default":14},
   {"type":"range","id":"cta_global_cta_gap_mobile","label":"Global CTA gap mobile (px)","min":4,"max":60,"step":2,"default":12},
   {"type":"select","id":"cta_global_style","label":"Global CTA 3D style","default":"raised","options":[{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
