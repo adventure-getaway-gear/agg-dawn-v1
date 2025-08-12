@@ -302,10 +302,24 @@ README:
           <div class="agg-prime-showcase__overlay agg-pos-{{ slide.buttons_position }}">
             <div class="agg-prime-showcase__buttons">
               {% if slide.button1_text and slide.button1_url %}
-                <a href="{{ slide.button1_url }}" class="agg-prime-showcase__button" role="button" aria-label="{{ slide.button1_aria | escape }}" tabindex="0" data-anim="{{ slide.button1_anim | default: 'fade' }}">{{ slide.button1_text }}</a>
+                <a href="{{ slide.button1_url }}"
+                   class="button{% if slide.button1_style == 'secondary' %} button--secondary{% elsif slide.button1_style == 'tertiary' %} button--tertiary{% endif %}{% if slide.button1_size == 'large' %} button--large{% elsif slide.button1_size == 'small' %} button--small{% endif %}"
+                   role="button"
+                   aria-label="{{ slide.button1_aria | escape }}"
+                   tabindex="0"
+                   data-anim="{{ slide.button1_anim | default: 'fade' }}">
+                  {{ slide.button1_text }}
+                </a>
               {% endif %}
               {% if slide.button2_text and slide.button2_url %}
-                <a href="{{ slide.button2_url }}" class="agg-prime-showcase__button agg-prime-showcase__button--secondary" role="button" aria-label="{{ slide.button2_aria | escape }}" tabindex="0" data-anim="{{ slide.button2_anim | default: 'slide' }}">{{ slide.button2_text }}</a>
+                <a href="{{ slide.button2_url }}"
+                   class="button{% if slide.button2_style == 'secondary' %} button--secondary{% elsif slide.button2_style == 'tertiary' %} button--tertiary{% endif %}{% if slide.button2_size == 'large' %} button--large{% elsif slide.button2_size == 'small' %} button--small{% endif %}"
+                   role="button"
+                   aria-label="{{ slide.button2_aria | escape }}"
+                   tabindex="0"
+                   data-anim="{{ slide.button2_anim | default: 'slide' }}">
+                  {{ slide.button2_text }}
+                </a>
               {% endif %}
             </div>
           </div>
@@ -436,6 +450,16 @@ README:
         {"type": "text", "id": "button1_text", "label": "Button 1 text"},
         {"type": "url", "id": "button1_url", "label": "Button 1 URL"},
         {"type": "text", "id": "button1_aria", "label": "Button 1 ARIA label"},
+        {"type": "select", "id": "button1_style", "label": "Button 1 style", "options": [
+          {"value": "primary", "label": "Primary"},
+          {"value": "secondary", "label": "Secondary"},
+          {"value": "tertiary", "label": "Tertiary"}
+        ], "default": "primary"},
+        {"type": "select", "id": "button1_size", "label": "Button 1 size", "options": [
+          {"value": "medium", "label": "Medium"},
+          {"value": "large", "label": "Large"},
+          {"value": "small", "label": "Small"}
+        ], "default": "medium"},
         {"type": "select", "id": "button1_anim", "label": "Button 1 entrance animation", "options": [
           {"value": "fade", "label": "Fade In"},
           {"value": "slide", "label": "Slide In"},
@@ -444,6 +468,16 @@ README:
         {"type": "text", "id": "button2_text", "label": "Button 2 text"},
         {"type": "url", "id": "button2_url", "label": "Button 2 URL"},
         {"type": "text", "id": "button2_aria", "label": "Button 2 ARIA label"},
+        {"type": "select", "id": "button2_style", "label": "Button 2 style", "options": [
+          {"value": "primary", "label": "Primary"},
+          {"value": "secondary", "label": "Secondary"},
+          {"value": "tertiary", "label": "Tertiary"}
+        ], "default": "secondary"},
+        {"type": "select", "id": "button2_size", "label": "Button 2 size", "options": [
+          {"value": "medium", "label": "Medium"},
+          {"value": "large", "label": "Large"},
+          {"value": "small", "label": "Small"}
+        ], "default": "medium"},
         {"type": "select", "id": "button2_anim", "label": "Button 2 entrance animation", "options": [
           {"value": "fade", "label": "Fade In"},
           {"value": "slide", "label": "Slide In"},
