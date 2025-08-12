@@ -42,43 +42,6 @@
         "padding_bottom": 36
       }
     },
-    "hero_banner_agg_47CTUg": {
-      "type": "hero-banner-agg",
-      "name": "Hero Banner AGG",
-      "settings": {
-        "media_type": "image",
-        "image_alt": "",
-        "video_url": "",
-        "video_title": "Hero Video",
-        "video_autoplay": true,
-        "video_muted": true,
-        "video_loop": true,
-        "video_controls": false,
-        "desktop_height": 520,
-        "mobile_height": 420,
-        "image_height": 400,
-        "text_align": "center",
-        "enable_overlay": true,
-        "overlay_color": "#000000",
-        "overlay_opacity": 40,
-        "headline": "Adventure Awaits",
-        "subheadline": "Gear up for your next getaway",
-        "headline_color": "#ffffff",
-        "subheadline_color": "#ffffff",
-        "headline_size": 48,
-        "subheadline_size": 22,
-        "padding": 40,
-        "cta_link": "",
-        "cta_text": "Shop Now",
-        "cta_aria_primary": "",
-        "cta_link_2": "",
-        "cta_text_2": "Learn More",
-        "cta_aria_secondary": "",
-        "seo_description": "",
-        "output_jsonld": true,
-        "custom_css": ""
-      }
-    },
     "hero_banner_agg_slideshow_JeciFw": {
       "type": "hero-banner-agg-slideshow",
       "blocks": {
@@ -325,8 +288,7 @@
   },
   "order": [
     "hero_body_agg_zBMDEg",
-    "featured_collection",
-    "hero_banner_agg_47CTUg",
-    "hero_banner_agg_slideshow_JeciFw"
+    "hero_banner_agg_slideshow_JeciFw",
+    "featured_collection"
   ]
 }
