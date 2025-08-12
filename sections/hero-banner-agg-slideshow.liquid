@@ -249,6 +249,7 @@
             {%- assign ctas_pos = b.ctas_position | default: headline_pos | default: global_ctas_pos -%}
             {%- if s.show_global_headlines and b.slide_headline != blank -%}
               {% assign h_anim_type = b.headline_anim_type | default: 'none' %}
+              {% if h_anim_type == 'none' and b.headline_shimmer == 'shimmer' %}{% assign h_anim_type = 'shimmer' %}{% endif %}
               {% assign h_anim_intensity = b.headline_anim_intensity | default: 50 %}
               {% assign h_anim_speed = b.headline_anim_speed | default: 'medium' %}
               {% assign h_anim_speed_custom = b.headline_anim_speed_custom | default: 800 %}
@@ -260,6 +261,7 @@
             {%- endif -%}
             {%- if s.show_global_subheadlines and b.slide_subheadline != blank -%}
               {% assign s_anim_type = b.sub_anim_type | default: 'none' %}
+              {% if s_anim_type == 'none' and b.sub_shimmer == 'shimmer' %}{% assign s_anim_type = 'shimmer' %}{% endif %}
               {% assign s_anim_intensity = b.sub_anim_intensity | default: 50 %}
               {% assign s_anim_speed = b.sub_anim_speed | default: 'medium' %}
               {% assign s_anim_speed_custom = b.sub_anim_speed_custom | default: 800 %}
