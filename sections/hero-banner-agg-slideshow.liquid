@@ -505,16 +505,57 @@
       {% endif %}
     </div>
   {% else %}
-    <div class="hero-banner-agg__media" style="position:relative;width:100%;height:{{ s.image_height }}px;">
-      {% if s.hero_image %}
-        {%- assign image = s.hero_image -%}
-        <img src="{{ image | img_url: '1600x' }}" alt="{{ s.image_alt | default: s.headline | escape }}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
-        {% if s.enable_overlay %}
-          <div class="hero-banner-agg__overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>
-        {% endif %}
-      {% else %}
-        <div style="background:#222;height:100%;width:100%;"></div>
-      {% endif %}
+    {%- comment -%} Fallback as single-slide so animations apply {%- endcomment -%}
+    <div class="hero-banner-agg__slideshow" data-autoplay="false" data-interval="{{ s.slideshow_interval | times: 1000 }}" aria-roledescription="carousel" style="height:{{ s.image_height }}px;">
+      <ul class="hero-banner-agg__slides" aria-live="polite">
+        <li class="hero-banner-agg__slide is-active" data-index="0" data-duration="0" role="group" aria-roledescription="slide" aria-label="Slide 1 of 1">
+          {% if s.hero_image %}
+            {%- assign image = s.hero_image -%}
+            {%- assign widths = '400,600,800,1200,1600,2048' | split: ',' -%}
+            {%- capture srcset -%}{% for w in widths %}{{ image | image_url: width: w | append: ' ' | append: w | append: 'w' }}{% unless forloop.last %}, {% endunless %}{% endfor %}{%- endcapture -%}
+            {%- assign fb_anim_type = s.fallback_image_anim_type | default: 'none' -%}
+            {%- assign fb_anim_intensity = s.fallback_image_anim_intensity | default: 50 -%}
+            {%- assign fb_anim_speed = s.fallback_image_anim_speed | default: 'medium' -%}
+            {%- assign fb_anim_speed_custom = s.fallback_image_anim_speed_custom | default: 800 -%}
+            {%- assign fb_anim_speed_val = fb_anim_speed_custom -%}
+            {%- if fb_anim_speed == 'slow' -%}{% assign fb_anim_speed_val = 1800 %}{%- elsif fb_anim_speed == 'medium' -%}{% assign fb_anim_speed_val = 800 %}{%- elsif fb_anim_speed == 'fast' -%}{% assign fb_anim_speed_val = 350 %}{%- endif -%}
+            {%- assign fb_slide_style = s.fallback_image_slide_style | default: 'none' -%}
+            <img
+              id="hero-fallback-img-{{ section.id }}"
+              src="{{ image | image_url: width: 1600 }}"
+              srcset="{{ srcset | strip }}"
+              sizes="100vw"
+              alt="{{ s.image_alt | default: s.subheadline | default: s.headline | escape }}"
+              width="{{ image.width }}"
+              height="{{ image.height }}"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              class="hero-banner-agg__slideImg anim-{{ fb_anim_type }}"
+              data-anim-type="{{ fb_anim_type }}"
+              data-anim-intensity="{{ fb_anim_intensity }}"
+              data-anim-speed="{{ fb_anim_speed }}"
+              data-anim-speed-val="{{ fb_anim_speed_val }}"
+              data-amb-direction="{{ s.fallback_ambient_direction | default: s.ambient_default_direction | default: 'diagonal' }}"
+              data-amb-loop="{{ s.fallback_ambient_loop_style | default: s.ambient_default_loop_style | default: 'ease-in-out' }}"
+              data-anim-slide-style="{{ fb_slide_style }}"
+              data-slide-ease="{{ s.fallback_image_slide_ease | default: 'smooth' }}"
+              data-slide-ease-custom="{{ s.fallback_image_slide_ease_custom }}"
+              data-sparkle-color="{{ s.fallback_image_sparkle_color | default: s.global_sparkle_color }}"
+              data-sparkle-density="{{ s.fallback_image_sparkle_density | default: 0 }}"
+              data-sparkle-speed="{{ s.fallback_image_sparkle_speed_ms | default: 0 }}"
+              data-glitter-color="{{ s.fallback_image_glitter_color | default: s.global_glitter_color }}"
+              data-glitter-intensity="{{ s.fallback_image_glitter_intensity | default: 0 }}"
+              data-glitter-speed="{{ s.fallback_image_glitter_speed_ms | default: 0 }}"
+              style="width:100%;height:100%;object-fit:cover;display:block;" />
+            {% if s.enable_overlay %}
+              <div class="hero-banner-agg__overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>
+            {% endif %}
+          {% else %}
+            <div style="background:#222;height:100%;width:100%;"></div>
+          {% endif %}
+        </li>
+      </ul>
     </div>
   {% endif %}
   <div class="hero-banner-agg__inner" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:{{ flex_align }};text-align:{{ s.text_align }};padding:{{ s.padding_vertical }}px {{ s.padding_horizontal }}px;gap:1rem;">
@@ -536,7 +577,6 @@
     {% endif %}
   </div>
   {% if s.custom_css %}<style>{{ s.custom_css }}</style>{% endif %}
-  {% if section.blocks.size > 0 %}
   <script>
     (function(){
       var root=document.getElementById('hero-slideshow-{{ section.id }}'); if(!root) return;
@@ -963,7 +1003,6 @@
   applyImageAnimation(idx);
 })();
   </script>
-  {% endif %}
 </section>
 {% comment %} SEO: Structured data for image gallery / single image {% endcomment %}
 {% if section.blocks.size > 1 %}
@@ -1036,6 +1075,70 @@
     {"type":"range","id":"transition_speed","label":"Fade transition (ms)","min":100,"max":2000,"step":50,"default":800},
     {"type":"checkbox","id":"pause_on_hover","label":"Pause on hover","default":true},
     {"type":"checkbox","id":"loop_slides","label":"Loop slides","default":true},
+    {"type":"header","content":"Fallback Image FX"},
+    {"type":"select","id":"fallback_image_anim_type","label":"Fallback image animation","default":"none","options":[
+      {"value":"none","label":"None"},
+      {"value":"ambient_drift","label":"Ambient Drift"},
+      {"value":"ken_burns","label":"Ken Burns"},
+      {"value":"parallax","label":"Parallax"},
+      {"value":"crossfade","label":"Crossfade"},
+      {"value":"zoom","label":"Zoom"},
+      {"value":"blur_focus","label":"Blur/Focus"},
+      {"value":"light_sweep","label":"Light Sweep"},
+      {"value":"mist_fog","label":"Mist/Fog"},
+      {"value":"gradient_drift","label":"Gradient Drift"},
+      {"value":"lens_flare","label":"Lens Flare"},
+      {"value":"mouse_parallax","label":"Mouse Parallax"},
+      {"value":"sparkle_overlay","label":"Sparkle Overlay"},
+      {"value":"glitter_overlay","label":"Glitter Overlay"}
+    ]},
+    {"type":"range","id":"fallback_image_anim_intensity","label":"Fallback animation intensity","min":0,"max":100,"step":1,"default":50},
+    {"type":"select","id":"fallback_image_anim_speed","label":"Fallback animation speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
+    {"type":"range","id":"fallback_image_anim_speed_custom","label":"Fallback custom speed (ms)","min":50,"max":3000,"step":50,"default":800},
+    {"type":"select","id":"fallback_ambient_direction","label":"Fallback ambient direction","default":"","options":[
+      {"value":"","label":"Inherit global"},
+      {"value":"diagonal","label":"Diagonal"},
+      {"value":"horizontal","label":"Horizontal"},
+      {"value":"vertical","label":"Vertical"}
+    ]},
+    {"type":"select","id":"fallback_ambient_loop_style","label":"Fallback ambient loop","default":"","options":[
+      {"value":"","label":"Inherit global"},
+      {"value":"ease-in-out","label":"Ease-in-out"},
+      {"value":"linear","label":"Linear"},
+      {"value":"bounce","label":"Gentle bounce"}
+    ]},
+    {"type":"select","id":"fallback_image_slide_style","label":"Fallback slide-in style","default":"none","options":[
+      {"value":"none","label":"None"},
+      {"value":"slide_in_left","label":"Slide-in Left"},
+      {"value":"slide_in_right","label":"Slide-in Right"},
+      {"value":"slide_in_top","label":"Slide-in Top"},
+      {"value":"slide_in_bottom","label":"Slide-in Bottom"},
+      {"value":"swipe_cover_left","label":"Cover Left→Right"},
+      {"value":"swipe_cover_right","label":"Cover Right→Left"},
+      {"value":"swipe_cover_top","label":"Cover Top→Bottom"},
+      {"value":"swipe_cover_bottom","label":"Cover Bottom→Top"},
+      {"value":"swipe_uncover_left","label":"Uncover Left→Right"},
+      {"value":"swipe_uncover_right","label":"Uncover Right→Left"},
+      {"value":"swipe_uncover_top","label":"Uncover Top→Bottom"},
+      {"value":"swipe_uncover_bottom","label":"Uncover Bottom→Top"}
+    ]},
+    {"type":"select","id":"fallback_image_slide_ease","label":"Fallback slide-in easing","default":"smooth","options":[
+      {"value":"smooth","label":"Smooth"},
+      {"value":"ease","label":"Ease"},
+      {"value":"ease-in","label":"Ease-in"},
+      {"value":"ease-out","label":"Ease-out"},
+      {"value":"ease-in-out","label":"Ease-in-out"},
+      {"value":"linear","label":"Linear"},
+      {"value":"custom","label":"Custom cubic-bezier()"}
+    ]},
+    {"type":"text","id":"fallback_image_slide_ease_custom","label":"Fallback custom cubic-bezier(...)"},
+    {"type":"header","content":"Fallback Sparkle/Glitter"},
+    {"type":"color","id":"fallback_image_sparkle_color","label":"Fallback sparkle color","default":"#ffffff"},
+    {"type":"range","id":"fallback_image_sparkle_density","label":"Fallback sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+    {"type":"range","id":"fallback_image_sparkle_speed_ms","label":"Fallback sparkle speed (ms, 0 = inherit)","min":0,"max":9000,"step":250,"default":0},
+    {"type":"color","id":"fallback_image_glitter_color","label":"Fallback glitter color","default":"#ffffff"},
+    {"type":"range","id":"fallback_image_glitter_intensity","label":"Fallback glitter intensity (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+    {"type":"range","id":"fallback_image_glitter_speed_ms","label":"Fallback glitter speed (ms, 0 = inherit)","min":0,"max":9000,"step":250,"default":0},
   {"type":"header","content":"Ambient & Text Shimmer"},
   {"type":"range","id":"ambient_subtlety","label":"Ambient subtlety (global)","min":0,"max":100,"step":5,"default":50},
   {"type":"select","id":"ambient_default_direction","label":"Ambient direction (global)","default":"diagonal","options":[
