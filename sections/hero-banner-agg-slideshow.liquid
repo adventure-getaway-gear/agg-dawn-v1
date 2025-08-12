@@ -10,7 +10,7 @@
   endif
 -%}
 <!-- Hero Slideshow Section -->
-<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}" data-global-img-effect="{{ s.global_image_effect_default | default: 'none' }}" data-global-img-effect-force="{{ s.global_image_effect_force | default: false }}" data-global-sparkle-color="{{ s.global_sparkle_color | default: '#ffffff' }}" data-global-sparkle-density="{{ s.global_sparkle_density | default: 60 }}" data-global-sparkle-speed="{{ s.global_sparkle_speed_ms | default: 6000 }}" data-global-glitter-color="{{ s.global_glitter_color | default: '#ffffff' }}" data-global-glitter-intensity="{{ s.global_glitter_intensity | default: 45 }}" data-global-glitter-speed="{{ s.global_glitter_speed_ms | default: 8000 }}" data-global-text-fx="{{ s.global_text_fx_default | default: 'none' }}" data-global-text-fx-force="{{ s.global_text_fx_force | default: false }}" data-global-text-fx-color="{{ s.global_text_fx_color | default: '#ffffff' }}" data-global-text-fx-intensity="{{ s.global_text_fx_intensity | default: 50 }}" data-global-text-fx-speed="{{ s.global_text_fx_speed_ms | default: 6000 }}" data-global-text-fx-pos="{{ s.global_text_fx_position | default: 'mc' }}" data-global-text-fx-size="{{ s.global_text_fx_size | default: 16 }}" data-global-text-fx-frequency="{{ s.global_text_fx_frequency | default: 10 }}">
+<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-amb-default-direction="{{ s.ambient_default_direction | default: 'diagonal' }}" data-amb-default-loop="{{ s.ambient_default_loop_style | default: 'ease-in-out' }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}" data-global-img-effect="{{ s.global_image_effect_default | default: 'none' }}" data-global-img-effect-force="{{ s.global_image_effect_force | default: false }}" data-global-sparkle-color="{{ s.global_sparkle_color | default: '#ffffff' }}" data-global-sparkle-density="{{ s.global_sparkle_density | default: 60 }}" data-global-sparkle-speed="{{ s.global_sparkle_speed_ms | default: 6000 }}" data-global-glitter-color="{{ s.global_glitter_color | default: '#ffffff' }}" data-global-glitter-intensity="{{ s.global_glitter_intensity | default: 45 }}" data-global-glitter-speed="{{ s.global_glitter_speed_ms | default: 8000 }}" data-global-text-fx="{{ s.global_text_fx_default | default: 'none' }}" data-global-text-fx-force="{{ s.global_text_fx_force | default: false }}" data-global-text-fx-color="{{ s.global_text_fx_color | default: '#ffffff' }}" data-global-text-fx-intensity="{{ s.global_text_fx_intensity | default: 50 }}" data-global-text-fx-speed="{{ s.global_text_fx_speed_ms | default: 6000 }}" data-global-text-fx-pos="{{ s.global_text_fx_position | default: 'mc' }}" data-global-text-fx-size="{{ s.global_text_fx_size | default: 16 }}" data-global-text-fx-frequency="{{ s.global_text_fx_frequency | default: 10 }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms;--cta-shimmer-band-w:{{ s.cta_global_shimmer_band_width | default: 200 }}px}
   /* Slightly narrower shimmer band on smaller screens for visual balance */
@@ -45,6 +45,14 @@
     25% { transform: translate3d(calc(var(--amb-x, 6px) * .5), calc(var(--amb-y, 4px) * -.8), 0) scale(var(--amb-scale,1.035)); }
     50% { transform: translate3d(calc(var(--amb-x, 6px)), calc(var(--amb-y, 4px)), 0) scale(var(--amb-scale,1.04)); }
     75% { transform: translate3d(calc(var(--amb-x, 6px) * .4), calc(var(--amb-y, 4px) * .8), 0) scale(var(--amb-scale,1.035)); }
+    100% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
+  }
+  /* Slight bounce variant (very gentle overshoot) */
+  @keyframes hbAmbientDriftBounce {
+    0% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
+    20% { transform: translate3d(calc(var(--amb-x, 6px) * -.2), calc(var(--amb-y, 4px) * -.3), 0) scale(var(--amb-scale,1.035)); }
+    50% { transform: translate3d(calc(var(--amb-x, 6px) * 1.05), calc(var(--amb-y, 4px) * 1.05), 0) scale(calc(var(--amb-scale,1.03) * 1.005)); }
+    80% { transform: translate3d(calc(var(--amb-x, 6px) * .3), calc(var(--amb-y, 4px) * .5), 0) scale(var(--amb-scale,1.035)); }
     100% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
   }
   /* Text animations */
@@ -312,6 +320,8 @@
                   data-anim-intensity="{{ anim_intensity }}"
                   data-anim-speed="{{ anim_speed }}"
                   data-anim-speed-val="{{ anim_speed_val }}"
+                  data-amb-direction="{{ b.ambient_direction | default: s.ambient_default_direction | default: 'diagonal' }}"
+                  data-amb-loop="{{ b.ambient_loop_style | default: s.ambient_default_loop_style | default: 'ease-in-out' }}"
                   data-anim-slide-style="{{ img_slide_style }}"
                   data-slide-ease="{{ block.settings.image_slide_ease | default: 'smooth' }}"
                   data-slide-ease-custom="{{ block.settings.image_slide_ease_custom }}"
@@ -696,15 +706,22 @@
           img.style.animation = 'hbKenBurns ' + (speed*1.8) + 'ms ease-in-out 1 both';
           break;
         case 'ambient_drift':
+          try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { break; } } catch(e) {}
           var ambCtl = parseInt(root.getAttribute('data-amb-subtlety')||'50',10);
           var ambFactor = 0.5 + (isNaN(ambCtl)?0.5:ambCtl)/100; // 0.5..1.5
           var ambX = Math.max(1.5, intensity/10) * ambFactor;
           var ambY = Math.max(1.0, intensity/14) * ambFactor;
+          var dir = (img.getAttribute('data-amb-direction') || root.getAttribute('data-amb-default-direction') || 'diagonal').toLowerCase();
+          if (dir === 'horizontal') { ambY = 0; }
+          else if (dir === 'vertical') { ambX = 0; }
           var ambScale = 1 + Math.min(0.03, intensity/1300) * ambFactor; // clamp gentler
           img.style.setProperty('--amb-x', ambX+'px');
           img.style.setProperty('--amb-y', ambY+'px');
           img.style.setProperty('--amb-scale', ambScale.toFixed(3));
-          img.style.animation = 'hbAmbientDrift ' + Math.max(speed*3, 5000) + 'ms ease-in-out infinite alternate both';
+          var loopStyle = (img.getAttribute('data-amb-loop') || root.getAttribute('data-amb-default-loop') || 'ease-in-out').toLowerCase();
+          var animName = loopStyle === 'bounce' ? 'hbAmbientDriftBounce' : 'hbAmbientDrift';
+          var timing = loopStyle === 'linear' ? 'linear' : 'ease-in-out';
+          img.style.animation = animName + ' ' + Math.max(speed*3, 5000) + 'ms ' + timing + ' infinite alternate both';
           break;
         case 'parallax':
           var shift = (Math.max(6, intensity/4)).toFixed(2) + 'px';
@@ -1021,6 +1038,16 @@
     {"type":"checkbox","id":"loop_slides","label":"Loop slides","default":true},
   {"type":"header","content":"Ambient & Text Shimmer"},
   {"type":"range","id":"ambient_subtlety","label":"Ambient subtlety (global)","min":0,"max":100,"step":5,"default":50},
+  {"type":"select","id":"ambient_default_direction","label":"Ambient direction (global)","default":"diagonal","options":[
+    {"value":"diagonal","label":"Diagonal"},
+    {"value":"horizontal","label":"Horizontal"},
+    {"value":"vertical","label":"Vertical"}
+  ]},
+  {"type":"select","id":"ambient_default_loop_style","label":"Ambient loop style (global)","default":"ease-in-out","options":[
+    {"value":"ease-in-out","label":"Ease-in-out"},
+    {"value":"linear","label":"Linear"},
+    {"value":"bounce","label":"Gentle bounce"}
+  ],"info":"Controls timing curve for ambient drift. "},
   {"type":"color","id":"text_shimmer_color","label":"Default text shimmer color","default":"#ffffff","info":"Used if a slide doesn’t override color."},
   {"type":"range","id":"text_shimmer_speed_ms","label":"Default text shimmer speed (ms)","min":800,"max":6000,"step":100,"default":2200,"info":"0 in slide = use this global speed."},
   {"type":"checkbox","id":"enable_text_shimmer","label":"Enable text shimmer globally","default":true,"info":"Slides can also force shimmer on individually."},
@@ -1330,9 +1357,21 @@
   {"type":"select","id":"ctas_inline_align","label":"CTAs inline alignment","default":"center","options":[{"value":"start","label":"Start"},{"value":"center","label":"Center"},{"value":"end","label":"End"}]},
       {"type":"range","id":"slide_duration","label":"Custom duration (s)","min":0,"max":25,"step":1,"default":0,"info":"0 uses default duration"}
     ]}
-  ],
-  "max_blocks": 10,
-  "presets": [
+  {"type":"range","id":"image_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
+  {"type":"select","id":"image_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
+          {"type":"range","id":"image_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800,"info":"Only used when speed = Custom"},
+  {"type":"select","id":"ambient_direction","label":"Ambient direction (slide)","default":"","options":[
+    {"value":"","label":"Inherit global"},
+    {"value":"diagonal","label":"Diagonal"},
+    {"value":"horizontal","label":"Horizontal"},
+    {"value":"vertical","label":"Vertical"}
+  ]},
+  {"type":"select","id":"ambient_loop_style","label":"Ambient loop style (slide)","default":"","options":[
+    {"value":"","label":"Inherit global"},
+    {"value":"ease-in-out","label":"Ease-in-out"},
+    {"value":"linear","label":"Linear"},
+    {"value":"bounce","label":"Gentle bounce"}
+  ]},
     {"name":"AGG Slideshow Hero","category":"Hero","blocks":[{"type":"image"},{"type":"image"},{"type":"image"}]}
   ]
 }
