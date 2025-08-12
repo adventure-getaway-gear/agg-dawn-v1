@@ -403,6 +403,21 @@
                 {%- if speed_hover_secondary == 0 or speed_hover_secondary == blank %}{% assign speed_hover_secondary = b.cta_anim_speed_hover | default: s.cta_global_anim_speed_hover %}{% endif %}
                 {%- assign speed_click_secondary = b.secondary_anim_speed_click -%}
                 {%- if speed_click_secondary == 0 or speed_click_secondary == blank %}{% assign speed_click_secondary = b.cta_anim_speed_click | default: s.cta_global_anim_speed_click %}{% endif %}
+                {%- comment %} Per-variant shimmer speed multipliers (apply only when style is shimmer) {%- endcomment -%}
+                {%- assign prim_mult = s.cta_shimmer_speed_multiplier_primary | default: 1.0 -%}
+                {%- assign sec_mult = s.cta_shimmer_speed_multiplier_secondary | default: 1.0 -%}
+                {%- assign speed_cont_primary_final = speed_cont_primary -%}
+                {%- assign speed_hover_primary_final = speed_hover_primary -%}
+                {%- assign speed_click_primary_final = speed_click_primary -%}
+                {%- if prim_style_cont == 'shimmer' -%}{%- assign speed_cont_primary_final = speed_cont_primary | times: prim_mult -%}{%- endif -%}
+                {%- if prim_style_hover == 'shimmer' -%}{%- assign speed_hover_primary_final = speed_hover_primary | times: prim_mult -%}{%- endif -%}
+                {%- if prim_style_click == 'shimmer' -%}{%- assign speed_click_primary_final = speed_click_primary | times: prim_mult -%}{%- endif -%}
+                {%- assign speed_cont_secondary_final = speed_cont_secondary -%}
+                {%- assign speed_hover_secondary_final = speed_hover_secondary -%}
+                {%- assign speed_click_secondary_final = speed_click_secondary -%}
+                {%- if sec_style_cont == 'shimmer' -%}{%- assign speed_cont_secondary_final = speed_cont_secondary | times: sec_mult -%}{%- endif -%}
+                {%- if sec_style_hover == 'shimmer' -%}{%- assign speed_hover_secondary_final = speed_hover_secondary | times: sec_mult -%}{%- endif -%}
+                {%- if sec_style_click == 'shimmer' -%}{%- assign speed_click_secondary_final = speed_click_secondary | times: sec_mult -%}{%- endif -%}
                 {%- assign prim_3d = b.primary_3d_style | default: b.cta_style | default: s.cta_global_style | default: 'raised' -%}
                 {%- assign sec_3d = b.secondary_3d_style | default: b.cta_style | default: s.cta_global_style | default: 'raised' -%}
                 {%- comment %} Consolidated per-slide CTA visual overrides with enable/reset flags {%- endcomment -%}
@@ -447,10 +462,10 @@
         {%- capture sec_bg_style -%}{% if sec_bg_grad != blank %}background:{{ sec_bg_grad }};{% else %}background:{{ sec_bg_color }};{% endif %}color:{{ sec_text_color }};{%- endcapture -%}
         <div class="hero-banner-agg__slideButtons" style="justify-content:{% if b.ctas_inline_align == 'start' %}flex-start{% elsif b.ctas_inline_align == 'end' %}flex-end{% else %}center{% endif %};--cta-gap:{{ gap_px }}px;--cta-gap-m:{{ gap_px_m }}px;">
                   {% if has_cta_primary %}
-      <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}" data-style="{{ prim_3d }}"{% if prim_style_cont != 'none' or prim_style_hover != 'none' or prim_style_click != 'none' %} data-anim-style-cont="{{ prim_style_cont }}" data-anim-style-hover="{{ prim_style_hover }}" data-anim-style-click="{{ prim_style_click }}" data-anim-cont="{{ prim_cont }}" data-anim-hover="{{ prim_hover }}" data-anim-click="{{ prim_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_primary | default: 3 }}s; --anim-speed-hover: {{ speed_hover_primary | default: 2 }}s; --anim-speed-click: {{ speed_click_primary | default: 1 }}s; {{ prim_bg_style }} {{ base_border_style }} {{ base_radius_style }} {{ base_dim_style }}{% if b.primary_shimmer_band_width and b.primary_shimmer_band_width > 0 %} --cta-shimmer-band-w: {{ b.primary_shimmer_band_width }}px;{% elsif s.cta_shimmer_band_width_primary and s.cta_shimmer_band_width_primary > 0 %} --cta-shimmer-band-w: {{ s.cta_shimmer_band_width_primary }}px;{% else %} --cta-shimmer-band-w: {{ s.cta_global_shimmer_band_width | default: 200 }}px;{% endif %}">{{ b.slide_cta_text }}</a>
+          <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}" data-style="{{ prim_3d }}"{% if prim_style_cont != 'none' or prim_style_hover != 'none' or prim_style_click != 'none' %} data-anim-style-cont="{{ prim_style_cont }}" data-anim-style-hover="{{ prim_style_hover }}" data-anim-style-click="{{ prim_style_click }}" data-anim-cont="{{ prim_cont }}" data-anim-hover="{{ prim_hover }}" data-anim-click="{{ prim_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_primary_final | default: 3 }}s; --anim-speed-hover: {{ speed_hover_primary_final | default: 2 }}s; --anim-speed-click: {{ speed_click_primary_final | default: 1 }}s; {{ prim_bg_style }} {{ base_border_style }} {{ base_radius_style }} {{ base_dim_style }}{% if b.primary_shimmer_band_width and b.primary_shimmer_band_width > 0 %} --cta-shimmer-band-w: {{ b.primary_shimmer_band_width }}px;{% elsif s.cta_shimmer_band_width_primary and s.cta_shimmer_band_width_primary > 0 %} --cta-shimmer-band-w: {{ s.cta_shimmer_band_width_primary }}px;{% else %} --cta-shimmer-band-w: {{ s.cta_global_shimmer_band_width | default: 200 }}px;{% endif %}">{{ b.slide_cta_text }}</a>
                   {% endif %}
                   {% if has_cta_secondary %}
-      <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}" data-style="{{ sec_3d }}"{% if sec_style_cont != 'none' or sec_style_hover != 'none' or sec_style_click != 'none' %} data-anim-style-cont="{{ sec_style_cont }}" data-anim-style-hover="{{ sec_style_hover }}" data-anim-style-click="{{ sec_style_click }}" data-anim-cont="{{ sec_cont }}" data-anim-hover="{{ sec_hover }}" data-anim-click="{{ sec_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_secondary | default: 3 }}s; --anim-speed-hover: {{ speed_hover_secondary | default: 2 }}s; --anim-speed-click: {{ speed_click_secondary | default: 1 }}s; {{ sec_bg_style }} {{ base_border_style }} {{ base_radius_style }} {{ base_dim_style }}{% if b.secondary_shimmer_band_width and b.secondary_shimmer_band_width > 0 %} --cta-shimmer-band-w: {{ b.secondary_shimmer_band_width }}px;{% elsif s.cta_shimmer_band_width_secondary and s.cta_shimmer_band_width_secondary > 0 %} --cta-shimmer-band-w: {{ s.cta_shimmer_band_width_secondary }}px;{% else %} --cta-shimmer-band-w: {{ s.cta_global_shimmer_band_width | default: 200 }}px;{% endif %}">{{ b.slide_cta2_text }}</a>
+          <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}" data-style="{{ sec_3d }}"{% if sec_style_cont != 'none' or sec_style_hover != 'none' or sec_style_click != 'none' %} data-anim-style-cont="{{ sec_style_cont }}" data-anim-style-hover="{{ sec_style_hover }}" data-anim-style-click="{{ sec_style_click }}" data-anim-cont="{{ sec_cont }}" data-anim-hover="{{ sec_hover }}" data-anim-click="{{ sec_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_secondary_final | default: 3 }}s; --anim-speed-hover: {{ speed_hover_secondary_final | default: 2 }}s; --anim-speed-click: {{ speed_click_secondary_final | default: 1 }}s; {{ sec_bg_style }} {{ base_border_style }} {{ base_radius_style }} {{ base_dim_style }}{% if b.secondary_shimmer_band_width and b.secondary_shimmer_band_width > 0 %} --cta-shimmer-band-w: {{ b.secondary_shimmer_band_width }}px;{% elsif s.cta_shimmer_band_width_secondary and s.cta_shimmer_band_width_secondary > 0 %} --cta-shimmer-band-w: {{ s.cta_shimmer_band_width_secondary }}px;{% else %} --cta-shimmer-band-w: {{ s.cta_global_shimmer_band_width | default: 200 }}px;{% endif %}">{{ b.slide_cta2_text }}</a>
                   {% endif %}
                 </div>
               </div>
@@ -1049,6 +1064,8 @@
   {"type":"range","id":"cta_global_anim_speed_continuous","label":"Global continuous speed (s)","min":1,"max":10,"step":0.5,"default":3},
   {"type":"range","id":"cta_global_anim_speed_hover","label":"Global hover speed (s)","min":0.5,"max":6,"step":0.5,"default":2},
   {"type":"range","id":"cta_global_anim_speed_click","label":"Global click speed (s)","min":0.3,"max":3,"step":0.1,"default":1},
+  {"type":"range","id":"cta_shimmer_speed_multiplier_primary","label":"Primary shimmer speed multiplier","min":0.25,"max":4,"step":0.05,"default":1,"info":"Applies only to shimmer speeds; 1 = unchanged"},
+  {"type":"range","id":"cta_shimmer_speed_multiplier_secondary","label":"Secondary shimmer speed multiplier","min":0.25,"max":4,"step":0.05,"default":1,"info":"Applies only to shimmer speeds; 1 = unchanged"},
   {"type":"range","id":"cta_global_shimmer_band_width","label":"CTA shimmer band width (px) (fallback)","min":50,"max":400,"step":10,"default":200,"info":"Fallback width if no variant-specific width is set."},
   {"type":"range","id":"cta_shimmer_band_width_primary","label":"Primary button shimmer width (px)","min":0,"max":400,"step":10,"default":0,"info":"0 = use global fallback"},
   {"type":"range","id":"cta_shimmer_band_width_secondary","label":"Secondary button shimmer width (px)","min":0,"max":400,"step":10,"default":0,"info":"0 = use global fallback"},
@@ -1062,6 +1079,7 @@
   {"type":"checkbox","id":"show_global_headlines","label":"Show slide headlines","default":true},
   {"type":"checkbox","id":"show_global_subheadlines","label":"Show slide subheadlines","default":true},
     {"type":"checkbox","id":"show_slide_ctas","label":"Show slide CTA buttons","default":true},
+    {"type":"checkbox","id":"show_advanced_settings","label":"Show Advanced Settings","default":false,"info":"Reveal additional technical controls for fine-tuning effects."},
     {"type":"textarea","id":"custom_css","label":"Custom CSS"}
   ],
   "blocks": [

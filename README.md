@@ -8,6 +8,7 @@ Custom Shopify theme (Dawn base) for Adventure Getaway Gear.
 - Text animations per element: fade variants and Shimmer (moving glint + sparkles), plus distinct Text FX (Sparkle/Glitter) rendered inside glyphs with background-clip.
 - Canvas-optional sparkle/glitter patterns with caching, driven by size/frequency sliders (global and per-slide).
 - Button effects: 3D visual styles (raised/inset/neumorphic/glass/embossed), animation styles (shimmer/pulse/glow/lift) with per-mode speeds; shimmer band width controls (global, per-variant, per-slide for primary/secondary).
+ - Button effects: 3D visual styles (raised/inset/neumorphic/glass/embossed), animation styles (shimmer/pulse/glow/lift) with per-mode speeds; shimmer band width controls (global, per-variant, per-slide for primary/secondary); per-variant shimmer speed multipliers.
 - Header “tuck under” + adjustable header bottom offset to eliminate sticky-header gap.
 - Accessibility and SEO: ARIA carousel, keyboard/swipe, lazy/decoding, JSON-LD for gallery/single image.
 
@@ -18,13 +19,14 @@ Grouped headers keep controls scannable:
 - Effect Customization Controls
 	- Global Image Effects: default/force, sparkle/glitter color, density/intensity, speed.
 	- Global Text Effects (Sparkle/Glitter): default/force, color, intensity, speed, position, size, frequency.
-	- Button Effects: global animation styles and speeds, shimmer band width fallback + per-variant widths, CTA gap, global 3D style.
+	- Button Effects: global animation styles and speeds, per-variant shimmer speed multipliers, shimmer band width fallback + per-variant widths, CTA gap, global 3D style.
 - Global Content Positioning
 
 Per-slide block controls:
 - Image Animation: type, intensity, speed (+ custom), slide-in styles with easing, sparkle/glitter per-slide options.
 - Headline/Subheadline: text, sizes/colors/positions; text animation type/speed/easing; shimmer color/speed; twinkle enable; sparkle density, glint strength/width. Text FX (Sparkle/Glitter) with color/intensity/speed/position and size/frequency.
 - CTA Buttons: variant, size, per-CTA animation styles (cont/hover/click) and enable toggles; per-mode speeds; per-slide shimmer band width for primary/secondary; optional visual overrides (borders, size, gradients); layout gap overrides.
+ - Advanced: Toggle “Show Advanced Settings” in the section to reveal deeper/technical controls (for reference; Shopify doesn’t allow true conditional hiding, so info hints indicate when a field applies).
 - Reset: “Reset to global defaults” disables slide-level shimmer/twinkle/CTA overrides and size/color overrides.
 
 Notes on shimmer vs. twinkle and Text FX:
@@ -61,6 +63,7 @@ Notes on shimmer vs. twinkle and Text FX:
 ### 2025-08-12
 - CTA shimmer: wired global fallback band width and added per-variant (primary/secondary) + per-slide overrides.
 - Consolidated Button Effects header; added info hints and UI polish.
+ - Added per-variant shimmer speed multipliers; added Show Advanced Settings toggle (UX hint).
 
 ### 2025-08-11
 - Twinkle stagger, independent opacity, per-element toggles; header gap polish.
