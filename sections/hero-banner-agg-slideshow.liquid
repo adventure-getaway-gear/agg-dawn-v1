@@ -10,7 +10,7 @@
   endif
 -%}
 <!-- Hero Slideshow Section -->
-<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}" data-global-img-effect="{{ s.global_image_effect_default | default: 'none' }}" data-global-img-effect-force="{{ s.global_image_effect_force | default: false }}" data-global-sparkle-color="{{ s.global_sparkle_color | default: '#ffffff' }}" data-global-sparkle-density="{{ s.global_sparkle_density | default: 60 }}" data-global-sparkle-speed="{{ s.global_sparkle_speed_ms | default: 16000 }}" data-global-glitter-color="{{ s.global_glitter_color | default: '#ffffff' }}" data-global-glitter-intensity="{{ s.global_glitter_intensity | default: 45 }}" data-global-glitter-speed="{{ s.global_glitter_speed_ms | default: 12000 }}">
+<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}" data-global-img-effect="{{ s.global_image_effect_default | default: 'none' }}" data-global-img-effect-force="{{ s.global_image_effect_force | default: false }}" data-global-sparkle-color="{{ s.global_sparkle_color | default: '#ffffff' }}" data-global-sparkle-density="{{ s.global_sparkle_density | default: 60 }}" data-global-sparkle-speed="{{ s.global_sparkle_speed_ms | default: 6000 }}" data-global-glitter-color="{{ s.global_glitter_color | default: '#ffffff' }}" data-global-glitter-intensity="{{ s.global_glitter_intensity | default: 45 }}" data-global-glitter-speed="{{ s.global_glitter_speed_ms | default: 8000 }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
@@ -913,10 +913,10 @@
   {"type":"checkbox","id":"global_image_effect_force","label":"Force global image effect (override slide)","default":false},
   {"type":"color","id":"global_sparkle_color","label":"Default sparkle color","default":"#ffffff"},
   {"type":"range","id":"global_sparkle_density","label":"Default sparkle density","min":10,"max":100,"step":5,"default":60},
-  {"type":"range","id":"global_sparkle_speed_ms","label":"Default sparkle speed (ms)","min":2000,"max":30000,"step":500,"default":16000},
+  {"type":"range","id":"global_sparkle_speed_ms","label":"Default sparkle speed (ms)","min":1000,"max":9000,"step":250,"default":6000},
   {"type":"color","id":"global_glitter_color","label":"Default glitter color","default":"#ffffff"},
   {"type":"range","id":"global_glitter_intensity","label":"Default glitter intensity","min":10,"max":100,"step":5,"default":45},
-  {"type":"range","id":"global_glitter_speed_ms","label":"Default glitter speed (ms)","min":1200,"max":30000,"step":500,"default":12000},
+  {"type":"range","id":"global_glitter_speed_ms","label":"Default glitter speed (ms)","min":1000,"max":9000,"step":250,"default":8000},
   {"type":"header","content":"Global CTA Animation Defaults"},
   {"type":"select","id":"cta_global_anim_style_cont","label":"Global continuous style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
   {"type":"select","id":"cta_global_anim_style_hover","label":"Global hover style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
@@ -961,13 +961,13 @@
         {"value":"glitter_overlay","label":"Glitter Overlay"}
       ]},
   {"type":"header","content":"Sparkle Options"},
-  {"type":"color","id":"image_sparkle_color","label":"Sparkle color","default":""},
+  {"type":"color","id":"image_sparkle_color","label":"Sparkle color","default":"#ffffff"},
   {"type":"range","id":"image_sparkle_density","label":"Sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
-  {"type":"range","id":"image_sparkle_speed_ms","label":"Sparkle speed (ms, 0 = inherit)","min":0,"max":30000,"step":500,"default":0},
+  {"type":"range","id":"image_sparkle_speed_ms","label":"Sparkle speed (ms, 0 = inherit)","min":0,"max":9000,"step":250,"default":0},
   {"type":"header","content":"Glitter Options"},
-  {"type":"color","id":"image_glitter_color","label":"Glitter color","default":""},
+  {"type":"color","id":"image_glitter_color","label":"Glitter color","default":"#ffffff"},
   {"type":"range","id":"image_glitter_intensity","label":"Glitter intensity (0 = inherit)","min":0,"max":100,"step":5,"default":0},
-  {"type":"range","id":"image_glitter_speed_ms","label":"Glitter speed (ms, 0 = inherit)","min":0,"max":30000,"step":500,"default":0},
+  {"type":"range","id":"image_glitter_speed_ms","label":"Glitter speed (ms, 0 = inherit)","min":0,"max":9000,"step":250,"default":0},
       {"type":"range","id":"image_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
       {"type":"select","id":"image_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
       {"type":"range","id":"image_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800},
