@@ -3,46 +3,67 @@
 Custom Shopify theme (Dawn base) for Adventure Getaway Gear.
 
 ## Highlights
-- Slideshow hero (`sections/hero-banner-agg-slideshow.liquid`) with autoplay, dots/arrows, swipe, progress bar, and per-slide content (headline, subheadline, two CTAs).
-- Image animations: Ken Burns, Ambient Drift, Parallax, Zoom, Blur/Focus, Crossfade, Light Sweep, swipe cover/uncover, and mouse parallax.
-- Text animations per element (headline/subheadline): fade variants and shimmer with glint + sparkles (aka “dazzle”).
-- Shimmer controls: global color/speed, density, glint strength/width, twinkle enable + speed; per-slide overrides; per-element twinkle toggles for headline and subheadline.
-- Header “tuck under” and adjustable header bottom offset to remove top gap.
-- Accessibility (ARIA carousel, keyboard) and SEO (JSON-LD for gallery/single image).
+- Slideshow hero (`sections/hero-banner-agg-slideshow.liquid`) with autoplay, dots/arrows, swipe, keyboard nav, ARIA, progress bar, per-slide content (headline, subheadline, two CTAs).
+- Image animations: Ken Burns, Ambient Drift, Parallax, Zoom, Blur/Focus, Crossfade, Light Sweep, swipe cover/uncover, Gradient Drift, Lens Flare, Mist/Fog, Mouse Parallax.
+- Text animations per element: fade variants and Shimmer (moving glint + sparkles), plus distinct Text FX (Sparkle/Glitter) rendered inside glyphs with background-clip.
+- Canvas-optional sparkle/glitter patterns with caching, driven by size/frequency sliders (global and per-slide).
+- Button effects: 3D visual styles (raised/inset/neumorphic/glass/embossed), animation styles (shimmer/pulse/glow/lift) with per-mode speeds; shimmer band width controls (global, per-variant, per-slide for primary/secondary).
+- Header “tuck under” + adjustable header bottom offset to eliminate sticky-header gap.
+- Accessibility and SEO: ARIA carousel, keyboard/swipe, lazy/decoding, JSON-LD for gallery/single image.
+
+## Settings Panel (Overview)
+Grouped headers keep controls scannable:
+- SEO & Accessibility: fallback image/alt, ARIA label.
+- Ambient & Text Shimmer: global shimmer color/speed, sparkle density, glint strength/width, twinkle toggle + speed, tuck-under header + offset.
+- Effect Customization Controls
+	- Global Image Effects: default/force, sparkle/glitter color, density/intensity, speed.
+	- Global Text Effects (Sparkle/Glitter): default/force, color, intensity, speed, position, size, frequency.
+	- Button Effects: global animation styles and speeds, shimmer band width fallback + per-variant widths, CTA gap, global 3D style.
+- Global Content Positioning
+
+Per-slide block controls:
+- Image Animation: type, intensity, speed (+ custom), slide-in styles with easing, sparkle/glitter per-slide options.
+- Headline/Subheadline: text, sizes/colors/positions; text animation type/speed/easing; shimmer color/speed; twinkle enable; sparkle density, glint strength/width. Text FX (Sparkle/Glitter) with color/intensity/speed/position and size/frequency.
+- CTA Buttons: variant, size, per-CTA animation styles (cont/hover/click) and enable toggles; per-mode speeds; per-slide shimmer band width for primary/secondary; optional visual overrides (borders, size, gradients); layout gap overrides.
+- Reset: “Reset to global defaults” disables slide-level shimmer/twinkle/CTA overrides and size/color overrides.
+
+Notes on shimmer vs. twinkle and Text FX:
+- Shimmer is the moving sheen and base sparkles in the text; Twinkle adds extra animated sparkle pops on top.
+- Text FX (Sparkle/Glitter) are separate visual fills rendered in the glyphs; they can be used with or without Shimmer.
+
+## Performance & Accessibility
+- Images use responsive `srcset`, `sizes="100vw"`, `decoding="async"`, and `loading="eager"` for the first slide then `lazy` for others; `fetchpriority=high` for the first slide.
+- Animations respect `prefers-reduced-motion: reduce` to minimize motion.
+- CSS uses variables and efficient keyframes; optional canvas patterns are tiny tiles with a JS-side cache.
+- Carousel supports keyboard arrows, labeled dots with `role=tab`, and live region announcements.
+
+## SEO & Metadata
+- Per-section JSON-LD: `ImageGallery` (multiple slides) or `ImageObject` (single slide) with name/description and image URLs.
+- Add descriptive Alt text per slide (`slide_alt`) for accessibility; ARIA label override available.
+- Open Graph: Use your theme’s existing OG tags; hero images will be present in markup and can be referenced in your theme head if desired.
 
 ## Using the Slideshow Hero
 1. Add “AGG Slideshow Hero” on the home page.
-2. Add slides (blocks). For each slide you can set:
-	- Image animation, optional directional slide-in and easing.
-	- Headline/Subheadline text, position, sizes, colors.
-	- Text animation: choose Shimmer to enable shimmer for that element.
-	- Per-element twinkle: toggle “Headline: enable twinkle overlay” or “Subheadline: enable twinkle overlay” to force twinkle for that element (overrides global twinkle).
-	- CTA buttons: size, style (3D variants), and animation styles.
-3. In section settings (left panel):
-	- Text Shimmer: set global color/speed; toggle hover-only/once.
-	- Sparkle density, Glint strength/width control the dazzle look.
-	- Twinkle overlay: enable/disable globally and adjust Twinkle speed (ms).
-	- Tuck under sticky header and Header bottom offset (px) remove top gap.
+2. Add slides and set image, alt, link, and animation. Then add headline/subheadline + text/FX.
+3. Configure Button Effects: choose animation styles, adjust per-mode speeds, and set shimmer band widths (global fallback, per-variant, and per-slide primary/secondary as needed).
+4. Use Reset in a slide to quickly revert to global defaults.
 
-Notes on shimmer vs. twinkle:
-- Shimmer provides the moving glint and static sparkles in the text fill.
-- Twinkle is an extra animated sparkle overlay; disabling twinkle now keeps static sparkles visible.
-- Per-element twinkle toggles let headline/subheadline opt in regardless of global.
+## Tips & Tweaks
+- Keep shimmer subtle on mobile; reduce shimmer band width to ~140–200px for smaller buttons.
+- For dense glitter on large fonts, increase Text FX size to ~24–32 and frequency to ~16–24.
+- Prefer `raised` or `glass` 3D styles for bright hero imagery; use `inset` on darker backgrounds.
 
 ## GitHub ⇄ Shopify Workflow
-1. Commit changes locally; pull with rebase to resolve “Update from Shopify” commits.
-2. Push to `main`; the Online Store editor live theme will sync your changes.
-3. Use the provided VS Code tasks or the `scripts/git-commit-push.ps1` helper for one-step commit/pull --rebase/push.
+1. Commit locally; pull with rebase; push to `main`.
+2. Use `scripts/git-commit-push.ps1 -Message "..." -NoPrompt` for one-step commit/pull --rebase/push.
 
 ## Change Log
-### 2025-08-11
-- Slideshow: Improved shimmer/dazzle by staggering three hbTwinkle passes for visible sparkle twinkle.
-- Added independent twinkle opacity control so base sparkles remain when twinkle is off.
-- Per-element twinkle toggles for headline and subheadline (`data-text-twinkle`) with block-level schema controls.
-- Header gap polish: tuck-under + header bottom offset slider.
+### 2025-08-12
+- CTA shimmer: wired global fallback band width and added per-variant (primary/secondary) + per-slide overrides.
+- Consolidated Button Effects header; added info hints and UI polish.
 
-### 2025-08-10
-- Reset `hero-banner-agg.liquid` to image-only baseline for a lean foundation.
+### 2025-08-11
+- Twinkle stagger, independent opacity, per-element toggles; header gap polish.
 
 ---
-Internal build documentation. 
+Internal build documentation.
