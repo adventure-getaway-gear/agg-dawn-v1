@@ -582,8 +582,9 @@
       var root=document.getElementById('hero-slideshow-{{ section.id }}'); if(!root) return;
       var initialized = root.getAttribute('data-enhanced'); if(initialized) return; root.setAttribute('data-enhanced','true');
       var wrap=root.querySelector('.hero-banner-agg__slideshow'); if(!wrap) return;
-      var slides=[].slice.call(root.querySelectorAll('.hero-banner-agg__slide'));
-    var isCarousel = slides.length>1;
+  var slides=[].slice.call(root.querySelectorAll('.hero-banner-agg__slide'));
+  var isCarousel = slides.length>1;
+  var isFallback = (root.getAttribute('data-slide-count') === '0');
       var dots=[].slice.call(root.querySelectorAll('.hero-banner-agg__dot'));
       var announcer = root.querySelector('[data-carousel-announcer]');
       var idx=0;
@@ -843,11 +844,18 @@
         el.classList.remove('hb-text-shimmer');
         el.classList.remove('hb-text-shimmer-hover');
         // Determine text FX type if selected (distinct from shimmer)
-        var fxType = el.getAttribute('data-text-fx') || '';
-        if (!fxType) {
-          var gFx = root.getAttribute('data-global-text-fx') || 'none';
-          var gForceFx = (root.getAttribute('data-global-text-fx-force') === 'true' || root.getAttribute('data-global-text-fx-force') === '1');
-          if (gForceFx && gFx !== 'none') fxType = gFx;
+        var gFx = root.getAttribute('data-global-text-fx') || 'none';
+        var gForceFx = (root.getAttribute('data-global-text-fx-force') === 'true' || root.getAttribute('data-global-text-fx-force') === '1');
+        var slideFx = el.getAttribute('data-text-fx');
+        var fxType = '';
+        if (gForceFx && gFx !== 'none') {
+          fxType = gFx; // force overrides slide
+        } else {
+          if (slideFx && slideFx !== 'none') {
+            fxType = slideFx;
+          } else if (gFx && gFx !== 'none') {
+            fxType = gFx; // apply global default when slide is unset/none
+          }
         }
   var fxColor = el.getAttribute('data-text-fx-color') || root.getAttribute('data-global-text-fx-color') || '#ffffff';
         var fxIntensity = parseInt(el.getAttribute('data-text-fx-intensity')||'0',10); if (isNaN(fxIntensity) || fxIntensity<=0) fxIntensity = parseInt(root.getAttribute('data-global-text-fx-intensity')||'50',10);
@@ -868,7 +876,7 @@
   el.removeAttribute('data-text-fx-content');
         // Opacity from intensity curve
         var fxOpacity = 0.2 + Math.min(1, Math.max(0, fxIntensity/100)) * 0.7;
-        if (fxType === 'sparkle' || fxType === 'glitter'){
+  if (fxType === 'sparkle' || fxType === 'glitter'){
           el.classList.add('hb-text-fx');
           el.classList.add(fxType === 'sparkle' ? 'sparkle' : 'glitter');
           try { el.setAttribute('data-text-fx-content', (el.textContent || '').trim()); } catch(e) { /* no-op */ }
@@ -997,6 +1005,80 @@
             break;
         }
       });
+      // In fallback mode, also apply global text shimmer and text FX defaults to the section-level headline/subheadline
+      if (isFallback) {
+        var headerEls = [].slice.call(root.querySelectorAll('.hero-banner-agg__inner h1, .hero-banner-agg__inner p'));
+        var allowGlobalShimmer = (root.getAttribute('data-allow-text-shimmer') === 'true' || root.getAttribute('data-allow-text-shimmer') === '1');
+        var hoverOnlyGlobal = (root.getAttribute('data-text-shimmer-hover-only') === 'true' || root.getAttribute('data-text-shimmer-hover-only') === '1');
+        var onceGlobal = (root.getAttribute('data-text-shimmer-once') === 'true' || root.getAttribute('data-text-shimmer-once') === '1');
+        var gShimmerColor = root.getAttribute('data-txt-shimmer-color') || '#ffffff';
+        var gShimmerSpeed = parseInt(root.getAttribute('data-txt-shimmer-speed')||'0',10) || 2200;
+        var gSparkleDen = parseInt(root.getAttribute('data-txt-sparkle-density')||'50',10);
+        var gGlintStr = parseInt(root.getAttribute('data-txt-glint-strength')||'35',10);
+        var gGlintW = parseInt(root.getAttribute('data-txt-glint-width')||'35',10);
+        var allowTwinkleGlobal = (root.getAttribute('data-allow-text-twinkle') === 'true' || root.getAttribute('data-allow-text-twinkle') === '1');
+        var gTwinkleSpeed = parseInt(root.getAttribute('data-txt-twinkle-speed')||'1800',10);
+        var gFxType = root.getAttribute('data-global-text-fx') || 'none';
+        var gFxForce = (root.getAttribute('data-global-text-fx-force') === 'true' || root.getAttribute('data-global-text-fx-force') === '1');
+        var gFxColor = root.getAttribute('data-global-text-fx-color') || '#ffffff';
+        var gFxIntensity = parseInt(root.getAttribute('data-global-text-fx-intensity')||'50',10);
+        var gFxSpeed = parseInt(root.getAttribute('data-global-text-fx-speed')||'6000',10);
+        var gFxPos = root.getAttribute('data-global-text-fx-pos') || 'mc';
+        var gFxSize = parseInt(root.getAttribute('data-global-text-fx-size')||'16',10);
+        var gFxFreq = parseInt(root.getAttribute('data-global-text-fx-frequency')||'10',10);
+        var posMapH = { tl:[-4,-4], tc:[0,-4], tr:[4,-4], ml:[-4,0], mc:[0,0], mr:[4,0], bl:[-4,4], bc:[0,4], br:[4,4], cover:[0,0] };
+        var offH = posMapH[gFxPos] || [0,0];
+        headerEls.forEach(function(el){
+          // Clear previous
+          el.classList.remove('hb-text-shimmer','hb-text-shimmer-hover','hb-text-fx','sparkle','glitter');
+          el.style.removeProperty('--txt-shimmer-color');
+          el.style.removeProperty('--txt-shimmer-speed');
+          el.style.removeProperty('--txt-sparkle-density');
+          el.style.removeProperty('--txt-glint-strength');
+          el.style.removeProperty('--txt-glint-width');
+          el.style.removeProperty('--txt-twinkle-speed');
+          el.style.removeProperty('--txt-twinkle-opacity');
+          el.style.removeProperty('--fx-color');
+          el.style.removeProperty('--fx-opacity');
+          el.style.removeProperty('--fx-speed');
+          el.style.removeProperty('--fx-offset-x');
+          el.style.removeProperty('--fx-offset-y');
+          el.removeAttribute('data-text-fx-content');
+          // Apply shimmer if globally enabled
+          if (allowGlobalShimmer) {
+            el.style.setProperty('--txt-shimmer-color', gShimmerColor);
+            el.style.setProperty('--txt-shimmer-speed', Math.max(600, gShimmerSpeed)+'ms');
+            var sparkNormH = Math.max(0, Math.min(100, gSparkleDen)) / 100;
+            el.style.setProperty('--txt-sparkle-density', sparkNormH);
+            el.style.setProperty('--txt-glint-strength', Math.max(0, Math.min(100, gGlintStr)));
+            el.style.setProperty('--txt-glint-width', Math.max(5, gGlintW));
+            el.style.setProperty('--txt-twinkle-speed', Math.max(400, gTwinkleSpeed)+'ms');
+            el.style.setProperty('--txt-twinkle-opacity', allowTwinkleGlobal ? (sparkNormH*0.9) : 0);
+            if (hoverOnlyGlobal) {
+              el.classList.add('hb-text-shimmer-hover');
+            } else {
+              el.classList.add('hb-text-shimmer');
+              if (onceGlobal) {
+                setTimeout(function(){ el.style.animationPlayState='paused'; el.classList.remove('hb-text-shimmer'); el.style.removeProperty('-webkit-text-fill-color'); el.style.color=''; }, Math.max(2200, gShimmerSpeed+1200));
+              }
+            }
+          }
+          // Apply text FX (sparkle/glitter) if global default is set or forced
+          var applyFx = (gFxType && gFxType !== 'none');
+          if (applyFx) {
+            var fxOpacityH = 0.2 + Math.min(1, Math.max(0, gFxIntensity/100)) * 0.7;
+            el.classList.add('hb-text-fx');
+            el.classList.add(gFxType === 'sparkle' ? 'sparkle' : 'glitter');
+            try { el.setAttribute('data-text-fx-content', (el.textContent || '').trim()); } catch(e) {}
+            el.style.setProperty('--fx-color', gFxColor);
+            el.style.setProperty('--fx-opacity', fxOpacityH.toFixed(2));
+            el.style.setProperty('--fx-speed', Math.max(1000, gFxSpeed)+'ms');
+            el.style.setProperty('--fx-offset-x', offH[0]+'px');
+            el.style.setProperty('--fx-offset-y', offH[1]+'px');
+            // Optional canvas tiling: reuse existing mechanism if available is complex; rely on CSS gradients by default.
+          }
+        });
+      }
     });
   }
   // Initial animation
