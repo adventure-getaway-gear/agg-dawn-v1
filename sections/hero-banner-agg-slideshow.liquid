@@ -10,7 +10,7 @@
   endif
 -%}
 <!-- Hero Slideshow Section -->
-<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}">
+<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}" data-global-img-effect="{{ s.global_image_effect_default | default: 'none' }}" data-global-img-effect-force="{{ s.global_image_effect_force | default: false }}" data-global-sparkle-color="{{ s.global_sparkle_color | default: '#ffffff' }}" data-global-sparkle-density="{{ s.global_sparkle_density | default: 60 }}" data-global-sparkle-speed="{{ s.global_sparkle_speed_ms | default: 16000 }}" data-global-glitter-color="{{ s.global_glitter_color | default: '#ffffff' }}" data-global-glitter-intensity="{{ s.global_glitter_intensity | default: 45 }}" data-global-glitter-speed="{{ s.global_glitter_speed_ms | default: 12000 }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
@@ -99,6 +99,32 @@
   .hb-anim-overlay.hb-mist { background: radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.06) 60%, rgba(255,255,255,0) 100%); filter: blur(12px); opacity: .35; animation: hbMist 6s ease-in-out infinite alternate; }
   .hb-anim-overlay.hb-gradient { background: linear-gradient(120deg, rgba(255,255,255,0.08), rgba(255,255,255,0.0), rgba(255,255,255,0.12)); background-size: 200% 100%; animation: hbGradientDrift 8s linear infinite; opacity:.35; }
   .hb-anim-overlay.hb-flare { background: radial-gradient(60% 60% at -10% 50%, rgba(255,255,200,0.45) 0%, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0) 60%); animation: hbFlare 5s ease-in-out infinite; opacity:.45; }
+  /* Sparkle overlay: lightweight tiled dots with drift */
+  @keyframes hbSparkleDrift { 0%{background-position:0 0, 12px 8px, 6px 16px;} 100%{background-position:200px 0, 212px 8px, 206px 16px;} }
+  .hb-anim-overlay.hb-sparkle { 
+    background-image:
+      radial-gradient(circle, var(--sp-color, rgba(255,255,255,.9)) 0.8px, rgba(255,255,255,0) 1.2px),
+      radial-gradient(circle, var(--sp-color, rgba(255,255,255,.65)) 0.7px, rgba(255,255,255,0) 1.1px),
+      radial-gradient(circle, var(--sp-color, rgba(255,255,255,.45)) 0.6px, rgba(255,255,255,0) 1px);
+    background-size: 18px 18px, 24px 24px, 36px 36px;
+    background-position: 0 0, 12px 8px, 6px 16px;
+    animation: hbSparkleDrift var(--sp-speed, 16s) linear infinite;
+    opacity: var(--sp-opacity, .6);
+    filter: drop-shadow(0 0 2px rgba(255,255,255,.25));
+  }
+  /* Glitter overlay: dense texture with slow wave */
+  @keyframes hbGlitterWave { 0%{background-position:0 0, 0 0, 0 0;} 50%{background-position:40px 20px, -30px 10px, 20px -10px;} 100%{background-position:0 0, 0 0, 0 0;} }
+  .hb-anim-overlay.hb-glitter {
+    background-image:
+      linear-gradient(120deg, rgba(255,255,255,.08), rgba(255,255,255,0), rgba(255,255,255,.12)),
+      radial-gradient(circle, var(--gl-color, rgba(255,255,255,.8)) 1px, rgba(255,255,255,0) 1.8px),
+      radial-gradient(circle, var(--gl-color, rgba(255,255,255,.5)) 1px, rgba(255,255,255,0) 1.8px);
+    background-size: 400% 100%, 10px 10px, 14px 14px;
+    mix-blend-mode: screen;
+    animation: hbGlitterWave var(--gl-speed, 12s) ease-in-out infinite;
+    opacity: var(--gl-opacity, .5);
+    filter: saturate(1.15) blur(.2px);
+  }
   @keyframes hbGradientDrift { 0%{background-position:0% 50%} 100%{background-position:100% 50%} }
   @keyframes hbMist { 0%{transform:translateX(-12%)} 100%{transform:translateX(12%)} }
   @keyframes hbFlare { 0%{transform:translateX(-120%)} 100%{transform:translateX(120%)} }
@@ -246,6 +272,12 @@
                   data-anim-slide-style="{{ img_slide_style }}"
                   data-slide-ease="{{ block.settings.image_slide_ease | default: 'smooth' }}"
                   data-slide-ease-custom="{{ block.settings.image_slide_ease_custom }}"
+                  data-sparkle-color="{{ b.image_sparkle_color }}"
+                  data-sparkle-density="{{ b.image_sparkle_density }}"
+                  data-sparkle-speed="{{ b.image_sparkle_speed_ms }}"
+                  data-glitter-color="{{ b.image_glitter_color }}"
+                  data-glitter-intensity="{{ b.image_glitter_intensity }}"
+                  data-glitter-speed="{{ b.image_glitter_speed_ms }}"
                   style="width:100%;height:100%;object-fit:cover;display:block;" />
               {% else %}
                 <div style="background:#222;width:100%;height:100%;"></div>
@@ -495,10 +527,15 @@
     slides.forEach(function(slide, i) {
       var img = slide.querySelector('.hero-banner-agg__slideImg');
       if (!img) return;
-      var type = img.getAttribute('data-anim-type');
+  var type = img.getAttribute('data-anim-type');
       var intensity = parseInt(img.getAttribute('data-anim-intensity'), 10) || 50;
       var speed = parseInt(img.getAttribute('data-anim-speed-val'), 10) || 800;
       var slideStyle = img.getAttribute('data-anim-slide-style') || 'none';
+  // Global image effect override/fallback
+  var gEff = root.getAttribute('data-global-img-effect') || 'none';
+  var gForce = (root.getAttribute('data-global-img-effect-force') === 'true' || root.getAttribute('data-global-img-effect-force') === '1');
+  if (gForce && gEff !== 'none') { type = gEff; }
+  if (!type || type === 'none') { if (gEff && gEff !== 'none') { type = gEff; } }
       // Reset all styles
       img.style.transform = '';
       img.style.filter = '';
@@ -572,6 +609,26 @@
       }
 
       switch(type) {
+        case 'sparkle_overlay':
+          var spColor = img.getAttribute('data-sparkle-color') || root.getAttribute('data-global-sparkle-color') || '#ffffff';
+          var spDen = parseInt(img.getAttribute('data-sparkle-density')||'0',10); if (isNaN(spDen) || spDen<=0) spDen = parseInt(root.getAttribute('data-global-sparkle-density')||'60',10);
+          var spSpeed = parseInt(img.getAttribute('data-sparkle-speed')||'0',10); if (isNaN(spSpeed) || spSpeed<=0) spSpeed = parseInt(root.getAttribute('data-global-sparkle-speed')||'16000',10);
+          var ovS = makeOverlay(slide, 'hb-sparkle');
+          ovS.style.setProperty('--sp-color', spColor);
+          var spOpacity = Math.max(0.15, Math.min(1, 0.15 + (spDen/100)*0.75));
+          ovS.style.setProperty('--sp-opacity', spOpacity);
+          ovS.style.setProperty('--sp-speed', Math.max(2000, spSpeed) + 'ms');
+          break;
+        case 'glitter_overlay':
+          var glColor = img.getAttribute('data-glitter-color') || root.getAttribute('data-global-glitter-color') || '#ffffff';
+          var glInt = parseInt(img.getAttribute('data-glitter-intensity')||'0',10); if (isNaN(glInt) || glInt<=0) glInt = parseInt(root.getAttribute('data-global-glitter-intensity')||'45',10);
+          var glSpeed = parseInt(img.getAttribute('data-glitter-speed')||'0',10); if (isNaN(glSpeed) || glSpeed<=0) glSpeed = parseInt(root.getAttribute('data-global-glitter-speed')||'12000',10);
+          var ovG = makeOverlay(slide, 'hb-glitter');
+          ovG.style.setProperty('--gl-color', glColor);
+          var glOpacity = Math.max(0.12, Math.min(0.9, 0.12 + (glInt/100)*0.78));
+          ovG.style.setProperty('--gl-opacity', glOpacity);
+          ovG.style.setProperty('--gl-speed', Math.max(1200, glSpeed) + 'ms');
+          break;
         case 'ken_burns':
           var scale = (1 + (intensity/180)).toFixed(3);
           img.style.setProperty('--kb-scale', scale);
@@ -847,6 +904,19 @@
   {"type":"range","id":"text_shimmer_twinkle_speed_ms","label":"Twinkle speed (ms)","min":400,"max":4000,"step":100,"default":1800},
   {"type":"checkbox","id":"tuck_under_header","label":"Tuck under sticky header (remove top gap)","default":true},
   {"type":"range","id":"header_offset_px","label":"Header bottom offset (px)","min":0,"max":120,"step":2,"default":48,"info":"Adjust if a small gap remains."},
+  {"type":"header","content":"Global Image Effects"},
+  {"type":"select","id":"global_image_effect_default","label":"Default image effect","default":"none","options":[
+    {"value":"none","label":"None"},
+    {"value":"sparkle_overlay","label":"Sparkle overlay"},
+    {"value":"glitter_overlay","label":"Glitter overlay"}
+  ],"info":"Applies when a slide selects 'none' or when forced below."},
+  {"type":"checkbox","id":"global_image_effect_force","label":"Force global image effect (override slide)","default":false},
+  {"type":"color","id":"global_sparkle_color","label":"Default sparkle color","default":"#ffffff"},
+  {"type":"range","id":"global_sparkle_density","label":"Default sparkle density","min":10,"max":100,"step":5,"default":60},
+  {"type":"range","id":"global_sparkle_speed_ms","label":"Default sparkle speed (ms)","min":2000,"max":30000,"step":500,"default":16000},
+  {"type":"color","id":"global_glitter_color","label":"Default glitter color","default":"#ffffff"},
+  {"type":"range","id":"global_glitter_intensity","label":"Default glitter intensity","min":10,"max":100,"step":5,"default":45},
+  {"type":"range","id":"global_glitter_speed_ms","label":"Default glitter speed (ms)","min":1200,"max":30000,"step":500,"default":12000},
   {"type":"header","content":"Global CTA Animation Defaults"},
   {"type":"select","id":"cta_global_anim_style_cont","label":"Global continuous style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
   {"type":"select","id":"cta_global_anim_style_hover","label":"Global hover style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
@@ -886,8 +956,18 @@
         {"value":"mist_fog","label":"Floating Mist / Fog Overlay"},
         {"value":"gradient_drift","label":"Gradient Drift"},
         {"value":"lens_flare","label":"Lens Flare / Glow"},
-        {"value":"mouse_parallax","label":"Mouse Parallax / Tilt"}
+        {"value":"mouse_parallax","label":"Mouse Parallax / Tilt"},
+        {"value":"sparkle_overlay","label":"Sparkle Overlay"},
+        {"value":"glitter_overlay","label":"Glitter Overlay"}
       ]},
+  {"type":"header","content":"Sparkle Options"},
+  {"type":"color","id":"image_sparkle_color","label":"Sparkle color","default":""},
+  {"type":"range","id":"image_sparkle_density","label":"Sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+  {"type":"range","id":"image_sparkle_speed_ms","label":"Sparkle speed (ms, 0 = inherit)","min":0,"max":30000,"step":500,"default":0},
+  {"type":"header","content":"Glitter Options"},
+  {"type":"color","id":"image_glitter_color","label":"Glitter color","default":""},
+  {"type":"range","id":"image_glitter_intensity","label":"Glitter intensity (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+  {"type":"range","id":"image_glitter_speed_ms","label":"Glitter speed (ms, 0 = inherit)","min":0,"max":30000,"step":500,"default":0},
       {"type":"range","id":"image_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
       {"type":"select","id":"image_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
       {"type":"range","id":"image_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800},
