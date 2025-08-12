@@ -10,7 +10,7 @@
 {
   "sections": {
     "hero_banner_agg_slideshow_QLcNb7": {
-      "type": "hero-agg-ambient",
+      "type": "hero-banner-agg-slideshow",
       "name": "Hero Banner AGG Slideshow",
       "settings": {
         "image_alt": "",
