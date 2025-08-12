@@ -84,7 +84,8 @@
       radial-gradient(1.2px 1.2px at 65% 55%, rgba(255,255,255,.7), rgba(255,255,255,0)),
       radial-gradient(1.2px 1.2px at 40% 70%, rgba(255,255,255,.6), rgba(255,255,255,0));
     mix-blend-mode: screen;
-    opacity: calc(var(--txt-sparkle-density, .5) * .9);
+    /* Twinkle opacity now independent; base sparkles remain visible when twinkle is disabled */
+    opacity: var(--txt-twinkle-opacity, calc(var(--txt-sparkle-density, .5) * .9));
     /* Run three twinkle passes with staggered delays so sparkles actually twinkle */
     animation:
       hbTwinkle var(--txt-twinkle-speed, 1800ms) ease-in-out infinite,
@@ -700,42 +701,46 @@
               var speed = computedSpeed + 'ms';
               el.style.setProperty('--txt-shimmer-color', col);
               el.style.setProperty('--txt-shimmer-speed', speed);
-        // sparkle density and glint strength from root
-        var spark = parseInt(root.getAttribute('data-txt-sparkle-density')||'50',10);
-        var glint = parseInt(root.getAttribute('data-txt-glint-strength')||'35',10);
+
+              // Sparkle/glint base layers
+              var spark = parseInt(root.getAttribute('data-txt-sparkle-density')||'50',10);
+              var glint = parseInt(root.getAttribute('data-txt-glint-strength')||'35',10);
               var glintW = parseInt(root.getAttribute('data-txt-glint-width')||'35',10);
               var twk = parseInt(root.getAttribute('data-txt-twinkle-speed')||'1800',10);
               var allowTwGlobal = (root.getAttribute('data-allow-text-twinkle') === 'true' || root.getAttribute('data-allow-text-twinkle') === '1');
               var allowTwSlide = !!(slideNode && (slideNode.getAttribute('data-allow-slide-twinkle') === 'true' || slideNode.getAttribute('data-allow-slide-twinkle') === '1'));
-              var allowTw = allowTwGlobal || allowTwSlide;
-  var sparkNorm = Math.max(0, Math.min(100, spark)) / 100; // 0..1
-  if (!allowTw) { sparkNorm = 0; }
-        var glintNorm = Math.max(0, Math.min(100, glint)); // 0..100
-        el.style.setProperty('--txt-sparkle-density', sparkNorm);
-        el.style.setProperty('--txt-glint-strength', glintNorm);
+              // Per-element override: data-text-twinkle = true|false to force enable/disable
+              var elTw = el.getAttribute('data-text-twinkle');
+              var allowTwElemTrue = (elTw === 'true' || elTw === '1');
+              var allowTwElemFalse = (elTw === 'false' || elTw === '0');
+              var allowTw = allowTwElemTrue || (!allowTwElemFalse && (allowTwGlobal || allowTwSlide));
+
+              var sparkNorm = Math.max(0, Math.min(100, spark)) / 100; // 0..1
+              var glintNorm = Math.max(0, Math.min(100, glint)); // 0..100
+              el.style.setProperty('--txt-sparkle-density', sparkNorm);
+              el.style.setProperty('--txt-glint-strength', glintNorm);
               el.style.setProperty('--txt-glint-width', glintW);
               el.style.setProperty('--txt-twinkle-speed', Math.max(600, twk)+'ms');
-              // Ensure no inline animation overrides class-based shimmer
+              // Twinkle overlay opacity controlled separately so base sparkles remain when twinkle is off
+              el.style.setProperty('--txt-twinkle-opacity', allowTw ? (sparkNorm*0.9) : 0);
+
               el.style.removeProperty('animation');
               if (hoverOnly) {
                 el.classList.add('hb-text-shimmer-hover');
               } else {
                 el.classList.add('hb-text-shimmer');
                 if (once) {
-                  // Run shimmer briefly then freeze to final
                   setTimeout(function(){
                     el.style.animationPlayState = 'paused';
                     el.classList.remove('hb-text-shimmer');
-                    // leave text visible with final color
                     el.style.removeProperty('-webkit-text-fill-color');
                     el.style.color = '';
                   }, Math.max(2200, parseInt(ts,10)+1200));
                 }
               }
-              // Optional combo: subtle fade-up with shimmer if enabled on this block
+              // Compose shimmer + fade only when not hover-only
               var combo = el.closest('.hero-banner-agg__slide')?.getAttribute('data-combo-shimmer-fade') === 'true';
-              if (combo) {
-                // Compose shimmer + fade-up inline so shimmer is not lost
+              if (combo && !hoverOnly) {
                 var fadeDur = Math.min(computedSpeed, 900);
                 el.style.animation = 'hbTextShimmer var(--txt-shimmer-speed, '+speed+') linear infinite, hbTextFadeUp '+fadeDur+'ms ease-out 1 both';
               }
@@ -926,6 +931,7 @@
       {"type":"select","id":"headline_shimmer","label":"Headline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
       {"type":"color","id":"headline_shimmer_color","label":"Headline shimmer color"},
   {"type":"range","id":"headline_shimmer_speed_ms","label":"Headline shimmer speed (ms)","min":0,"max":6000,"step":100,"default":0,"info":"0 = use global"},
+      {"type":"checkbox","id":"headline_enable_twinkle","label":"Headline: enable twinkle overlay (override global)","default":false},
       {"type":"range","id":"headline_anim_speed_custom","label":"Headline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900},
       {"type":"header","content":"Subheadline Animation"},
       {"type":"select","id":"sub_anim_type","label":"Subheadline Animation","default":"none","options":[
@@ -952,9 +958,10 @@
       {"type":"select","id":"sub_shimmer","label":"Subheadline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
       {"type":"color","id":"sub_shimmer_color","label":"Subheadline shimmer color"},
   {"type":"range","id":"sub_shimmer_speed_ms","label":"Subheadline shimmer speed (ms)","min":0,"max":6000,"step":100,"default":0,"info":"0 = use global"},
-  {"type":"checkbox","id":"enable_text_shimmer_slide","label":"Enable text shimmer for this slide (override global)","default":false},
-  {"type":"checkbox","id":"enable_text_twinkle_slide","label":"Enable sparkle twinkle for this slide (override global)","default":false},
-  {"type":"checkbox","id":"combine_text_shimmer_with_fade","label":"Combine shimmer with subtle fade-up on activate","default":false},
+      {"type":"checkbox","id":"sub_enable_twinkle","label":"Subheadline: enable twinkle overlay (override global)","default":false},
+      {"type":"checkbox","id":"enable_text_shimmer_slide","label":"Enable text shimmer for this slide (override global)","default":false},
+      {"type":"checkbox","id":"enable_text_twinkle_slide","label":"Enable sparkle twinkle for this slide (override global)","default":false},
+      {"type":"checkbox","id":"combine_text_shimmer_with_fade","label":"Combine shimmer with subtle fade-up on activate","default":false},
       {"type":"range","id":"sub_anim_speed_custom","label":"Subheadline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900},
       {"type":"text","id":"slide_alt","label":"Alt text"},
       {"type":"url","id":"slide_link","label":"Full-slide link"},
@@ -997,22 +1004,6 @@
   {"type":"range","id":"cta_gap","label":"CTA gap override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit"},
   {"type":"range","id":"cta_gap_mobile","label":"CTA gap mobile override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit"},
   {"type":"select","id":"cta_style","label":"CTA 3D style override","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
-  {"type":"header","content":"CTA Visual Overrides"},
-  {"type":"checkbox","id":"enable_cta_visual_overrides","label":"Enable CTA visual overrides"},
-  {"type":"checkbox","id":"reset_slide_overrides","label":"Reset (ignore all overrides)"},
-  {"type":"color","id":"primary_bg_color","label":"Primary CTA background color","default":"#1a1a1a"},
-  {"type":"text","id":"primary_bg_gradient","label":"Primary CTA background gradient (CSS)"},
-  {"type":"color","id":"primary_text_color","label":"Primary CTA text color","default":"#ffffff"},
-  {"type":"color","id":"secondary_bg_color","label":"Secondary CTA background color","default":"#1a1a1a"},
-  {"type":"text","id":"secondary_bg_gradient","label":"Secondary CTA background gradient (CSS)"},
-  {"type":"color","id":"secondary_text_color","label":"Secondary CTA text color","default":"#ffffff"},
-  {"type":"range","id":"cta_border_width","label":"CTA border width (px)","min":0,"max":8,"step":1,"default":0},
-  {"type":"select","id":"cta_border_style","label":"CTA border style","default":"none","options":[{"value":"none","label":"None"},{"value":"solid","label":"Solid"},{"value":"dashed","label":"Dashed"},{"value":"dotted","label":"Dotted"}]},
-  {"type":"color","id":"cta_border_color","label":"CTA border color","default":"#ffffff"},
-  {"type":"range","id":"cta_radius_override","label":"CTA border radius (px)","min":0,"max":64,"step":2,"default":0},
-  {"type":"range","id":"cta_fixed_width","label":"CTA fixed width (px, 0 = auto)","min":0,"max":400,"step":10,"default":0},
-  {"type":"range","id":"cta_width_scale","label":"CTA width scale (% - shrink or expand)","min":-60,"max":120,"step":5,"default":0,"info":"Negative shrinks width visually using scaleX"},
-  {"type":"range","id":"cta_fixed_height","label":"CTA fixed height (px, 0 = auto)","min":0,"max":140,"step":4,"default":0},
   {"type":"header","content":"Primary Button Options"},
   {"type":"checkbox","id":"primary_anim_continuous","label":"Primary: continuous enabled"},
   {"type":"checkbox","id":"primary_anim_hover","label":"Primary: hover enabled"},

@@ -2,47 +2,47 @@
 
 Custom Shopify theme (Dawn base) for Adventure Getaway Gear.
 
-## Current State (Baseline Restored)
-We reverted enhancement commits (video mobile auto layout, 9-point positioning system, slider step changes) to return to the earlier simpler polished baseline you requested revisiting. The following commits were reverted in sequence:
+## Highlights
+- Slideshow hero (`sections/hero-banner-agg-slideshow.liquid`) with autoplay, dots/arrows, swipe, progress bar, and per-slide content (headline, subheadline, two CTAs).
+- Image animations: Ken Burns, Ambient Drift, Parallax, Zoom, Blur/Focus, Crossfade, Light Sweep, swipe cover/uncover, and mouse parallax.
+- Text animations per element (headline/subheadline): fade variants and shimmer with glint + sparkles (aka “dazzle”).
+- Shimmer controls: global color/speed, density, glint strength/width, twinkle enable + speed; per-slide overrides; per-element twinkle toggles for headline and subheadline.
+- Header “tuck under” and adjustable header bottom offset to remove top gap.
+- Accessibility (ARIA carousel, keyboard) and SEO (JSON-LD for gallery/single image).
 
-- Enhance: video playback fixes & mobile portrait auto layout (aa86a9d)
-- Fix: wrap positioning logic inside liquid tag (7d147ac)
-- Fix: reduce offset slider steps (69a21ac)
-- Feature: 9-point positioning & offsets (508560b)
+## Using the Slideshow Hero
+1. Add “AGG Slideshow Hero” on the home page.
+2. Add slides (blocks). For each slide you can set:
+	- Image animation, optional directional slide-in and easing.
+	- Headline/Subheadline text, position, sizes, colors.
+	- Text animation: choose Shimmer to enable shimmer for that element.
+	- Per-element twinkle: toggle “Headline: enable twinkle overlay” or “Subheadline: enable twinkle overlay” to force twinkle for that element (overrides global twinkle).
+	- CTA buttons: size, style (3D variants), and animation styles.
+3. In section settings (left panel):
+	- Text Shimmer: set global color/speed; toggle hover-only/once.
+	- Sparkle density, Glint strength/width control the dazzle look.
+	- Twinkle overlay: enable/disable globally and adjust Twinkle speed (ms).
+	- Tuck under sticky header and Header bottom offset (px) remove top gap.
 
-This provides a lean hero banner ready for renewed polish pass.
+Notes on shimmer vs. twinkle:
+- Shimmer provides the moving glint and static sparkles in the text fill.
+- Twinkle is an extra animated sparkle overlay; disabling twinkle now keeps static sparkles visible.
+- Per-element twinkle toggles let headline/subheadline opt in regardless of global.
 
-## Goals
-- Professional, performant, vendor‑neutral foundation.
-- Hero banner with image/video (next iteration), overlay, dual CTAs.
-- Strong SEO (structured data, accessible labels, alt text).
-- GitHub ⇄ Shopify reliable sync workflow.
+## GitHub ⇄ Shopify Workflow
+1. Commit changes locally; pull with rebase to resolve “Update from Shopify” commits.
+2. Push to `main`; the Online Store editor live theme will sync your changes.
+3. Use the provided VS Code tasks or the `scripts/git-commit-push.ps1` helper for one-step commit/pull --rebase/push.
 
-## Next Steps (Planned Re-Polish)
-1. Re-introduce video support with robust autoplay / manual fallback.
-2. Add optional mobile portrait auto layout (opt-in) instead of forced.
-3. Rebuild positioning controls in a simplified tier (e.g., basic alignment + advanced toggle).
-4. Introduce text wrap & alignment options (normal / no-wrap / balance).
-5. Performance: lazy loading media & reducing inline CSS duplication.
+## Change Log
+### 2025-08-11
+- Slideshow: Improved shimmer/dazzle by staggering three hbTwinkle passes for visible sparkle twinkle.
+- Added independent twinkle opacity control so base sparkles remain when twinkle is off.
+- Per-element twinkle toggles for headline and subheadline (`data-text-twinkle`) with block-level schema controls.
+- Header gap polish: tuck-under + header bottom offset slider.
 
-## Deployment Workflow
-1. Edit locally (feature branch recommended for future iterations).
-2. Commit & push; Shopify Online Store editor may add 'Update from Shopify' commits—always pull --rebase to keep linear history.
-3. After validation in a preview theme, publish changes.
-
-## Notes
-If you need to fast-forward back to the advanced hero version, we can cherry-pick or revert the revert commits.
-
-### 2025-08-10 Reset (Image-only Hero)
-Simplified `hero-banner-agg.liquid` back to an image-only banner (removed video logic, 9-point positioning, mobile auto layout) to start a new approach. Previous advanced version preserved on branch `backup-hero-banner-agg-advanced`.
-
-### 2025-08-11 Added Slideshow Hero Section
-Introduced a new section `hero-banner-agg-slideshow.liquid` providing a lightweight image slideshow hero:
-- Fade transition, autoplay (toggle + interval seconds)
-- Optional prev/next arrows and dots
-- Overlay color + opacity reuse
-- Fallback single image mode if no blocks defined
-This keeps the original `hero-banner-agg.liquid` untouched (still image-only) while allowing experimentation without disturbing baseline.
+### 2025-08-10
+- Reset `hero-banner-agg.liquid` to image-only baseline for a lean foundation.
 
 ---
-Contact: Internal build documentation. 
+Internal build documentation. 
