@@ -1148,6 +1148,18 @@
       {"type":"range","id":"image_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
       {"type":"select","id":"image_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
           {"type":"range","id":"image_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800,"info":"Only used when speed = Custom"},
+      {"type":"select","id":"ambient_direction","label":"Ambient direction (slide)","default":"","options":[
+        {"value":"","label":"Inherit global"},
+        {"value":"diagonal","label":"Diagonal"},
+        {"value":"horizontal","label":"Horizontal"},
+        {"value":"vertical","label":"Vertical"}
+      ]},
+      {"type":"select","id":"ambient_loop_style","label":"Ambient loop style (slide)","default":"","options":[
+        {"value":"","label":"Inherit global"},
+        {"value":"ease-in-out","label":"Ease-in-out"},
+        {"value":"linear","label":"Linear"},
+        {"value":"bounce","label":"Gentle bounce"}
+      ]},
   {"type":"header","content":"Directional Image Slide-in"},
       {"type":"select","id":"image_slide_style","label":"Image Slide-in Style","default":"none","options":[
         {"value":"none","label":"None"},
@@ -1357,22 +1369,17 @@
   {"type":"select","id":"ctas_inline_align","label":"CTAs inline alignment","default":"center","options":[{"value":"start","label":"Start"},{"value":"center","label":"Center"},{"value":"end","label":"End"}]},
       {"type":"range","id":"slide_duration","label":"Custom duration (s)","min":0,"max":25,"step":1,"default":0,"info":"0 uses default duration"}
     ]}
-  {"type":"range","id":"image_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
-  {"type":"select","id":"image_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
-          {"type":"range","id":"image_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800,"info":"Only used when speed = Custom"},
-  {"type":"select","id":"ambient_direction","label":"Ambient direction (slide)","default":"","options":[
-    {"value":"","label":"Inherit global"},
-    {"value":"diagonal","label":"Diagonal"},
-    {"value":"horizontal","label":"Horizontal"},
-    {"value":"vertical","label":"Vertical"}
-  ]},
-  {"type":"select","id":"ambient_loop_style","label":"Ambient loop style (slide)","default":"","options":[
-    {"value":"","label":"Inherit global"},
-    {"value":"ease-in-out","label":"Ease-in-out"},
-    {"value":"linear","label":"Linear"},
-    {"value":"bounce","label":"Gentle bounce"}
-  ]},
-    {"name":"AGG Slideshow Hero","category":"Hero","blocks":[{"type":"image"},{"type":"image"},{"type":"image"}]}
+  ],
+  "presets": [
+    {
+      "name": "AGG Slideshow Hero",
+      "category": "Hero",
+      "blocks": [
+        {"type": "image"},
+        {"type": "image"},
+        {"type": "image"}
+      ]
+    }
   ]
 }
 {% endschema %}
