@@ -264,7 +264,7 @@
               {% assign h_anim_speed_val = h_anim_speed_custom %}
               {% if h_anim_speed == 'slow' %}{% assign h_anim_speed_val = 1800 %}{% elsif h_anim_speed == 'medium' %}{% assign h_anim_speed_val = 900 %}{% elsif h_anim_speed == 'fast' %}{% assign h_anim_speed_val = 500 %}{% endif %}
               <div class="hero-banner-agg__slidePiece pos-{{ headline_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--headline-color:{{ b.headline_color | default: s.headline_color }};--headline-size:{% if b.headline_size > 0 %}{{ b.headline_size }}px{% endif %};--headline-size-m:{% if b.headline_size > 0 %}{{ b.headline_size | divided_by: 1.6 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <h3 class="hero-banner-agg__pieceHeadline" data-text-anim-type="{{ h_anim_type }}" data-text-anim-intensity="{{ h_anim_intensity }}" data-text-anim-speed-val="{{ h_anim_speed_val }}" data-text-anim-ease="{{ b.headline_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.headline_anim_ease_custom }}" data-text-shimmer-color="{{ b.headline_shimmer_color | default: s.text_shimmer_color }}" data-text-shimmer-speed="{{ b.headline_shimmer_speed_ms }}" data-text-twinkle="{{ b.headline_enable_twinkle }}">{{ b.slide_headline }}</h3>
+                <h3 class="hero-banner-agg__pieceHeadline" data-text-anim-type="{{ h_anim_type }}" data-text-anim-intensity="{{ h_anim_intensity }}" data-text-anim-speed-val="{{ h_anim_speed_val }}" data-text-anim-ease="{{ b.headline_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.headline_anim_ease_custom }}" data-text-shimmer-color="{{ b.headline_shimmer_color | default: s.text_shimmer_color }}" data-text-shimmer-speed="{{ b.headline_shimmer_speed_ms }}" data-text-twinkle="{{ b.headline_enable_twinkle }}" data-text-sparkle-density="{{ b.headline_sparkle_density }}" data-text-glint-strength="{{ b.headline_glint_strength }}" data-text-glint-width="{{ b.headline_glint_width }}">{{ b.slide_headline }}</h3>
               </div>
             {%- endif -%}
             {%- if s.show_global_subheadlines and b.slide_subheadline != blank -%}
@@ -276,7 +276,7 @@
               {% assign s_anim_speed_val = s_anim_speed_custom %}
               {% if s_anim_speed == 'slow' %}{% assign s_anim_speed_val = 1800 %}{% elsif s_anim_speed == 'medium' %}{% assign s_anim_speed_val = 900 %}{% elsif s_anim_speed == 'fast' %}{% assign s_anim_speed_val = 500 %}{% endif %}
               <div class="hero-banner-agg__slidePiece pos-{{ sub_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--sub-color:{{ b.subheadline_color | default: s.subheadline_color }};--sub-size:{% if b.subheadline_size > 0 %}{{ b.subheadline_size }}px{% endif %};--sub-size-m:{% if b.subheadline_size > 0 %}{{ b.subheadline_size | divided_by: 1.1 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <p class="hero-banner-agg__pieceSub" data-text-anim-type="{{ s_anim_type }}" data-text-anim-intensity="{{ s_anim_intensity }}" data-text-anim-speed-val="{{ s_anim_speed_val }}" data-text-anim-ease="{{ b.sub_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.sub_anim_ease_custom }}" data-text-shimmer-color="{{ b.sub_shimmer_color | default: s.text_shimmer_color }}" data-text-shimmer-speed="{{ b.sub_shimmer_speed_ms }}" data-text-twinkle="{{ b.sub_enable_twinkle }}">{{ b.slide_subheadline }}</p>
+                <p class="hero-banner-agg__pieceSub" data-text-anim-type="{{ s_anim_type }}" data-text-anim-intensity="{{ s_anim_intensity }}" data-text-anim-speed-val="{{ s_anim_speed_val }}" data-text-anim-ease="{{ b.sub_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.sub_anim_ease_custom }}" data-text-shimmer-color="{{ b.sub_shimmer_color | default: s.text_shimmer_color }}" data-text-shimmer-speed="{{ b.sub_shimmer_speed_ms }}" data-text-twinkle="{{ b.sub_enable_twinkle }}" data-text-sparkle-density="{{ b.sub_sparkle_density }}" data-text-glint-strength="{{ b.sub_glint_strength }}" data-text-glint-width="{{ b.sub_glint_width }}">{{ b.slide_subheadline }}</p>
               </div>
             {%- endif -%}
             {%- if s.show_slide_ctas and any_cta -%}
@@ -702,10 +702,13 @@
               el.style.setProperty('--txt-shimmer-color', col);
               el.style.setProperty('--txt-shimmer-speed', speed);
 
-              // Sparkle/glint base layers
-              var spark = parseInt(root.getAttribute('data-txt-sparkle-density')||'50',10);
-              var glint = parseInt(root.getAttribute('data-txt-glint-strength')||'35',10);
-              var glintW = parseInt(root.getAttribute('data-txt-glint-width')||'35',10);
+              // Sparkle/glint base layers with per-element overrides (0/blank = inherit)
+              var elSpark = parseInt(el.getAttribute('data-text-sparkle-density')||'0',10);
+              var spark = elSpark>0 ? elSpark : parseInt(root.getAttribute('data-txt-sparkle-density')||'50',10);
+              var elGlint = parseInt(el.getAttribute('data-text-glint-strength')||'0',10);
+              var glint = elGlint>0 ? elGlint : parseInt(root.getAttribute('data-txt-glint-strength')||'35',10);
+              var elGlintW = parseInt(el.getAttribute('data-text-glint-width')||'0',10);
+              var glintW = elGlintW>0 ? elGlintW : parseInt(root.getAttribute('data-txt-glint-width')||'35',10);
               var twk = parseInt(root.getAttribute('data-txt-twinkle-speed')||'1800',10);
               var allowTwGlobal = (root.getAttribute('data-allow-text-twinkle') === 'true' || root.getAttribute('data-allow-text-twinkle') === '1');
               var allowTwSlide = !!(slideNode && (slideNode.getAttribute('data-allow-slide-twinkle') === 'true' || slideNode.getAttribute('data-allow-slide-twinkle') === '1'));
@@ -931,6 +934,9 @@
       {"type":"select","id":"headline_shimmer","label":"Headline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
       {"type":"color","id":"headline_shimmer_color","label":"Headline shimmer color"},
   {"type":"range","id":"headline_shimmer_speed_ms","label":"Headline shimmer speed (ms)","min":0,"max":6000,"step":100,"default":0,"info":"0 = use global"},
+  {"type":"range","id":"headline_sparkle_density","label":"Headline sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+  {"type":"range","id":"headline_glint_strength","label":"Headline glint strength (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+  {"type":"range","id":"headline_glint_width","label":"Headline glint width (0 = inherit)","min":0,"max":50,"step":1,"default":0},
       {"type":"checkbox","id":"headline_enable_twinkle","label":"Headline: enable twinkle overlay (override global)","default":false},
       {"type":"range","id":"headline_anim_speed_custom","label":"Headline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900},
       {"type":"header","content":"Subheadline Animation"},
@@ -958,6 +964,9 @@
       {"type":"select","id":"sub_shimmer","label":"Subheadline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
       {"type":"color","id":"sub_shimmer_color","label":"Subheadline shimmer color"},
   {"type":"range","id":"sub_shimmer_speed_ms","label":"Subheadline shimmer speed (ms)","min":0,"max":6000,"step":100,"default":0,"info":"0 = use global"},
+  {"type":"range","id":"sub_sparkle_density","label":"Subheadline sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+  {"type":"range","id":"sub_glint_strength","label":"Subheadline glint strength (0 = inherit)","min":0,"max":100,"step":5,"default":0},
+  {"type":"range","id":"sub_glint_width","label":"Subheadline glint width (0 = inherit)","min":0,"max":50,"step":1,"default":0},
       {"type":"checkbox","id":"sub_enable_twinkle","label":"Subheadline: enable twinkle overlay (override global)","default":false},
       {"type":"checkbox","id":"enable_text_shimmer_slide","label":"Enable text shimmer for this slide (override global)","default":false},
       {"type":"checkbox","id":"enable_text_twinkle_slide","label":"Enable sparkle twinkle for this slide (override global)","default":false},
