@@ -6,9 +6,13 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="">
     <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    <link rel="preconnect" href="https://shopify.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+      <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180, height: 180 }}">
     {%- endif -%}
 
     {%- unless settings.type_header_font.system? and settings.type_body_font.system? -%}
@@ -27,6 +31,36 @@
     {% endif %}
 
     {% render 'meta-tags' %}
+
+    {%- comment -%} Global JSON-LD for generic WebPage + optional breadcrumbs {%- endcomment -%}
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": {{ page_title | json }},
+        "url": {{ canonical_url | default: request.origin | json }},
+        "inLanguage": {{ request.locale.iso_code | json }},
+        "description": {{ page_description | default: shop.description | json }}
+      }
+    </script>
+    {%- if breadcrumb -%}
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {%- for crumb in breadcrumb -%}
+              {
+                "@type": "ListItem",
+                "position": {{ forloop.index }},
+                "name": {{ crumb.title | default: crumb | json }},
+                "item": {{ crumb.url | default: canonical_url | json }}
+              }{%- if forloop.last == false -%},{%- endif -%}
+            {%- endfor -%}
+          ]
+        }
+      </script>
+    {%- endif -%}
 
     <script src="{{ 'constants.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'pubsub.js' | asset_url }}" defer="defer"></script>
@@ -372,5 +406,7 @@
     {%- if settings.cart_type == 'drawer' -%}
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+
+  {% render 'perf-seo-helpers' %}
   </body>
 </html>

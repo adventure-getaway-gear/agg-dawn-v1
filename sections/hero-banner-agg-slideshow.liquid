@@ -213,7 +213,8 @@
           {% if has_cta_primary or has_cta_secondary %}{% assign any_cta = true %}{% endif %}
           {% assign wrap_slide_link = false %}
           {% if b.slide_link != blank and any_cta == false %}{% assign wrap_slide_link = true %}{% endif %}
-          <li id="{{ slide_id }}" class="hero-banner-agg__slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.index0 }}" data-duration="{{ b.slide_duration | default: s.slideshow_interval | times: 1000 }}" data-combo-shimmer-fade="{{ b.combine_text_shimmer_with_fade | default: false }}" data-allow-slide-txt-shimmer="{{ b.enable_text_shimmer_slide | default: false }}" data-allow-slide-twinkle="{{ b.enable_text_twinkle_slide | default: false }}" role="group" aria-roledescription="slide" aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}" {{ block.shopify_attributes }}>
+          {%- assign slide_reset = b.reset_slide_overrides | default: false -%}
+          <li id="{{ slide_id }}" class="hero-banner-agg__slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.index0 }}" data-duration="{{ b.slide_duration | default: s.slideshow_interval | times: 1000 }}" data-combo-shimmer-fade="{{ b.combine_text_shimmer_with_fade | default: false }}" data-allow-slide-txt-shimmer="{% if slide_reset %}false{% else %}{{ b.enable_text_shimmer_slide | default: false }}{% endif %}" data-allow-slide-twinkle="{% if slide_reset %}false{% else %}{{ b.enable_text_twinkle_slide | default: false }}{% endif %}" role="group" aria-roledescription="slide" aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}" {{ block.shopify_attributes }}>
             {% if wrap_slide_link %}<a href="{{ b.slide_link }}" style="display:block;position:absolute;inset:0;" tabindex="-1" aria-label="{{ b.slide_alt | default: s.image_alt | escape }}">{% endif %}
               {% if b.slide_image %}
                 {% assign widths = '400,600,800,1200,1600,2048' | split: ',' %}
@@ -232,6 +233,8 @@
                   srcset="{{ srcset | strip }}"
                   sizes="100vw"
                   alt="{{ b.slide_alt | default: s.image_alt | default: s.subheadline | default: s.headline | escape }}"
+                  width="{{ b.slide_image.width }}"
+                  height="{{ b.slide_image.height }}"
                   loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
                   fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
                   decoding="async"
@@ -264,7 +267,7 @@
               {% assign h_anim_speed_val = h_anim_speed_custom %}
               {% if h_anim_speed == 'slow' %}{% assign h_anim_speed_val = 1800 %}{% elsif h_anim_speed == 'medium' %}{% assign h_anim_speed_val = 900 %}{% elsif h_anim_speed == 'fast' %}{% assign h_anim_speed_val = 500 %}{% endif %}
               <div class="hero-banner-agg__slidePiece pos-{{ headline_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--headline-color:{{ b.headline_color | default: s.headline_color }};--headline-size:{% if b.headline_size > 0 %}{{ b.headline_size }}px{% endif %};--headline-size-m:{% if b.headline_size > 0 %}{{ b.headline_size | divided_by: 1.6 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <h3 class="hero-banner-agg__pieceHeadline" data-text-anim-type="{{ h_anim_type }}" data-text-anim-intensity="{{ h_anim_intensity }}" data-text-anim-speed-val="{{ h_anim_speed_val }}" data-text-anim-ease="{{ b.headline_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.headline_anim_ease_custom }}" data-text-shimmer-color="{{ b.headline_shimmer_color | default: s.text_shimmer_color }}" data-text-shimmer-speed="{{ b.headline_shimmer_speed_ms }}" data-text-twinkle="{{ b.headline_enable_twinkle }}" data-text-sparkle-density="{{ b.headline_sparkle_density }}" data-text-glint-strength="{{ b.headline_glint_strength }}" data-text-glint-width="{{ b.headline_glint_width }}">{{ b.slide_headline }}</h3>
+                <h3 class="hero-banner-agg__pieceHeadline" data-text-anim-type="{{ h_anim_type }}" data-text-anim-intensity="{{ h_anim_intensity }}" data-text-anim-speed-val="{{ h_anim_speed_val }}" data-text-anim-ease="{{ b.headline_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.headline_anim_ease_custom }}" data-text-shimmer-color="{% if slide_reset %}{{ s.text_shimmer_color }}{% else %}{{ b.headline_shimmer_color | default: s.text_shimmer_color }}{% endif %}" data-text-shimmer-speed="{% if slide_reset %}{{ s.text_shimmer_speed_ms }}{% else %}{{ b.headline_shimmer_speed_ms }}{% endif %}" data-text-twinkle="{% if slide_reset %}{% else %}{{ b.headline_enable_twinkle }}{% endif %}" data-text-sparkle-density="{% if slide_reset %}{% else %}{{ b.headline_sparkle_density }}{% endif %}" data-text-glint-strength="{% if slide_reset %}{% else %}{{ b.headline_glint_strength }}{% endif %}" data-text-glint-width="{% if slide_reset %}{% else %}{{ b.headline_glint_width }}{% endif %}">{{ b.slide_headline }}</h3>
               </div>
             {%- endif -%}
             {%- if s.show_global_subheadlines and b.slide_subheadline != blank -%}
@@ -276,7 +279,7 @@
               {% assign s_anim_speed_val = s_anim_speed_custom %}
               {% if s_anim_speed == 'slow' %}{% assign s_anim_speed_val = 1800 %}{% elsif s_anim_speed == 'medium' %}{% assign s_anim_speed_val = 900 %}{% elsif s_anim_speed == 'fast' %}{% assign s_anim_speed_val = 500 %}{% endif %}
               <div class="hero-banner-agg__slidePiece pos-{{ sub_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--sub-color:{{ b.subheadline_color | default: s.subheadline_color }};--sub-size:{% if b.subheadline_size > 0 %}{{ b.subheadline_size }}px{% endif %};--sub-size-m:{% if b.subheadline_size > 0 %}{{ b.subheadline_size | divided_by: 1.1 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <p class="hero-banner-agg__pieceSub" data-text-anim-type="{{ s_anim_type }}" data-text-anim-intensity="{{ s_anim_intensity }}" data-text-anim-speed-val="{{ s_anim_speed_val }}" data-text-anim-ease="{{ b.sub_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.sub_anim_ease_custom }}" data-text-shimmer-color="{{ b.sub_shimmer_color | default: s.text_shimmer_color }}" data-text-shimmer-speed="{{ b.sub_shimmer_speed_ms }}" data-text-twinkle="{{ b.sub_enable_twinkle }}" data-text-sparkle-density="{{ b.sub_sparkle_density }}" data-text-glint-strength="{{ b.sub_glint_strength }}" data-text-glint-width="{{ b.sub_glint_width }}">{{ b.slide_subheadline }}</p>
+                <p class="hero-banner-agg__pieceSub" data-text-anim-type="{{ s_anim_type }}" data-text-anim-intensity="{{ s_anim_intensity }}" data-text-anim-speed-val="{{ s_anim_speed_val }}" data-text-anim-ease="{{ b.sub_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.sub_anim_ease_custom }}" data-text-shimmer-color="{% if slide_reset %}{{ s.text_shimmer_color }}{% else %}{{ b.sub_shimmer_color | default: s.text_shimmer_color }}{% endif %}" data-text-shimmer-speed="{% if slide_reset %}{{ s.text_shimmer_speed_ms }}{% else %}{{ b.sub_shimmer_speed_ms }}{% endif %}" data-text-twinkle="{% if slide_reset %}{% else %}{{ b.sub_enable_twinkle }}{% endif %}" data-text-sparkle-density="{% if slide_reset %}{% else %}{{ b.sub_sparkle_density }}{% endif %}" data-text-glint-strength="{% if slide_reset %}{% else %}{{ b.sub_glint_strength }}{% endif %}" data-text-glint-width="{% if slide_reset %}{% else %}{{ b.sub_glint_width }}{% endif %}">{{ b.slide_subheadline }}</p>
               </div>
             {%- endif -%}
             {%- if s.show_slide_ctas and any_cta -%}
@@ -788,6 +791,7 @@
   "tag": "section",
   "class": "section hero-banner-agg hero-banner-agg--slideshow",
   "settings": [
+  {"type":"header","content":"SEO & Accessibility"},
     {"type":"image_picker","id":"hero_image","label":"Fallback image"},
     {"type":"text","id":"image_alt","label":"Global fallback alt text"},
   {"type":"text","id":"headline","label":"Headline","default":"Explore Your Next Adventure"},
@@ -843,7 +847,7 @@
   {"type":"range","id":"text_shimmer_twinkle_speed_ms","label":"Twinkle speed (ms)","min":400,"max":4000,"step":100,"default":1800},
   {"type":"checkbox","id":"tuck_under_header","label":"Tuck under sticky header (remove top gap)","default":true},
   {"type":"range","id":"header_offset_px","label":"Header bottom offset (px)","min":0,"max":120,"step":2,"default":48,"info":"Adjust if a small gap remains."},
-  {"type":"header","content":"Global CTA animation defaults"},
+  {"type":"header","content":"Global CTA Animation Defaults"},
   {"type":"select","id":"cta_global_anim_style_cont","label":"Global continuous style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
   {"type":"select","id":"cta_global_anim_style_hover","label":"Global hover style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
   {"type":"select","id":"cta_global_anim_style_click","label":"Global click style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
@@ -864,7 +868,11 @@
   ],
   "blocks": [
     {"type":"image","name":"Slide","settings":[
+  {"type":"header","content":"Slide Basics"},
       {"type":"image_picker","id":"slide_image","label":"Image"},
+  {"type":"text","id":"slide_alt","label":"Alt text","info":"Describe the image for accessibility and SEO."},
+  {"type":"url","id":"slide_link","label":"Full-slide link"},
+  {"type":"header","content":"Image Animation"},
       {"type":"header","content":"Image Animation Settings"},
       {"type":"select","id":"image_anim_type","label":"Image Animation Type","default":"none","options":[
         {"value":"none","label":"None"},
@@ -883,7 +891,7 @@
       {"type":"range","id":"image_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
       {"type":"select","id":"image_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
       {"type":"range","id":"image_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800},
-      {"type":"header","content":"Directional Image Slide-in"},
+  {"type":"header","content":"Directional Image Slide-in"},
       {"type":"select","id":"image_slide_style","label":"Image Slide-in Style","default":"none","options":[
         {"value":"none","label":"None"},
         {"value":"slide_in_left","label":"Slide-in from Left"},
@@ -909,7 +917,7 @@
         {"value":"custom","label":"Custom cubic-bezier()"}
       ]},
       {"type":"text","id":"image_slide_ease_custom","label":"Custom cubic-bezier(...) for Image Slide-in"},
-      {"type":"header","content":"Headline Animation"},
+  {"type":"header","content":"Headline Animation"},
       {"type":"select","id":"headline_anim_type","label":"Headline Animation","default":"none","options":[
         {"value":"none","label":"None"},
         {"value":"fade_in","label":"Fade In"},
@@ -939,7 +947,7 @@
   {"type":"range","id":"headline_glint_width","label":"Headline glint width (0 = inherit)","min":0,"max":50,"step":1,"default":0},
       {"type":"checkbox","id":"headline_enable_twinkle","label":"Headline: enable twinkle overlay (override global)","default":false},
       {"type":"range","id":"headline_anim_speed_custom","label":"Headline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900},
-      {"type":"header","content":"Subheadline Animation"},
+  {"type":"header","content":"Subheadline Animation"},
       {"type":"select","id":"sub_anim_type","label":"Subheadline Animation","default":"none","options":[
         {"value":"none","label":"None"},
         {"value":"fade_in","label":"Fade In"},
@@ -972,16 +980,32 @@
       {"type":"checkbox","id":"enable_text_twinkle_slide","label":"Enable sparkle twinkle for this slide (override global)","default":false},
       {"type":"checkbox","id":"combine_text_shimmer_with_fade","label":"Combine shimmer with subtle fade-up on activate","default":false},
       {"type":"range","id":"sub_anim_speed_custom","label":"Subheadline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900},
-      {"type":"text","id":"slide_alt","label":"Alt text"},
-      {"type":"url","id":"slide_link","label":"Full-slide link"},
+  {"type":"header","content":"Slide Content"},
       {"type":"text","id":"slide_headline","label":"Slide headline"},
       {"type":"text","id":"slide_subheadline","label":"Slide subheadline"},
+  {"type":"header","content":"CTA Buttons"},
       {"type":"text","id":"slide_cta_text","label":"Slide CTA text"},
       {"type":"url","id":"slide_cta_link","label":"Slide CTA link"},
       {"type":"select","id":"slide_cta_variant","label":"Slide CTA variant","default":"primary","options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"ghost","label":"Ghost"}]},
   {"type":"text","id":"slide_cta2_text","label":"Secondary CTA text"},
   {"type":"url","id":"slide_cta2_link","label":"Secondary CTA link"},
   {"type":"select","id":"slide_cta2_variant","label":"Secondary CTA variant","default":"secondary","options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"ghost","label":"Ghost"}]},
+  {"type":"header","content":"CTA Visual Overrides"},
+  {"type":"checkbox","id":"enable_cta_visual_overrides","label":"Enable CTA visual overrides for this slide","default":false},
+  {"type":"range","id":"cta_border_width","label":"CTA border width (px)","min":0,"max":8,"step":1,"default":0},
+  {"type":"select","id":"cta_border_style","label":"CTA border style","default":"none","options":[{"value":"none","label":"None"},{"value":"solid","label":"Solid"},{"value":"dashed","label":"Dashed"},{"value":"dotted","label":"Dotted"}]},
+  {"type":"color","id":"cta_border_color","label":"CTA border color"},
+  {"type":"range","id":"cta_radius_override","label":"CTA border radius override (px)","min":0,"max":32,"step":1,"default":0},
+  {"type":"range","id":"cta_fixed_width","label":"CTA fixed width (px)","min":0,"max":600,"step":10,"default":0,"info":"0 = auto"},
+  {"type":"range","id":"cta_width_scale","label":"CTA width scale (%)","min":-50,"max":200,"step":5,"default":0},
+  {"type":"range","id":"cta_fixed_height","label":"CTA fixed height (px)","min":0,"max":200,"step":5,"default":0},
+  {"type":"color","id":"primary_bg_color","label":"Primary CTA background color"},
+  {"type":"text","id":"primary_bg_gradient","label":"Primary CTA background gradient CSS"},
+  {"type":"color","id":"primary_text_color","label":"Primary CTA text color"},
+  {"type":"color","id":"secondary_bg_color","label":"Secondary CTA background color"},
+  {"type":"text","id":"secondary_bg_gradient","label":"Secondary CTA background gradient CSS"},
+  {"type":"color","id":"secondary_text_color","label":"Secondary CTA text color"},
+  {"type":"header","content":"Layout & Position"},
   {"type":"select","id":"cta_size","label":"CTA size","default":"medium","options":[{"value":"small","label":"Small"},{"value":"medium","label":"Medium"},{"value":"large","label":"Large"}]},
   {"type":"select","id":"cta_anim_style","label":"CTA animation style","default":"shimmer","options":[
     {"value":"none","label":"None"},
@@ -1035,6 +1059,8 @@
   {"type":"range","id":"secondary_anim_speed_hover","label":"Secondary hover speed (s)","min":0,"max":6,"step":0.5,"default":0,"info":"0 = inherit"},
   {"type":"range","id":"secondary_anim_speed_click","label":"Secondary click speed (s)","min":0,"max":3,"step":0.1,"default":0,"info":"0 = inherit"},
   {"type":"select","id":"secondary_3d_style","label":"Secondary 3D style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
+  {"type":"header","content":"Reset"},
+  {"type":"checkbox","id":"reset_slide_overrides","label":"Reset this slide to global defaults (disable all slide-level overrides)","default":false},
   {"type":"range","id":"headline_size","label":"Headline size override (px)","min":0,"max":120,"step":2,"default":0,"info":"0 = inherit global"},
   {"type":"range","id":"subheadline_size","label":"Subheadline size override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit global"},
   {"type":"color","id":"headline_color","label":"Headline color override"},
