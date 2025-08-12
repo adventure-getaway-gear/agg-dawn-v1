@@ -10,12 +10,15 @@
   endif
 -%}
 <!-- Hero Slideshow Section -->
-<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;margin-top:{{ s.top_spacing | default: 0 }}px;touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}">
+<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
     .hero-banner-agg--slideshow .hero-banner-agg__media,.hero-banner-agg--slideshow .hero-banner-agg__slideshow{position:relative;width:100%;height:var(--hb-height)}
     .hero-banner-agg__slideshow{overflow:hidden}
+    /* Allow slideshow to tuck under sticky header if enabled */
+    :root{--header-bottom-margin:48px}
+    @media (max-width:989px){:root{--header-bottom-margin:56px}}
     .hero-banner-agg__slides{position:absolute;inset:0;margin:0;padding:0;list-style:none}
     .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;will-change:opacity}
     .hero-banner-agg__slide.is-active{opacity:1;}
@@ -808,16 +811,17 @@
     {"type":"checkbox","id":"loop_slides","label":"Loop slides","default":true},
   {"type":"header","content":"Ambient & Text Shimmer"},
   {"type":"range","id":"ambient_subtlety","label":"Ambient subtlety (global)","min":0,"max":100,"step":5,"default":50},
-  {"type":"color","id":"text_shimmer_color","label":"Default text shimmer color","default":"#ffffff"},
-  {"type":"range","id":"text_shimmer_speed_ms","label":"Default text shimmer speed (ms)","min":800,"max":6000,"step":100,"default":2200},
-  {"type":"checkbox","id":"enable_text_shimmer","label":"Enable text shimmer globally","default":true},
+  {"type":"color","id":"text_shimmer_color","label":"Default text shimmer color","default":"#ffffff","info":"Used if a slide doesn’t override color."},
+  {"type":"range","id":"text_shimmer_speed_ms","label":"Default text shimmer speed (ms)","min":800,"max":6000,"step":100,"default":2200,"info":"0 in slide = use this global speed."},
+  {"type":"checkbox","id":"enable_text_shimmer","label":"Enable text shimmer globally","default":true,"info":"Slides can also force shimmer on individually."},
   {"type":"checkbox","id":"text_shimmer_hover_only","label":"Text shimmer: hover only","default":false},
   {"type":"checkbox","id":"text_shimmer_once","label":"Text shimmer: run once then stop","default":false},
-  {"type":"range","id":"text_shimmer_sparkle_density","label":"Text shimmer sparkle density","min":0,"max":100,"step":5,"default":50},
-  {"type":"range","id":"text_shimmer_glint_strength","label":"Text shimmer glint strength","min":0,"max":100,"step":5,"default":35},
-  {"type":"range","id":"text_shimmer_glint_width","label":"Text shimmer glint width","min":5,"max":50,"step":1,"default":35},
-  {"type":"checkbox","id":"enable_text_shimmer_twinkle","label":"Enable sparkle twinkle","default":true},
-  {"type":"range","id":"text_shimmer_twinkle_speed_ms","label":"Sparkle twinkle speed (ms)","min":400,"max":4000,"step":100,"default":1800},
+  {"type":"range","id":"text_shimmer_sparkle_density","label":"Sparkle density","min":0,"max":100,"step":5,"default":50,"info":"Higher = more sparkles."},
+  {"type":"range","id":"text_shimmer_glint_strength","label":"Glint strength","min":0,"max":100,"step":5,"default":35},
+  {"type":"range","id":"text_shimmer_glint_width","label":"Glint width","min":5,"max":50,"step":1,"default":35},
+  {"type":"checkbox","id":"enable_text_shimmer_twinkle","label":"Enable twinkle overlay","default":true,"info":"Slides can also force twinkle on."},
+  {"type":"range","id":"text_shimmer_twinkle_speed_ms","label":"Twinkle speed (ms)","min":400,"max":4000,"step":100,"default":1800},
+  {"type":"checkbox","id":"tuck_under_header","label":"Tuck under sticky header (remove top gap)","default":true},
   {"type":"header","content":"Global CTA animation defaults"},
   {"type":"select","id":"cta_global_anim_style_cont","label":"Global continuous style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
   {"type":"select","id":"cta_global_anim_style_hover","label":"Global hover style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
