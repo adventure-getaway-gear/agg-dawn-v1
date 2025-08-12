@@ -98,9 +98,14 @@
   @keyframes hbTextSparkleDrift { 0%{background-position:0 0, 12px 8px, 6px 16px;} 100%{background-position:200px 0, 212px 8px, 206px 16px;} }
   @keyframes hbTextGlitterWave { 0%{background-position:0 0, 0 0, 0 0;} 50%{background-position:40px 20px, -30px 10px, 20px -10px;} 100%{background-position:0 0, 0 0, 0 0;} }
   .hb-text-fx{ position: relative; }
+  /* Use a cloned-text pseudo element and clip animated backgrounds to the text glyphs */
   .hb-text-fx::before{
-    content:""; position:absolute; inset:var(--fx-inset, 0); pointer-events:none; mix-blend-mode:screen; z-index:1;
-    -webkit-mask-image: linear-gradient(#000,#000); mask-image: linear-gradient(#000,#000); /* ensure clip to element box */
+    content: attr(data-text-fx-content);
+    position:absolute; left:0; top:0; right:0; bottom:0; display:block; z-index:1; pointer-events:none;
+    font: inherit; line-height: inherit; letter-spacing: inherit; text-transform: inherit; text-align: inherit; white-space: pre-wrap;
+    color: transparent; -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; background-clip: text;
+    mix-blend-mode: screen; /* luminous highlight embedded in text */
   }
   .hb-text-fx.sparkle::before{
     background-image:
@@ -770,17 +775,19 @@
         var posMap = { tl:[-4,-4], tc:[0,-4], tr:[4,-4], ml:[-4,0], mc:[0,0], mr:[4,0], bl:[-4,4], bc:[0,4], br:[4,4], cover:[0,0] };
         var off = posMap[fxPos] || [0,0];
         // Clear old fx classes
-        el.classList.remove('hb-text-fx','sparkle','glitter');
+  el.classList.remove('hb-text-fx','sparkle','glitter');
         el.style.removeProperty('--fx-color');
         el.style.removeProperty('--fx-opacity');
         el.style.removeProperty('--fx-speed');
         el.style.removeProperty('--fx-offset-x');
         el.style.removeProperty('--fx-offset-y');
+  el.removeAttribute('data-text-fx-content');
         // Opacity from intensity curve
         var fxOpacity = 0.2 + Math.min(1, Math.max(0, fxIntensity/100)) * 0.7;
         if (fxType === 'sparkle' || fxType === 'glitter'){
           el.classList.add('hb-text-fx');
           el.classList.add(fxType === 'sparkle' ? 'sparkle' : 'glitter');
+          try { el.setAttribute('data-text-fx-content', (el.textContent || '').trim()); } catch(e) { /* no-op */ }
           el.style.setProperty('--fx-color', fxColor);
           el.style.setProperty('--fx-opacity', fxOpacity.toFixed(2));
           el.style.setProperty('--fx-speed', Math.max(1000, fxSpeed) + 'ms');
