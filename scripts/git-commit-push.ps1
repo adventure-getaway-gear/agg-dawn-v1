@@ -7,7 +7,8 @@ Param(
 
 function Invoke-Git {
   param([string]$Args)
-  git $Args
+  # Use cmd parsing to honor quotes inside the argument string (e.g., commit messages)
+  & cmd /c "git $Args"
   if ($LASTEXITCODE -ne 0) {
     Write-Error "Git command failed: git $Args"; exit $LASTEXITCODE
   }
