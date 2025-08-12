@@ -85,7 +85,11 @@
       radial-gradient(1.2px 1.2px at 40% 70%, rgba(255,255,255,.6), rgba(255,255,255,0));
     mix-blend-mode: screen;
     opacity: calc(var(--txt-sparkle-density, .5) * .9);
-    animation: hbTwinkle var(--txt-twinkle-speed, 1800ms) ease-in-out infinite;
+    /* Run three twinkle passes with staggered delays so sparkles actually twinkle */
+    animation:
+      hbTwinkle var(--txt-twinkle-speed, 1800ms) ease-in-out infinite,
+      hbTwinkle var(--txt-twinkle-speed, 1800ms) ease-in-out infinite,
+      hbTwinkle var(--txt-twinkle-speed, 1800ms) ease-in-out infinite;
     animation-delay: 0ms, 200ms, 400ms; /* stagger */
   }
   .hb-text-shimmer-hover{ position: relative; }
