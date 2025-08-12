@@ -205,7 +205,7 @@
           {% if has_cta_primary or has_cta_secondary %}{% assign any_cta = true %}{% endif %}
           {% assign wrap_slide_link = false %}
           {% if b.slide_link != blank and any_cta == false %}{% assign wrap_slide_link = true %}{% endif %}
-          <li id="{{ slide_id }}" class="hero-banner-agg__slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.index0 }}" data-duration="{{ b.slide_duration | default: s.slideshow_interval | times: 1000 }}" data-combo-shimmer-fade="{{ b.combine_text_shimmer_with_fade | default: false }}" role="group" aria-roledescription="slide" aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}" {{ block.shopify_attributes }}>
+          <li id="{{ slide_id }}" class="hero-banner-agg__slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.index0 }}" data-duration="{{ b.slide_duration | default: s.slideshow_interval | times: 1000 }}" data-combo-shimmer-fade="{{ b.combine_text_shimmer_with_fade | default: false }}" data-allow-slide-txt-shimmer="{{ b.enable_text_shimmer_slide | default: false }}" data-allow-slide-twinkle="{{ b.enable_text_twinkle_slide | default: false }}" role="group" aria-roledescription="slide" aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}" {{ block.shopify_attributes }}>
             {% if wrap_slide_link %}<a href="{{ b.slide_link }}" style="display:block;position:absolute;inset:0;" tabindex="-1" aria-label="{{ b.slide_alt | default: s.image_alt | escape }}">{% endif %}
               {% if b.slide_image %}
                 {% assign widths = '400,600,800,1200,1600,2048' | split: ',' %}
@@ -671,7 +671,10 @@
             el.style.animation = 'hbTextFadeRight '+ts+'ms '+textEasing+' 1 both';
             break;
           case 'shimmer':
-            var allow = (root.getAttribute('data-allow-text-shimmer') === 'true' || root.getAttribute('data-allow-text-shimmer') === '1');
+            var allowGlobal = (root.getAttribute('data-allow-text-shimmer') === 'true' || root.getAttribute('data-allow-text-shimmer') === '1');
+            var slideNode = el.closest('.hero-banner-agg__slide');
+            var allowSlide = !!(slideNode && (slideNode.getAttribute('data-allow-slide-txt-shimmer') === 'true' || slideNode.getAttribute('data-allow-slide-txt-shimmer') === '1'));
+            var allow = allowGlobal || allowSlide;
             if (allow) {
               var hoverOnly = (root.getAttribute('data-text-shimmer-hover-only') === 'true' || root.getAttribute('data-text-shimmer-hover-only') === '1');
               var once = (root.getAttribute('data-text-shimmer-once') === 'true' || root.getAttribute('data-text-shimmer-once') === '1');
@@ -688,7 +691,9 @@
         var glint = parseInt(root.getAttribute('data-txt-glint-strength')||'35',10);
               var glintW = parseInt(root.getAttribute('data-txt-glint-width')||'35',10);
               var twk = parseInt(root.getAttribute('data-txt-twinkle-speed')||'1800',10);
-              var allowTw = (root.getAttribute('data-allow-text-twinkle') === 'true' || root.getAttribute('data-allow-text-twinkle') === '1');
+              var allowTwGlobal = (root.getAttribute('data-allow-text-twinkle') === 'true' || root.getAttribute('data-allow-text-twinkle') === '1');
+              var allowTwSlide = !!(slideNode && (slideNode.getAttribute('data-allow-slide-twinkle') === 'true' || slideNode.getAttribute('data-allow-slide-twinkle') === '1'));
+              var allowTw = allowTwGlobal || allowTwSlide;
   var sparkNorm = Math.max(0, Math.min(100, spark)) / 100; // 0..1
   if (!allowTw) { sparkNorm = 0; }
         var glintNorm = Math.max(0, Math.min(100, glint)); // 0..100
@@ -928,6 +933,8 @@
       {"type":"select","id":"sub_shimmer","label":"Subheadline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
       {"type":"color","id":"sub_shimmer_color","label":"Subheadline shimmer color"},
   {"type":"range","id":"sub_shimmer_speed_ms","label":"Subheadline shimmer speed (ms)","min":0,"max":6000,"step":100,"default":0,"info":"0 = use global"},
+  {"type":"checkbox","id":"enable_text_shimmer_slide","label":"Enable text shimmer for this slide (override global)","default":false},
+  {"type":"checkbox","id":"enable_text_twinkle_slide","label":"Enable sparkle twinkle for this slide (override global)","default":false},
   {"type":"checkbox","id":"combine_text_shimmer_with_fade","label":"Combine shimmer with subtle fade-up on activate","default":false},
       {"type":"range","id":"sub_anim_speed_custom","label":"Subheadline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900},
       {"type":"text","id":"slide_alt","label":"Alt text"},
