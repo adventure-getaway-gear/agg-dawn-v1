@@ -1,0 +1,460 @@
+{% comment %}
+AGG Prime Showcase Section for Adventure Getaway Gear
+
+README:
+- This section displays 1-3 slides with animated backgrounds, headings, subheadings, and two CTA buttons per slide.
+- All content, images, button text/links, and overlay positions are configurable in the section settings.
+- To add slides, use the "Slides" block in the section settings (up to 3).
+- Brand colors, typography, and button styles are controlled via CSS variables at the top for easy future updates.
+- All images are lazy-loaded and have alt text for SEO.
+- Slide transitions, ambient movement, and button effects are handled by the included JS.
+- Accessibility: ARIA labels, keyboard navigation, and pause on hover/focus are built-in.
+- Responsive: Mobile layouts stack vertically, images crop/resize, and buttons are touch-friendly.
+- To customize styles, edit the CSS variables or add custom CSS in the schema settings.
+{% endcomment %}
+
+{% assign brand_primary = '#ff6a1a' %}
+{% assign brand_secondary = '#004b80' %}
+{% assign brand_text = '#222' %}
+{% assign brand_button_text = '#fff' %}
+
+<style>
+:root {
+  --agg-brand-primary: {{ brand_primary }};
+  --agg-brand-secondary: {{ brand_secondary }};
+  --agg-brand-text: {{ brand_text }};
+  --agg-brand-button-text: {{ brand_button_text }};
+  --agg-slide-interval: {{ section.settings.slide_interval | default: 7 }}s;
+  --agg-heading-font: 'Montserrat', 'Arial', sans-serif;
+  --agg-subheading-font: 'Roboto', 'Arial', sans-serif;
+  --agg-heading-size: 2.5rem;
+  --agg-subheading-size: 1.25rem;
+  --agg-button-radius: 8px;
+  --agg-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --agg-slide-height: 600px;
+  --agg-slide-height-mobile: 400px;
+}
+
+.agg-prime-showcase {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--agg-brand-secondary);
+  font-family: var(--agg-heading-font);
+}
+.agg-prime-showcase__slides {
+  display: flex;
+  transition: transform 0.8s cubic-bezier(0.7,0,0.3,1);
+  will-change: transform;
+}
+.agg-prime-showcase__slide {
+  min-width: 100%;
+  position: relative;
+  height: var(--agg-slide-height);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background: #000;
+}
+@media (max-width: 768px) {
+  .agg-prime-showcase__slide {
+    height: var(--agg-slide-height-mobile);
+  }
+}
+.agg-prime-showcase__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 1;
+  filter: brightness(0.95) saturate(1.1);
+  transition: transform 8s cubic-bezier(0.7,0,0.3,1);
+  will-change: transform;
+}
+.agg-prime-showcase__ambient {
+  animation: aggAmbientMove 18s ease-in-out infinite alternate;
+}
+@keyframes aggAmbientMove {
+  0% { transform: scale(1.05) translate3d(-2%, -2%, 0); }
+  100% { transform: scale(1.08) translate3d(2%, 2%, 0); }
+}
+.agg-prime-showcase__content {
+  position: absolute;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.agg-prime-showcase__overlay {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+/* Overlay positioning utility classes */
+.agg-pos-tl { top: 5%; left: 5%; align-items: flex-start; justify-content: flex-start; }
+.agg-pos-tc { top: 5%; left: 50%; transform: translateX(-50%); align-items: center; justify-content: flex-start; }
+.agg-pos-tr { top: 5%; right: 5%; align-items: flex-end; justify-content: flex-start; }
+.agg-pos-ml { top: 50%; left: 5%; transform: translateY(-50%); align-items: flex-start; justify-content: center; }
+.agg-pos-mc { top: 50%; left: 50%; transform: translate(-50%,-50%); align-items: center; justify-content: center; }
+.agg-pos-mr { top: 50%; right: 5%; transform: translateY(-50%); align-items: flex-end; justify-content: center; }
+.agg-pos-bl { bottom: 5%; left: 5%; align-items: flex-start; justify-content: flex-end; }
+.agg-pos-bc { bottom: 5%; left: 50%; transform: translateX(-50%); align-items: center; justify-content: flex-end; }
+.agg-pos-br { bottom: 5%; right: 5%; align-items: flex-end; justify-content: flex-end; }
+
+.agg-prime-showcase__heading {
+  font-family: var(--agg-heading-font);
+  color: var(--agg-brand-text);
+  font-size: var(--agg-heading-size);
+  font-weight: 700;
+  margin-bottom: 0.5em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  line-height: 1.1;
+}
+.agg-prime-showcase__subheading {
+  font-family: var(--agg-subheading-font);
+  color: var(--agg-brand-text);
+  font-size: var(--agg-subheading-size);
+  font-weight: 400;
+  margin-bottom: 1em;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  line-height: 1.2;
+}
+.agg-prime-showcase__buttons {
+  display: flex;
+  gap: 1em;
+  flex-wrap: wrap;
+  margin-top: 1em;
+}
+@media (max-width: 768px) {
+  .agg-prime-showcase__heading,
+  .agg-prime-showcase__subheading {
+    font-size: 1.25rem;
+    text-align: center;
+  }
+  .agg-prime-showcase__buttons {
+    flex-direction: column;
+    gap: 0.75em;
+    align-items: stretch;
+  }
+}
+.agg-prime-showcase__button {
+  background: var(--agg-brand-primary);
+  color: var(--agg-brand-button-text);
+  border: none;
+  border-radius: var(--agg-button-radius);
+  padding: 0.75em 2em;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: var(--agg-shadow);
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.7,0,0.3,1), box-shadow 0.3s, background 0.3s;
+  outline: none;
+  position: relative;
+  min-width: 120px;
+  min-height: 48px;
+  will-change: transform, box-shadow;
+}
+.agg-prime-showcase__button--secondary {
+  background: var(--agg-brand-secondary);
+  color: var(--agg-brand-button-text);
+}
+.agg-prime-showcase__button:focus {
+  box-shadow: 0 0 0 3px rgba(255,106,26,0.3);
+}
+.agg-prime-showcase__button[data-anim="fade"] {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: aggFadeIn 1s forwards;
+}
+.agg-prime-showcase__button[data-anim="slide"] {
+  opacity: 0;
+  transform: translateX(-32px);
+  animation: aggSlideIn 1s forwards;
+}
+.agg-prime-showcase__button[data-anim="glitter"] {
+  box-shadow: 0 0 16px 2px var(--agg-brand-primary);
+  animation: aggGlitterIn 1.2s forwards;
+}
+@keyframes aggFadeIn {
+  to { opacity: 1; transform: none; }
+}
+@keyframes aggSlideIn {
+  to { opacity: 1; transform: none; }
+}
+@keyframes aggGlitterIn {
+  0% { box-shadow: 0 0 0 0 var(--agg-brand-primary); }
+  80% { box-shadow: 0 0 24px 8px var(--agg-brand-primary); }
+  100% { box-shadow: 0 0 8px 2px var(--agg-brand-primary); }
+}
+.agg-prime-showcase__button:hover,
+.agg-prime-showcase__button:focus {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 16px 2px var(--agg-brand-primary);
+  background: linear-gradient(90deg, var(--agg-brand-primary) 60%, var(--agg-brand-secondary) 100%);
+}
+.agg-prime-showcase__button--secondary:hover,
+.agg-prime-showcase__button--secondary:focus {
+  background: linear-gradient(90deg, var(--agg-brand-secondary) 60%, var(--agg-brand-primary) 100%);
+}
+.agg-prime-showcase__nav {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 1em;
+}
+.agg-prime-showcase__nav-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(0,0,0,0.18);
+  border-radius: 50%;
+  border: none;
+  color: #fff;
+  font-size: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  outline: none;
+}
+.agg-prime-showcase__nav-btn:focus {
+  background: var(--agg-brand-primary);
+}
+.agg-prime-showcase__nav-btn[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.agg-prime-showcase__dots {
+  position: absolute;
+  bottom: 16px;
+  right: 32px;
+  z-index: 10;
+  display: flex;
+  gap: 0.5em;
+}
+.agg-prime-showcase__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.4;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  border: 2px solid var(--agg-brand-primary);
+}
+.agg-prime-showcase__dot.active {
+  opacity: 1;
+  background: var(--agg-brand-primary);
+}
+</style>
+
+<section class="agg-prime-showcase" aria-label="{{ section.settings.aria_label | escape | default: 'Prime Showcase' }}">
+  <div class="agg-prime-showcase__slides" id="aggPrimeSlides">
+    {% for block in section.blocks %}
+      {% assign slide = block.settings %}
+      <div class="agg-prime-showcase__slide" role="group" aria-roledescription="slide" aria-label="{{ slide.heading | escape }}" {% if forloop.first %}data-active="true"{% endif %}>
+        <img
+          class="agg-prime-showcase__bg agg-prime-showcase__ambient"
+          src="{{ slide.bg_image | image_url: width: 1800 }}"
+          srcset="{{ slide.bg_image | image_url: width: 900 }} 900w, {{ slide.bg_image | image_url: width: 1800 }} 1800w"
+          sizes="(max-width: 768px) 100vw, 1800px"
+          alt="{{ slide.bg_alt | escape }}"
+          loading="lazy"
+          aria-hidden="true"
+        >
+        <div class="agg-prime-showcase__content">
+          <div class="agg-prime-showcase__overlay agg-pos-{{ slide.heading_position }}">
+            {% if slide.heading %}
+              <{{ slide.heading_tag | default: 'h2' }} class="agg-prime-showcase__heading">{{ slide.heading }}</{{ slide.heading_tag | default: 'h2' }}>
+            {% endif %}
+          </div>
+          <div class="agg-prime-showcase__overlay agg-pos-{{ slide.subheading_position }}">
+            {% if slide.subheading %}
+              <div class="agg-prime-showcase__subheading">{{ slide.subheading }}</div>
+            {% endif %}
+          </div>
+          <div class="agg-prime-showcase__overlay agg-pos-{{ slide.buttons_position }}">
+            <div class="agg-prime-showcase__buttons">
+              {% if slide.button1_text and slide.button1_url %}
+                <a href="{{ slide.button1_url }}" class="agg-prime-showcase__button" role="button" aria-label="{{ slide.button1_aria | escape }}" tabindex="0" data-anim="{{ slide.button1_anim | default: 'fade' }}">{{ slide.button1_text }}</a>
+              {% endif %}
+              {% if slide.button2_text and slide.button2_url %}
+                <a href="{{ slide.button2_url }}" class="agg-prime-showcase__button agg-prime-showcase__button--secondary" role="button" aria-label="{{ slide.button2_aria | escape }}" tabindex="0" data-anim="{{ slide.button2_anim | default: 'slide' }}">{{ slide.button2_text }}</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <nav class="agg-prime-showcase__nav" aria-label="Slide navigation">
+    <button class="agg-prime-showcase__nav-btn" id="aggPrev" aria-label="Previous slide" tabindex="0">&#8592;</button>
+    <button class="agg-prime-showcase__nav-btn" id="aggNext" aria-label="Next slide" tabindex="0">&#8594;</button>
+  </nav>
+  <div class="agg-prime-showcase__dots" id="aggPrimeDots">
+    {% for block in section.blocks %}
+      <button class="agg-prime-showcase__dot{% if forloop.first %} active{% endif %}" aria-label="Go to slide {{ forloop.index }}" tabindex="0"></button>
+    {% endfor %}
+  </div>
+</section>
+
+<script>
+(function() {
+  // AGG Prime Showcase JS
+  const slides = document.querySelectorAll('.agg-prime-showcase__slide');
+  const dots = document.querySelectorAll('.agg-prime-showcase__dot');
+  const prevBtn = document.getElementById('aggPrev');
+  const nextBtn = document.getElementById('aggNext');
+  const slidesContainer = document.getElementById('aggPrimeSlides');
+  let current = 0;
+  let interval = null;
+  const slideInterval = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--agg-slide-interval')) * 1000 || 7000;
+
+  function showSlide(idx) {
+    slidesContainer.style.transform = `translateX(-${idx * 100}%)`;
+    slides.forEach((slide, i) => {
+      slide.setAttribute('data-active', i === idx ? 'true' : 'false');
+    });
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === idx);
+    });
+    current = idx;
+  }
+
+  function nextSlide() {
+    showSlide((current + 1) % slides.length);
+  }
+  function prevSlide() {
+    showSlide((current - 1 + slides.length) % slides.length);
+  }
+  function goToSlide(idx) {
+    showSlide(idx);
+  }
+  function startAutoplay() {
+    if (interval) clearInterval(interval);
+    interval = setInterval(nextSlide, slideInterval);
+  }
+  function stopAutoplay() {
+    if (interval) clearInterval(interval);
+    interval = null;
+  }
+  // Keyboard navigation
+  document.querySelector('.agg-prime-showcase').addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') { prevSlide(); stopAutoplay(); }
+    if (e.key === 'ArrowRight') { nextSlide(); stopAutoplay(); }
+  });
+  // Pause on hover/focus
+  slidesContainer.addEventListener('mouseenter', stopAutoplay);
+  slidesContainer.addEventListener('mouseleave', startAutoplay);
+  slidesContainer.addEventListener('focusin', stopAutoplay);
+  slidesContainer.addEventListener('focusout', startAutoplay);
+  // Nav buttons
+  prevBtn.addEventListener('click', function() { prevSlide(); stopAutoplay(); });
+  nextBtn.addEventListener('click', function() { nextSlide(); stopAutoplay(); });
+  // Dots
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', function() { goToSlide(i); stopAutoplay(); });
+  });
+  // Init
+  showSlide(0);
+  startAutoplay();
+})();
+</script>
+
+{% schema %}
+{
+  "name": "AGG Prime Showcase",
+  "tag": "section",
+  "class": "agg-prime-showcase-section",
+  "settings": [
+    {"type": "text", "id": "aria_label", "label": "ARIA label", "default": "Prime Showcase"},
+    {"type": "range", "id": "slide_interval", "label": "Slide interval (seconds)", "min": 3, "max": 15, "step": 1, "default": 7}
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "limit": 3,
+      "settings": [
+        {"type": "image_picker", "id": "bg_image", "label": "Background image"},
+        {"type": "text", "id": "bg_alt", "label": "Background image alt text"},
+        {"type": "text", "id": "heading", "label": "Heading text"},
+        {"type": "select", "id": "heading_tag", "label": "Heading tag", "options": [
+          {"value": "h1", "label": "H1"},
+          {"value": "h2", "label": "H2"},
+          {"value": "h3", "label": "H3"}
+        ], "default": "h2"},
+        {"type": "select", "id": "heading_position", "label": "Heading position", "options": [
+          {"value": "tl", "label": "Top Left"},
+          {"value": "tc", "label": "Top Center"},
+          {"value": "tr", "label": "Top Right"},
+          {"value": "ml", "label": "Middle Left"},
+          {"value": "mc", "label": "Middle Center"},
+          {"value": "mr", "label": "Middle Right"},
+          {"value": "bl", "label": "Bottom Left"},
+          {"value": "bc", "label": "Bottom Center"},
+          {"value": "br", "label": "Bottom Right"}
+        ], "default": "mc"},
+        {"type": "text", "id": "subheading", "label": "Subheading text"},
+        {"type": "select", "id": "subheading_position", "label": "Subheading position", "options": [
+          {"value": "tl", "label": "Top Left"},
+          {"value": "tc", "label": "Top Center"},
+          {"value": "tr", "label": "Top Right"},
+          {"value": "ml", "label": "Middle Left"},
+          {"value": "mc", "label": "Middle Center"},
+          {"value": "mr", "label": "Middle Right"},
+          {"value": "bl", "label": "Bottom Left"},
+          {"value": "bc", "label": "Bottom Center"},
+          {"value": "br", "label": "Bottom Right"}
+        ], "default": "bc"},
+        {"type": "text", "id": "button1_text", "label": "Button 1 text"},
+        {"type": "url", "id": "button1_url", "label": "Button 1 URL"},
+        {"type": "text", "id": "button1_aria", "label": "Button 1 ARIA label"},
+        {"type": "select", "id": "button1_anim", "label": "Button 1 entrance animation", "options": [
+          {"value": "fade", "label": "Fade In"},
+          {"value": "slide", "label": "Slide In"},
+          {"value": "glitter", "label": "Glitter Sparkle"}
+        ], "default": "fade"},
+        {"type": "text", "id": "button2_text", "label": "Button 2 text"},
+        {"type": "url", "id": "button2_url", "label": "Button 2 URL"},
+        {"type": "text", "id": "button2_aria", "label": "Button 2 ARIA label"},
+        {"type": "select", "id": "button2_anim", "label": "Button 2 entrance animation", "options": [
+          {"value": "fade", "label": "Fade In"},
+          {"value": "slide", "label": "Slide In"},
+          {"value": "glitter", "label": "Glitter Sparkle"}
+        ], "default": "slide"},
+        {"type": "select", "id": "buttons_position", "label": "Buttons position", "options": [
+          {"value": "tl", "label": "Top Left"},
+          {"value": "tc", "label": "Top Center"},
+          {"value": "tr", "label": "Top Right"},
+          {"value": "ml", "label": "Middle Left"},
+          {"value": "mc", "label": "Middle Center"},
+          {"value": "mr", "label": "Middle Right"},
+          {"value": "bl", "label": "Bottom Left"},
+          {"value": "bc", "label": "Bottom Center"},
+          {"value": "br", "label": "Bottom Right"}
+        ], "default": "br"}
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "AGG Prime Showcase",
+      "category": "Hero",
+      "blocks": [ {"type": "slide"} ]
+    }
+  ]
+}
+{% endschema %}
