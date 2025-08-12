@@ -10,7 +10,7 @@
   endif
 -%}
 <!-- Hero Slideshow Section -->
-<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}" data-global-img-effect="{{ s.global_image_effect_default | default: 'none' }}" data-global-img-effect-force="{{ s.global_image_effect_force | default: false }}" data-global-sparkle-color="{{ s.global_sparkle_color | default: '#ffffff' }}" data-global-sparkle-density="{{ s.global_sparkle_density | default: 60 }}" data-global-sparkle-speed="{{ s.global_sparkle_speed_ms | default: 6000 }}" data-global-glitter-color="{{ s.global_glitter_color | default: '#ffffff' }}" data-global-glitter-intensity="{{ s.global_glitter_intensity | default: 45 }}" data-global-glitter-speed="{{ s.global_glitter_speed_ms | default: 8000 }}">
+<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}" data-global-img-effect="{{ s.global_image_effect_default | default: 'none' }}" data-global-img-effect-force="{{ s.global_image_effect_force | default: false }}" data-global-sparkle-color="{{ s.global_sparkle_color | default: '#ffffff' }}" data-global-sparkle-density="{{ s.global_sparkle_density | default: 60 }}" data-global-sparkle-speed="{{ s.global_sparkle_speed_ms | default: 6000 }}" data-global-glitter-color="{{ s.global_glitter_color | default: '#ffffff' }}" data-global-glitter-intensity="{{ s.global_glitter_intensity | default: 45 }}" data-global-glitter-speed="{{ s.global_glitter_speed_ms | default: 8000 }}" data-global-text-fx="{{ s.global_text_fx_default | default: 'none' }}" data-global-text-fx-force="{{ s.global_text_fx_force | default: false }}" data-global-text-fx-color="{{ s.global_text_fx_color | default: '#ffffff' }}" data-global-text-fx-intensity="{{ s.global_text_fx_intensity | default: 50 }}" data-global-text-fx-speed="{{ s.global_text_fx_speed_ms | default: 6000 }}" data-global-text-fx-pos="{{ s.global_text_fx_position | default: 'mc' }}">
   <style>
   .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms}
   @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
@@ -94,6 +94,36 @@
     animation-delay: 0ms, 200ms, 400ms; /* stagger */
   }
   .hb-text-shimmer-hover{ position: relative; }
+  /* Text FX: Sparkle and Glitter (distinct from shimmer/twinkle) */
+  @keyframes hbTextSparkleDrift { 0%{background-position:0 0, 12px 8px, 6px 16px;} 100%{background-position:200px 0, 212px 8px, 206px 16px;} }
+  @keyframes hbTextGlitterWave { 0%{background-position:0 0, 0 0, 0 0;} 50%{background-position:40px 20px, -30px 10px, 20px -10px;} 100%{background-position:0 0, 0 0, 0 0;} }
+  .hb-text-fx{ position: relative; }
+  .hb-text-fx::before{
+    content:""; position:absolute; inset:var(--fx-inset, 0); pointer-events:none; mix-blend-mode:screen; z-index:1;
+    -webkit-mask-image: linear-gradient(#000,#000); mask-image: linear-gradient(#000,#000); /* ensure clip to element box */
+  }
+  .hb-text-fx.sparkle::before{
+    background-image:
+      radial-gradient(circle, var(--fx-color, rgba(255,255,255,.95)) 0.8px, rgba(255,255,255,0) 1.2px),
+      radial-gradient(circle, var(--fx-color, rgba(255,255,255,.7)) 0.7px, rgba(255,255,255,0) 1.1px),
+      radial-gradient(circle, var(--fx-color, rgba(255,255,255,.5)) 0.6px, rgba(255,255,255,0) 1px);
+    background-size: 18px 18px, 24px 24px, 36px 36px;
+    background-position: var(--fx-bgpos, 0 0), calc(12px + var(--fx-offset-x, 0px)) calc(8px + var(--fx-offset-y, 0px)), calc(6px + var(--fx-offset-x, 0px)) calc(16px + var(--fx-offset-y, 0px));
+    animation: hbTextSparkleDrift var(--fx-speed, 6000ms) linear infinite;
+    opacity: var(--fx-opacity, .7);
+    filter: drop-shadow(0 0 2px rgba(255,255,255,.2));
+  }
+  .hb-text-fx.glitter::before{
+    background-image:
+      linear-gradient(120deg, rgba(255,255,255,.1), rgba(255,255,255,0), rgba(255,255,255,.12)),
+      radial-gradient(circle, var(--fx-color, rgba(255,255,255,.9)) 1px, rgba(255,255,255,0) 1.8px),
+      radial-gradient(circle, var(--fx-color, rgba(255,255,255,.6)) 1px, rgba(255,255,255,0) 1.8px);
+    background-size: 400% 100%, 10px 10px, 14px 14px;
+    background-position: 0 0, var(--fx-offset-x, 0px) var(--fx-offset-y, 0px), calc(4px + var(--fx-offset-x, 0px)) calc(6px + var(--fx-offset-y, 0px));
+    animation: hbTextGlitterWave var(--fx-speed, 8000ms) ease-in-out infinite;
+    opacity: var(--fx-opacity, .55);
+    filter: saturate(1.1) blur(.2px);
+  }
   /* Overlays */
   .hb-anim-overlay { position:absolute; inset:0; pointer-events:none; z-index:5; mix-blend-mode:screen; }
   .hb-anim-overlay.hb-mist { background: radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.06) 60%, rgba(255,255,255,0) 100%); filter: blur(12px); opacity: .35; animation: hbMist 6s ease-in-out infinite alternate; }
@@ -299,7 +329,7 @@
               {% assign h_anim_speed_val = h_anim_speed_custom %}
               {% if h_anim_speed == 'slow' %}{% assign h_anim_speed_val = 1800 %}{% elsif h_anim_speed == 'medium' %}{% assign h_anim_speed_val = 900 %}{% elsif h_anim_speed == 'fast' %}{% assign h_anim_speed_val = 500 %}{% endif %}
               <div class="hero-banner-agg__slidePiece pos-{{ headline_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--headline-color:{{ b.headline_color | default: s.headline_color }};--headline-size:{% if b.headline_size > 0 %}{{ b.headline_size }}px{% endif %};--headline-size-m:{% if b.headline_size > 0 %}{{ b.headline_size | divided_by: 1.6 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <h3 class="hero-banner-agg__pieceHeadline" data-text-anim-type="{{ h_anim_type }}" data-text-anim-intensity="{{ h_anim_intensity }}" data-text-anim-speed-val="{{ h_anim_speed_val }}" data-text-anim-ease="{{ b.headline_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.headline_anim_ease_custom }}" data-text-shimmer-color="{% if slide_reset %}{{ s.text_shimmer_color }}{% else %}{{ b.headline_shimmer_color | default: s.text_shimmer_color }}{% endif %}" data-text-shimmer-speed="{% if slide_reset %}{{ s.text_shimmer_speed_ms }}{% else %}{{ b.headline_shimmer_speed_ms }}{% endif %}" data-text-twinkle="{% if slide_reset %}{% else %}{{ b.headline_enable_twinkle }}{% endif %}" data-text-sparkle-density="{% if slide_reset %}{% else %}{{ b.headline_sparkle_density }}{% endif %}" data-text-glint-strength="{% if slide_reset %}{% else %}{{ b.headline_glint_strength }}{% endif %}" data-text-glint-width="{% if slide_reset %}{% else %}{{ b.headline_glint_width }}{% endif %}">{{ b.slide_headline }}</h3>
+                <h3 class="hero-banner-agg__pieceHeadline" data-text-anim-type="{{ h_anim_type }}" data-text-anim-intensity="{{ h_anim_intensity }}" data-text-anim-speed-val="{{ h_anim_speed_val }}" data-text-anim-ease="{{ b.headline_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.headline_anim_ease_custom }}" data-text-shimmer-color="{% if slide_reset %}{{ s.text_shimmer_color }}{% else %}{{ b.headline_shimmer_color | default: s.text_shimmer_color }}{% endif %}" data-text-shimmer-speed="{% if slide_reset %}{{ s.text_shimmer_speed_ms }}{% else %}{{ b.headline_shimmer_speed_ms }}{% endif %}" data-text-twinkle="{% if slide_reset %}{% else %}{{ b.headline_enable_twinkle }}{% endif %}" data-text-sparkle-density="{% if slide_reset %}{% else %}{{ b.headline_sparkle_density }}{% endif %}" data-text-glint-strength="{% if slide_reset %}{% else %}{{ b.headline_glint_strength }}{% endif %}" data-text-glint-width="{% if slide_reset %}{% else %}{{ b.headline_glint_width }}{% endif %}" data-text-fx="{% if slide_reset %}{% else %}{{ b.headline_text_fx }}{% endif %}" data-text-fx-color="{% if slide_reset %}{% else %}{{ b.headline_text_fx_color }}{% endif %}" data-text-fx-intensity="{% if slide_reset %}{% else %}{{ b.headline_text_fx_intensity }}{% endif %}" data-text-fx-speed="{% if slide_reset %}{% else %}{{ b.headline_text_fx_speed }}{% endif %}" data-text-fx-pos="{% if slide_reset %}{% else %}{{ b.headline_text_fx_position }}{% endif %}">{{ b.slide_headline }}</h3>
               </div>
             {%- endif -%}
             {%- if s.show_global_subheadlines and b.slide_subheadline != blank -%}
@@ -311,7 +341,7 @@
               {% assign s_anim_speed_val = s_anim_speed_custom %}
               {% if s_anim_speed == 'slow' %}{% assign s_anim_speed_val = 1800 %}{% elsif s_anim_speed == 'medium' %}{% assign s_anim_speed_val = 900 %}{% elsif s_anim_speed == 'fast' %}{% assign s_anim_speed_val = 500 %}{% endif %}
               <div class="hero-banner-agg__slidePiece pos-{{ sub_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--sub-color:{{ b.subheadline_color | default: s.subheadline_color }};--sub-size:{% if b.subheadline_size > 0 %}{{ b.subheadline_size }}px{% endif %};--sub-size-m:{% if b.subheadline_size > 0 %}{{ b.subheadline_size | divided_by: 1.1 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <p class="hero-banner-agg__pieceSub" data-text-anim-type="{{ s_anim_type }}" data-text-anim-intensity="{{ s_anim_intensity }}" data-text-anim-speed-val="{{ s_anim_speed_val }}" data-text-anim-ease="{{ b.sub_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.sub_anim_ease_custom }}" data-text-shimmer-color="{% if slide_reset %}{{ s.text_shimmer_color }}{% else %}{{ b.sub_shimmer_color | default: s.text_shimmer_color }}{% endif %}" data-text-shimmer-speed="{% if slide_reset %}{{ s.text_shimmer_speed_ms }}{% else %}{{ b.sub_shimmer_speed_ms }}{% endif %}" data-text-twinkle="{% if slide_reset %}{% else %}{{ b.sub_enable_twinkle }}{% endif %}" data-text-sparkle-density="{% if slide_reset %}{% else %}{{ b.sub_sparkle_density }}{% endif %}" data-text-glint-strength="{% if slide_reset %}{% else %}{{ b.sub_glint_strength }}{% endif %}" data-text-glint-width="{% if slide_reset %}{% else %}{{ b.sub_glint_width }}{% endif %}">{{ b.slide_subheadline }}</p>
+                <p class="hero-banner-agg__pieceSub" data-text-anim-type="{{ s_anim_type }}" data-text-anim-intensity="{{ s_anim_intensity }}" data-text-anim-speed-val="{{ s_anim_speed_val }}" data-text-anim-ease="{{ b.sub_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.sub_anim_ease_custom }}" data-text-shimmer-color="{% if slide_reset %}{{ s.text_shimmer_color }}{% else %}{{ b.sub_shimmer_color | default: s.text_shimmer_color }}{% endif %}" data-text-shimmer-speed="{% if slide_reset %}{{ s.text_shimmer_speed_ms }}{% else %}{{ b.sub_shimmer_speed_ms }}{% endif %}" data-text-twinkle="{% if slide_reset %}{% else %}{{ b.sub_enable_twinkle }}{% endif %}" data-text-sparkle-density="{% if slide_reset %}{% else %}{{ b.sub_sparkle_density }}{% endif %}" data-text-glint-strength="{% if slide_reset %}{% else %}{{ b.sub_glint_strength }}{% endif %}" data-text-glint-width="{% if slide_reset %}{% else %}{{ b.sub_glint_width }}{% endif %}" data-text-fx="{% if slide_reset %}{% else %}{{ b.sub_text_fx }}{% endif %}" data-text-fx-color="{% if slide_reset %}{% else %}{{ b.sub_text_fx_color }}{% endif %}" data-text-fx-intensity="{% if slide_reset %}{% else %}{{ b.sub_text_fx_intensity }}{% endif %}" data-text-fx-speed="{% if slide_reset %}{% else %}{{ b.sub_text_fx_speed }}{% endif %}" data-text-fx-pos="{% if slide_reset %}{% else %}{{ b.sub_text_fx_position }}{% endif %}">{{ b.slide_subheadline }}</p>
               </div>
             {%- endif -%}
             {%- if s.show_slide_ctas and any_cta -%}
@@ -708,7 +738,7 @@
           break;
       }
 
-      // Text animations for headline and subheadline in active slide
+  // Text animations for headline and subheadline in active slide
   var txtElems = slide.querySelectorAll('[data-text-anim-type]');
       txtElems.forEach(function(el){
         var t = el.getAttribute('data-text-anim-type') || 'none';
@@ -725,6 +755,39 @@
         el.style.opacity = '1';
         el.classList.remove('hb-text-shimmer');
         el.classList.remove('hb-text-shimmer-hover');
+        // Determine text FX type if selected (distinct from shimmer)
+        var fxType = el.getAttribute('data-text-fx') || '';
+        if (!fxType) {
+          var gFx = root.getAttribute('data-global-text-fx') || 'none';
+          var gForceFx = (root.getAttribute('data-global-text-fx-force') === 'true' || root.getAttribute('data-global-text-fx-force') === '1');
+          if (gForceFx && gFx !== 'none') fxType = gFx;
+        }
+        var fxColor = el.getAttribute('data-text-fx-color') || root.getAttribute('data-global-text-fx-color') || '#ffffff';
+        var fxIntensity = parseInt(el.getAttribute('data-text-fx-intensity')||'0',10); if (isNaN(fxIntensity) || fxIntensity<=0) fxIntensity = parseInt(root.getAttribute('data-global-text-fx-intensity')||'50',10);
+        var fxSpeed = parseInt(el.getAttribute('data-text-fx-speed')||'0',10); if (isNaN(fxSpeed) || fxSpeed<=0) fxSpeed = parseInt(root.getAttribute('data-global-text-fx-speed')||'6000',10);
+        var fxPos = el.getAttribute('data-text-fx-pos') || root.getAttribute('data-global-text-fx-pos') || 'mc';
+        // Map pos to offsets
+        var posMap = { tl:[-4,-4], tc:[0,-4], tr:[4,-4], ml:[-4,0], mc:[0,0], mr:[4,0], bl:[-4,4], bc:[0,4], br:[4,4], cover:[0,0] };
+        var off = posMap[fxPos] || [0,0];
+        // Clear old fx classes
+        el.classList.remove('hb-text-fx','sparkle','glitter');
+        el.style.removeProperty('--fx-color');
+        el.style.removeProperty('--fx-opacity');
+        el.style.removeProperty('--fx-speed');
+        el.style.removeProperty('--fx-offset-x');
+        el.style.removeProperty('--fx-offset-y');
+        // Opacity from intensity curve
+        var fxOpacity = 0.2 + Math.min(1, Math.max(0, fxIntensity/100)) * 0.7;
+        if (fxType === 'sparkle' || fxType === 'glitter'){
+          el.classList.add('hb-text-fx');
+          el.classList.add(fxType === 'sparkle' ? 'sparkle' : 'glitter');
+          el.style.setProperty('--fx-color', fxColor);
+          el.style.setProperty('--fx-opacity', fxOpacity.toFixed(2));
+          el.style.setProperty('--fx-speed', Math.max(1000, fxSpeed) + 'ms');
+          el.style.setProperty('--fx-offset-x', off[0] + 'px');
+          el.style.setProperty('--fx-offset-y', off[1] + 'px');
+        }
+
         switch(t){
           case 'fade_in':
             el.style.animation = 'hbTextFadeIn '+ts+'ms '+textEasing+' 1 both';
@@ -917,6 +980,18 @@
   {"type":"color","id":"global_glitter_color","label":"Default glitter color","default":"#ffffff"},
   {"type":"range","id":"global_glitter_intensity","label":"Default glitter intensity","min":10,"max":100,"step":5,"default":45},
   {"type":"range","id":"global_glitter_speed_ms","label":"Default glitter speed (ms)","min":1000,"max":9000,"step":250,"default":8000},
+  {"type":"header","content":"Global Text Effects (Sparkle/Glitter)"},
+  {"type":"select","id":"global_text_fx_default","label":"Default text effect","default":"none","options":[{"value":"none","label":"None"},{"value":"sparkle","label":"Sparkle"},{"value":"glitter","label":"Glitter"}]},
+  {"type":"checkbox","id":"global_text_fx_force","label":"Force global text effect (override slide)","default":false},
+  {"type":"color","id":"global_text_fx_color","label":"Default text FX color","default":"#ffffff"},
+  {"type":"range","id":"global_text_fx_intensity","label":"Default text FX intensity","min":0,"max":100,"step":5,"default":50},
+  {"type":"range","id":"global_text_fx_speed_ms","label":"Default text FX speed (ms)","min":1000,"max":9000,"step":250,"default":6000},
+  {"type":"select","id":"global_text_fx_position","label":"Default text FX position","default":"mc","options":[
+    {"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},
+    {"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},
+    {"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"},
+    {"value":"cover","label":"Cover (full text)"}
+  ]},
   {"type":"header","content":"Global CTA Animation Defaults"},
   {"type":"select","id":"cta_global_anim_style_cont","label":"Global continuous style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
   {"type":"select","id":"cta_global_anim_style_hover","label":"Global hover style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
@@ -1063,6 +1138,28 @@
   {"type":"header","content":"Slide Content"},
       {"type":"text","id":"slide_headline","label":"Slide headline"},
       {"type":"text","id":"slide_subheadline","label":"Slide subheadline"},
+      {"type":"header","content":"Headline Text FX (Sparkle/Glitter)"},
+      {"type":"select","id":"headline_text_fx","label":"Headline text effect","default":"none","options":[{"value":"none","label":"None"},{"value":"sparkle","label":"Sparkle"},{"value":"glitter","label":"Glitter"}]},
+      {"type":"color","id":"headline_text_fx_color","label":"Headline FX color","default":"#ffffff"},
+      {"type":"range","id":"headline_text_fx_intensity","label":"Headline FX intensity","min":0,"max":100,"step":5,"default":0},
+      {"type":"range","id":"headline_text_fx_speed","label":"Headline FX speed (ms)","min":0,"max":9000,"step":250,"default":0},
+      {"type":"select","id":"headline_text_fx_position","label":"Headline FX position","default":"mc","options":[
+        {"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},
+        {"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},
+        {"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"},
+        {"value":"cover","label":"Cover (full text)"}
+      ]},
+      {"type":"header","content":"Subheadline Text FX (Sparkle/Glitter)"},
+      {"type":"select","id":"sub_text_fx","label":"Subheadline text effect","default":"none","options":[{"value":"none","label":"None"},{"value":"sparkle","label":"Sparkle"},{"value":"glitter","label":"Glitter"}]},
+      {"type":"color","id":"sub_text_fx_color","label":"Subheadline FX color","default":"#ffffff"},
+      {"type":"range","id":"sub_text_fx_intensity","label":"Subheadline FX intensity","min":0,"max":100,"step":5,"default":0},
+      {"type":"range","id":"sub_text_fx_speed","label":"Subheadline FX speed (ms)","min":0,"max":9000,"step":250,"default":0},
+      {"type":"select","id":"sub_text_fx_position","label":"Subheadline FX position","default":"mc","options":[
+        {"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},
+        {"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},
+        {"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"},
+        {"value":"cover","label":"Cover (full text)"}
+      ]},
   {"type":"header","content":"CTA Buttons"},
       {"type":"text","id":"slide_cta_text","label":"Slide CTA text"},
       {"type":"url","id":"slide_cta_link","label":"Slide CTA link"},

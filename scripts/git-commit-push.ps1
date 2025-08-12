@@ -6,11 +6,11 @@ Param(
 )
 
 function Invoke-Git {
-  param([string]$Args)
+  param([string]$Cmd)
   # Use cmd parsing to honor quotes inside the argument string (e.g., commit messages)
-  & cmd /c "git $Args"
+  & cmd /c "git $Cmd"
   if ($LASTEXITCODE -ne 0) {
-    Write-Error "Git command failed: git $Args"; exit $LASTEXITCODE
+    Write-Error "Git command failed: git $Cmd"; exit $LASTEXITCODE
   }
 }
 
@@ -29,13 +29,13 @@ try {
 
   if ($hasChanges -and -not $NoCommit -and -not [string]::IsNullOrWhiteSpace($Message)) {
     Write-Host "Staging all changes..." -ForegroundColor Cyan
-    Invoke-Git "add -A"
+  Invoke-Git "add -A"
 
     Write-Host "Committing..." -ForegroundColor Cyan
     if ($NoVerify) {
-      Invoke-Git "commit -m `"$Message`" --no-verify"
+  Invoke-Git "commit -m `"$Message`" --no-verify"
     } else {
-      Invoke-Git "commit -m `"$Message`""
+  Invoke-Git "commit -m `"$Message`""
     }
   } elseif ($hasChanges -and -not $NoCommit) {
     Write-Host "Changes detected but no commit message provided. Skipping commit." -ForegroundColor Yellow
@@ -66,9 +66,9 @@ try {
 
   Write-Host "Pushing to origin/$branch..." -ForegroundColor Cyan
   if ($hasUpstream) {
-    Invoke-Git "push"
+  Invoke-Git "push"
   } else {
-    Invoke-Git "push --set-upstream origin $branch"
+  Invoke-Git "push --set-upstream origin $branch"
   }
 
   Write-Host "Done." -ForegroundColor Green
