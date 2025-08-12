@@ -679,7 +679,8 @@
             var allowGlobal = (root.getAttribute('data-allow-text-shimmer') === 'true' || root.getAttribute('data-allow-text-shimmer') === '1');
             var slideNode = el.closest('.hero-banner-agg__slide');
             var allowSlide = !!(slideNode && (slideNode.getAttribute('data-allow-slide-txt-shimmer') === 'true' || slideNode.getAttribute('data-allow-slide-txt-shimmer') === '1'));
-            var allow = allowGlobal || allowSlide;
+            // If shimmer is explicitly selected for this element, allow it regardless of global toggles
+            var allow = allowGlobal || allowSlide || true;
             if (allow) {
               var hoverOnly = (root.getAttribute('data-text-shimmer-hover-only') === 'true' || root.getAttribute('data-text-shimmer-hover-only') === '1');
               var once = (root.getAttribute('data-text-shimmer-once') === 'true' || root.getAttribute('data-text-shimmer-once') === '1');
