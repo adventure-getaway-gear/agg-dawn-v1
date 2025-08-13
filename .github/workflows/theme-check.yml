@@ -20,5 +20,18 @@ jobs:
       - name: Install theme-check
         run: gem install theme-check
 
+      # Debug step to see what config is actually being loaded
+      - name: Debug theme-check config
+        run: |
+          test -f .theme-check.yml && echo "Found .theme-check.yml" || echo "Missing .theme-check.yml"
+          theme-check --version
+          theme-check --print-config || true
+
       - name: Run theme-check
-        run: theme-check
+        run: theme-check --config .theme-check.yml
+
+
+
+
+
+
