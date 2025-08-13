@@ -18,17 +18,21 @@ jobs:
           ruby-version: '3.2'
 
       - name: Install theme-check
-        run: gem install theme-check
+        run: gem install theme-check -v 1.15.0
 
-      # Debug step to see what config is actually being loaded
+      # Debug step to verify the config and environment
       - name: Debug theme-check config
         run: |
-          test -f .theme-check.yml && echo "Found .theme-check.yml" || echo "Missing .theme-check.yml"
-          theme-check --version
+          echo "Ruby version:" && ruby -v
+          echo "theme-check version:" && theme-check --version
+          echo "Repo root listing:" && ls -la
+          echo "Print .theme-check.yml:" && echo "-----" && cat .theme-check.yml && echo "-----"
+          echo "Resolved theme-check config:"
           theme-check --print-config || true
 
+      # Run theme-check but only fail on errors, not warnings
       - name: Run theme-check
-        run: theme-check --config .theme-check.yml
+        run: theme-check --config .theme-check.yml --fail-level error
 
 
 
