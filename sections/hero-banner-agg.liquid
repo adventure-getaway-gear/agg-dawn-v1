@@ -5,7 +5,7 @@
     assign align_map = 'flex-start'
   elsif s.text_align == 'right'
     assign align_map = 'flex-end'
-  endif
+  end
   assign overlay_opacity = s.overlay_opacity | divided_by: 100.0
   assign desktop_height = s.desktop_height | default: s.image_height
   assign mobile_height = s.mobile_height | default: s.image_height
