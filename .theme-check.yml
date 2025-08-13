@@ -6,8 +6,5 @@ ThemeAssetSize:
   enabled: false  # keep off for now; turn on later if you want strict asset sizes
 AssetPreload:
   enabled: true
-SchemaTranslations:
-  enabled: true
 LiquidTag:
   enabled: true
-
