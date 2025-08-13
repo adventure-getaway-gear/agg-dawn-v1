@@ -275,7 +275,7 @@ README:
 </style>
 
 <section class="agg-prime-showcase" aria-label="{{ section.settings.aria_label | escape | default: 'Prime Showcase' }}">
-  <div class="agg-prime-showcase__slides" id="aggPrimeSlides">
+  <div class="agg-prime-showcase__slides" id="aggPrimeSlides-{{ section.id }}">
     {% for block in section.blocks %}
       {% assign slide = block.settings %}
       <div class="agg-prime-showcase__slide" role="group" aria-roledescription="slide" aria-label="{{ slide.heading | escape }}" {% if forloop.first %}data-active="true"{% endif %}>
@@ -328,10 +328,10 @@ README:
     {% endfor %}
   </div>
   <nav class="agg-prime-showcase__nav" aria-label="Slide navigation">
-    <button class="agg-prime-showcase__nav-btn" id="aggPrev" aria-label="Previous slide" tabindex="0">&#8592;</button>
-    <button class="agg-prime-showcase__nav-btn" id="aggNext" aria-label="Next slide" tabindex="0">&#8594;</button>
+    <button class="agg-prime-showcase__nav-btn" id="aggPrev-{{ section.id }}" aria-label="Previous slide" tabindex="0">&#8592;</button>
+    <button class="agg-prime-showcase__nav-btn" id="aggNext-{{ section.id }}" aria-label="Next slide" tabindex="0">&#8594;</button>
   </nav>
-  <div class="agg-prime-showcase__dots" id="aggPrimeDots">
+  <div class="agg-prime-showcase__dots" id="aggPrimeDots-{{ section.id }}">
     {% for block in section.blocks %}
       <button class="agg-prime-showcase__dot{% if forloop.first %} active{% endif %}" aria-label="Go to slide {{ forloop.index }}" tabindex="0"></button>
     {% endfor %}
@@ -341,11 +341,13 @@ README:
 <script>
 (function() {
   // AGG Prime Showcase JS
-  const slides = document.querySelectorAll('.agg-prime-showcase__slide');
-  const dots = document.querySelectorAll('.agg-prime-showcase__dot');
-  const prevBtn = document.getElementById('aggPrev');
-  const nextBtn = document.getElementById('aggNext');
-  const slidesContainer = document.getElementById('aggPrimeSlides');
+  const sectionId = {{ section.id | json }};
+  const slidesContainer = document.getElementById('aggPrimeSlides-' + sectionId);
+  const prevBtn = document.getElementById('aggPrev-' + sectionId);
+  const nextBtn = document.getElementById('aggNext-' + sectionId);
+  const dotsContainer = document.getElementById('aggPrimeDots-' + sectionId);
+  const slides = slidesContainer.querySelectorAll('.agg-prime-showcase__slide');
+  const dots = dotsContainer.querySelectorAll('.agg-prime-showcase__dot');
   let current = 0;
   let interval = null;
   const slideInterval = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--agg-slide-interval')) * 1000 || 7000;
@@ -379,7 +381,8 @@ README:
     interval = null;
   }
   // Keyboard navigation
-  document.querySelector('.agg-prime-showcase').addEventListener('keydown', function(e) {
+  const sectionEl = slidesContainer.closest('.agg-prime-showcase');
+  sectionEl.addEventListener('keydown', function(e) {
     if (e.key === 'ArrowLeft') { prevSlide(); stopAutoplay(); }
     if (e.key === 'ArrowRight') { nextSlide(); stopAutoplay(); }
   });
