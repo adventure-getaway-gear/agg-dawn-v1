@@ -1,1568 +1,419 @@
-{% comment %} hero-banner-agg-slideshow v1.1.1 polished carousel (responsive srcset, a11y, keyboard + swipe, configurable speed) 2025-08-12 (schema refresh) {% endcomment %}
-{%- liquid
+{% comment %}
+  Hero Banner AGG Slideshow – refactored premium hero.
+  Features:
+   - Autoplay with pause on hover/focus and when tab hidden.
+   - Arrow, dot, swipe, keyboard navigation.
+   - Progress bar reflecting slide duration.
+   - Optional header tuck-under with offset.
+   - Image FX: kenburns/parallax/zoom/crossfade/fade.
+   - Text FX: shimmer/twinkle with per-element overrides.
+   - Desktop + mobile images, overlay, content alignment.
+  Groups & defaults:
+   Basics(overlay 30%, Center/Middle);
+   Media height(Desktop/Mobile = Medium);
+   Navigation(arrows+dots true);
+   Autoplay(true, delay 5000ms, pause on hover);
+   Header tuck(false, offset 0);
+   Progress(true);
+   Effects(Advanced) – see schema for options.
+  Section events:
+   root.__heroSlider = {next, prev, pause, play};
+   announces slide changes via live region.
+{% endcomment %}
+
+{% liquid
   assign s = section.settings
-  assign overlay_opacity = s.overlay_opacity | divided_by: 100.0
-  assign flex_align = 'center'
-  if s.text_align == 'left'
-    assign flex_align = 'flex-start'
-  elsif s.text_align == 'right'
-    assign flex_align = 'flex-end'
+
+  # ---- Backward compatibility mapping ----
+  assign overlay_raw = s.overlay_percent | default: s.overlay_opacity | default: 30
+  assign overlay = overlay_raw | at_most: 80 | at_least: 0
+  assign horiz = s.content_horizontal | default: s.text_align | downcase | default: 'center'
+  assign vert = s.content_vertical
+
+  if vert == blank
+    assign old_pos = s.headline_position
+    if old_pos != blank
+      assign vcode = old_pos | slice: 0, 1
+      assign hcode = old_pos | slice: 1, 1
+      case vcode
+        when 't' assign vert = 'top'
+        when 'm' assign vert = 'middle'
+        when 'b' assign vert = 'bottom'
+      endcase
+      case hcode
+        when 'l' assign horiz = 'left'
+        when 'c' assign horiz = 'center'
+        when 'r' assign horiz = 'right'
+      endcase
+    endif
   endif
+  if vert == blank
+    assign vert = 'middle'
+  endif
+
+  assign hd_choice = s.height_desktop
+  if hd_choice == blank
+    assign hpx = s.image_height | default: 600
+    if hpx < 500
+      assign hd_choice = 'short'
+    elsif hpx > 700
+      assign hd_choice = 'tall'
+    else
+      assign hd_choice = 'medium'
+    endif
+  endif
+  assign hm_choice = s.height_mobile
+  if hm_choice == blank
+    assign hpxm = s.mobile_height | default: 480
+    if hpxm < 400
+      assign hm_choice = 'short'
+    elsif hpxm > 560
+      assign hm_choice = 'tall'
+    else
+      assign hm_choice = 'medium'
+    endif
+  endif
+
+  assign map_d = '{"short":400,"medium":600,"tall":800}' | parse_json
+  assign map_m = '{"short":300,"medium":480,"tall":640}' | parse_json
+  assign hd_px = map_d[hd_choice]
+  assign hm_px = map_m[hm_choice]
+
+  assign show_arrows = s.show_arrows
+  if show_arrows == nil
+    assign show_arrows = s.show_nav | default: true
+  endif
+  assign show_dots = s.show_dots
+  if show_dots == nil
+    assign show_dots = s.show_dots | default: true
+  endif
+  assign show_progress = s.show_progress
+  if show_progress == nil
+    assign show_progress = s.show_progress_bar | default: true
+  endif
+  assign autoplay = s.autoplay
+  if autoplay == nil
+    assign autoplay = s.slideshow_autoplay | default: true
+  endif
+  assign delay = s.autoplay_delay_ms
+  if delay == nil or delay == 0
+    assign delay = s.slideshow_interval | default: 5 | times: 1000
+  endif
+  assign pause_hover = s.pause_on_hover | default: true
+  assign tuck = s.tuck_under_header | default: false
+  assign header_offset = s.header_offset_px | default: 0
+
+  # effects
+  assign img_fx = s.image_fx | default: s.global_image_effect_default | default: 'crossfade'
+  assign img_fx_intensity = s.image_fx_intensity | default: 'medium'
+  assign txt_shimmer = s.text_shimmer
+  if txt_shimmer == blank and s.enable_text_shimmer
+    if s.text_shimmer_once
+      assign txt_shimmer = 'once'
+    elsif s.text_shimmer_hover_only
+      assign txt_shimmer = 'hover'
+    else
+      assign txt_shimmer = 'hover'
+    endif
+  endif
+  assign txt_twinkle = s.text_twinkle
+  if txt_twinkle == blank and s.enable_text_shimmer_twinkle
+    assign txt_twinkle = 'on'
+  endif
+  assign shimmer_headline = s.shimmer_headline
+  if shimmer_headline == nil
+    assign shimmer_headline = true
+  endif
+  assign shimmer_subheadline = s.shimmer_subheadline
+  if shimmer_subheadline == nil
+    assign shimmer_subheadline = true
+  endif
+  assign twinkle_headline = s.twinkle_headline | default: false
+  assign twinkle_subheadline = s.twinkle_subheadline | default: false
+  assign reduced_fallback = s.fx_reduced_motion_fallback
+  if reduced_fallback == nil
+    assign reduced_fallback = true
+  endif
+
+  assign overlay_color = s.overlay_color | default: '#000000'
 -%}
-<!-- Hero Slideshow Section -->
-<section id="hero-slideshow-{{ section.id }}" class="hero-banner-agg hero-banner-agg--slideshow" role="banner" aria-label="{{ s.section_aria | default: s.headline | escape }}" style="position:relative;overflow:hidden;{% if s.tuck_under_header %}margin-top:calc({{ s.top_spacing | default: 0 }}px - var(--header-bottom-margin, 48px));{% else %}margin-top:{{ s.top_spacing | default: 0 }}px;{% endif %}touch-action:pan-y;-webkit-user-select:none;user-select:none;" data-slide-count="{{ section.blocks.size }}" data-amb-subtlety="{{ s.ambient_subtlety | default: 50 }}" data-amb-default-direction="{{ s.ambient_default_direction | default: 'diagonal' }}" data-amb-default-loop="{{ s.ambient_default_loop_style | default: 'ease-in-out' }}" data-txt-shimmer-color="{{ s.text_shimmer_color | default: '#ffffff' }}" data-txt-shimmer-speed="{{ s.text_shimmer_speed_ms | default: 2200 }}" data-allow-text-shimmer="{{ s.enable_text_shimmer | default: false }}" data-text-shimmer-hover-only="{{ s.text_shimmer_hover_only | default: false }}" data-text-shimmer-once="{{ s.text_shimmer_once | default: false }}" data-txt-sparkle-density="{{ s.text_shimmer_sparkle_density | default: 50 }}" data-txt-glint-strength="{{ s.text_shimmer_glint_strength | default: 35 }}" data-txt-glint-width="{{ s.text_shimmer_glint_width | default: 35 }}" data-allow-text-twinkle="{{ s.enable_text_shimmer_twinkle | default: true }}" data-txt-twinkle-speed="{{ s.text_shimmer_twinkle_speed_ms | default: 1800 }}" data-global-img-effect="{{ s.global_image_effect_default | default: 'none' }}" data-global-img-effect-force="{{ s.global_image_effect_force | default: false }}" data-global-sparkle-color="{{ s.global_sparkle_color | default: '#ffffff' }}" data-global-sparkle-density="{{ s.global_sparkle_density | default: 60 }}" data-global-sparkle-speed="{{ s.global_sparkle_speed_ms | default: 6000 }}" data-global-glitter-color="{{ s.global_glitter_color | default: '#ffffff' }}" data-global-glitter-intensity="{{ s.global_glitter_intensity | default: 45 }}" data-global-glitter-speed="{{ s.global_glitter_speed_ms | default: 8000 }}" data-global-text-fx="{{ s.global_text_fx_default | default: 'none' }}" data-global-text-fx-force="{{ s.global_text_fx_force | default: false }}" data-global-text-fx-color="{{ s.global_text_fx_color | default: '#ffffff' }}" data-global-text-fx-intensity="{{ s.global_text_fx_intensity | default: 50 }}" data-global-text-fx-speed="{{ s.global_text_fx_speed_ms | default: 6000 }}" data-global-text-fx-pos="{{ s.global_text_fx_position | default: 'mc' }}" data-global-text-fx-size="{{ s.global_text_fx_size | default: 16 }}" data-global-text-fx-frequency="{{ s.global_text_fx_frequency | default: 10 }}">
+
+<section id="Hero-{{ section.id }}" class="hb-hero hb-hero--{{ horiz }} hb-hero--{{ vert }}{% if tuck %} hb-hero--tucked{% endif %}" aria-roledescription="carousel" aria-label="Hero promotions" style="--overlay:{{ overlay | divided_by:100 }};--overlay-color:{{ overlay_color }};--hb-height:{{ hd_px }}px;--transition-speed:600ms;--progress-scale:0;--header-offset:{{ header_offset }}px;" data-autoplay="{{ autoplay }}" data-delay="{{ delay }}" data-pause-hover="{{ pause_hover }}" data-reduce="{{ reduced_fallback }}">
   <style>
-  .hero-banner-agg--slideshow{--hb-height:{{ s.image_height }}px;--transition-speed:{{ s.transition_speed | default: 800 }}ms;--cta-shimmer-band-w:{{ s.cta_global_shimmer_band_width | default: 200 }}px}
-  /* Slightly narrower shimmer band on smaller screens for visual balance */
-  @media (max-width:749px){ .hero-banner-agg--slideshow{ --cta-shimmer-band-w: calc({{ s.cta_global_shimmer_band_width | default: 200 }}px * 0.85); } }
-  @media (max-width:749px){.hero-banner-agg--slideshow{--hb-height:{{ s.mobile_height | default: s.image_height }}px}}
-    .hero-banner-agg--slideshow .hero-banner-agg__media,.hero-banner-agg--slideshow .hero-banner-agg__slideshow{position:relative;width:100%;height:var(--hb-height)}
-    .hero-banner-agg__slideshow{overflow:hidden}
-    /* Allow slideshow to tuck under sticky header if enabled */
-    :root{--header-bottom-margin:{{ s.header_offset_px | default: 48 }}px}
-    @media (max-width:989px){:root{--header-bottom-margin:{{ s.header_offset_px | default: 56 }}px}}
-    .hero-banner-agg__slides{position:absolute;inset:0;margin:0;padding:0;list-style:none}
-    .hero-banner-agg__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;will-change:opacity}
-    .hero-banner-agg__slide.is-active{opacity:1;}
-  .hero-banner-agg__slide img{width:100%;height:100%;object-fit:cover;display:block}
-  /* Image animation helpers */
-  .hero-banner-agg__slideImg.anim-ken_burns,
-  .hero-banner-agg__slideImg.anim-parallax,
-  .hero-banner-agg__slideImg.anim-zoom { transition: transform var(--img-anim-speed,800ms) ease-in-out; will-change: transform; }
-  .hero-banner-agg__slideImg.anim-blur_focus { transition: filter var(--img-anim-speed,800ms) ease-in-out; will-change: filter; }
-  .hero-banner-agg__slideImg.anim-crossfade { opacity: 0; transition: opacity var(--img-anim-speed,800ms) ease-in-out; will-change: opacity; }
-  .hero-banner-agg__slide.is-active .hero-banner-agg__slideImg.anim-crossfade { opacity: 1; }
-  .hero-banner-agg__slideImg.anim-light_sweep { position: relative; overflow: hidden; }
-  .hero-banner-agg__slideImg.is-animating { will-change: transform, filter, opacity; }
-  /* Keyframes using CSS vars for per-slide control */
-  @keyframes hbKenBurns { 0%{ transform: scale(var(--kb-scale,1.18)); } 100%{ transform: scale(1); } }
-  @keyframes hbZoomPulse { 0%{ transform: scale(1); } 50%{ transform: scale(var(--zoom-scale,1.12)); } 100%{ transform: scale(1); } }
-  @keyframes hbParallaxUp { 0%{ transform: translateY(var(--parallax-shift,12px)); } 100%{ transform: translateY(0); } }
-  @keyframes hbBlurFocus { 0%{ filter: blur(var(--blur-amt,2px)); } 100%{ filter: blur(0px); } }
-  /* Subtle continuous ambient drift (looping) */
-  @keyframes hbAmbientDrift {
-    0% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
-    25% { transform: translate3d(calc(var(--amb-x, 6px) * .5), calc(var(--amb-y, 4px) * -.8), 0) scale(var(--amb-scale,1.035)); }
-    50% { transform: translate3d(calc(var(--amb-x, 6px)), calc(var(--amb-y, 4px)), 0) scale(var(--amb-scale,1.04)); }
-    75% { transform: translate3d(calc(var(--amb-x, 6px) * .4), calc(var(--amb-y, 4px) * .8), 0) scale(var(--amb-scale,1.035)); }
-    100% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
-  }
-  /* Slight bounce variant (very gentle overshoot) */
-  @keyframes hbAmbientDriftBounce {
-    0% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
-    20% { transform: translate3d(calc(var(--amb-x, 6px) * -.2), calc(var(--amb-y, 4px) * -.3), 0) scale(var(--amb-scale,1.035)); }
-    50% { transform: translate3d(calc(var(--amb-x, 6px) * 1.05), calc(var(--amb-y, 4px) * 1.05), 0) scale(calc(var(--amb-scale,1.03) * 1.005)); }
-    80% { transform: translate3d(calc(var(--amb-x, 6px) * .3), calc(var(--amb-y, 4px) * .5), 0) scale(var(--amb-scale,1.035)); }
-    100% { transform: translate3d(calc(var(--amb-x, 6px) * -1), calc(var(--amb-y, 4px) * -1), 0) scale(var(--amb-scale,1.03)); }
-  }
-  /* Text animations */
-  @keyframes hbTextFadeIn { 0%{ opacity:0 } 100%{ opacity:1 } }
-  @keyframes hbTextFadeUp { 0%{ opacity:0; transform: translateY(var(--txt-shift, 16px)); } 100%{ opacity:1; transform: translateY(0); } }
-  @keyframes hbTextFadeDown { 0%{ opacity:0; transform: translateY(calc(var(--txt-shift, 16px) * -1)); } 100%{ opacity:1; transform: translateY(0); } }
-  @keyframes hbTextFadeLeft { 0%{ opacity:0; transform: translateX(var(--txt-shift, 20px)); } 100%{ opacity:1; transform: translateX(0); } }
-  @keyframes hbTextFadeRight { 0%{ opacity:0; transform: translateX(calc(var(--txt-shift, 20px) * -1)); } 100%{ opacity:1; transform: translateX(0); } }
-  /* Text shimmer (enhanced glint + sparkles) */
-  @keyframes hbTextShimmer { 0%{ background-position: -200% 0, -240% 0, -260% 0, -280% 0; } 100%{ background-position: 200% 0, 240% 0, 260% 0, 280% 0; } }
-  @keyframes hbTwinkle { 0%, 100% { opacity: 0.15; filter: blur(0.2px); } 50% { opacity: 0.65; filter: blur(0); } }
-  .hb-text-shimmer,
-  .hb-text-shimmer-hover:hover{
-    --_glint-str: calc((var(--txt-glint-strength, 35)) * 1%);
-    --_glint-width: max(2%, calc(var(--txt-glint-width, 35) * 1%));
-    --_glint: color-mix(in srgb, var(--txt-shimmer-color, #ffffff) 85%, white 35%);
-    --_sparkleA: rgba(255,255,255, calc(var(--txt-sparkle-density, .5) * .6));
-    --_sparkleB: rgba(255,255,255, calc(var(--txt-sparkle-density, .5) * .45));
-    /* 4 layers: moving glint band + 3 sparkle passes */
-    background-image:
-      linear-gradient(110deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) calc(50% - var(--_glint-width)), var(--_glint) 50%, rgba(255,255,255,0) calc(50% + var(--_glint-width)), rgba(255,255,255,0) 100%),
-      radial-gradient(circle at 10% 55%, var(--_sparkleA) 0 1px, rgba(255,255,255,0) 2px),
-      radial-gradient(circle at 35% 40%, var(--_sparkleB) 0 1px, rgba(255,255,255,0) 2px),
-      radial-gradient(circle at 70% 60%, var(--_sparkleB) 0 1px, rgba(255,255,255,0) 2px);
-    background-size: 200% 100%, 240% 100%, 260% 100%, 280% 100%;
-    -webkit-background-clip: text; background-clip: text;
-    color: transparent; -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 8px rgba(255,255,255,0.35), 0 0 3px rgba(255,255,255,0.2);
-    animation: hbTextShimmer var(--txt-shimmer-speed, 2200ms) linear infinite;
-    /* Optional twinkle overlay using pseudo element to not interfere with text selection */
-    position: relative;
-  }
-  .hb-text-shimmer::after,
-  .hb-text-shimmer-hover:hover::after{
-    content: "";
-    position: absolute; inset: 0; pointer-events: none;
-    background:
-      radial-gradient(1.2px 1.2px at 20% 30%, rgba(255,255,255,.8), rgba(255,255,255,0)),
-      radial-gradient(1.2px 1.2px at 65% 55%, rgba(255,255,255,.7), rgba(255,255,255,0)),
-      radial-gradient(1.2px 1.2px at 40% 70%, rgba(255,255,255,.6), rgba(255,255,255,0));
-    mix-blend-mode: screen;
-    /* Twinkle opacity now independent; base sparkles remain visible when twinkle is disabled */
-    opacity: var(--txt-twinkle-opacity, calc(var(--txt-sparkle-density, .5) * .9));
-    /* Run three twinkle passes with staggered delays so sparkles actually twinkle */
-    animation:
-      hbTwinkle var(--txt-twinkle-speed, 1800ms) ease-in-out infinite,
-      hbTwinkle var(--txt-twinkle-speed, 1800ms) ease-in-out infinite,
-      hbTwinkle var(--txt-twinkle-speed, 1800ms) ease-in-out infinite;
-    animation-delay: 0ms, 200ms, 400ms; /* stagger */
-  }
-  .hb-text-shimmer-hover{ position: relative; }
-  /* Text FX: Sparkle and Glitter (distinct from shimmer/twinkle) */
-  @keyframes hbTextSparkleDrift { 0%{background-position:0 0, 12px 8px, 6px 16px;} 100%{background-position:200px 0, 212px 8px, 206px 16px;} }
-  @keyframes hbTextGlitterWave { 0%{background-position:0 0, 0 0, 0 0;} 50%{background-position:40px 20px, -30px 10px, 20px -10px;} 100%{background-position:0 0, 0 0, 0 0;} }
-  .hb-text-fx{ position: relative; }
-  /* Use a cloned-text pseudo element and clip animated backgrounds to the text glyphs */
-  .hb-text-fx::before{
-    content: attr(data-text-fx-content);
-    position:absolute; left:0; top:0; right:0; bottom:0; display:block; z-index:1; pointer-events:none;
-    font: inherit; line-height: inherit; letter-spacing: inherit; text-transform: inherit; text-align: inherit; white-space: pre-wrap;
-    color: transparent; -webkit-text-fill-color: transparent;
-    -webkit-background-clip: text; background-clip: text;
-    mix-blend-mode: screen; /* luminous highlight embedded in text */
-  }
-  .hb-text-fx.sparkle::before{
-    background-image: var(--fx-bg, 
-      radial-gradient(circle, var(--fx-color, rgba(255,255,255,.95)) 0.8px, rgba(255,255,255,0) 1.2px),
-      radial-gradient(circle, var(--fx-color, rgba(255,255,255,.7)) 0.7px, rgba(255,255,255,0) 1.1px),
-      radial-gradient(circle, var(--fx-color, rgba(255,255,255,.5)) 0.6px, rgba(255,255,255,0) 1px));
-    background-size: 18px 18px, 24px 24px, 36px 36px;
-    background-position: var(--fx-bgpos, 0 0), calc(12px + var(--fx-offset-x, 0px)) calc(8px + var(--fx-offset-y, 0px)), calc(6px + var(--fx-offset-x, 0px)) calc(16px + var(--fx-offset-y, 0px));
-    animation: hbTextSparkleDrift var(--fx-speed, 6000ms) linear infinite;
-    opacity: var(--fx-opacity, .7);
-    filter: drop-shadow(0 0 2px rgba(255,255,255,.2));
-  }
-  .hb-text-fx.glitter::before{
-    background-image: var(--fx-bg, 
-      linear-gradient(120deg, rgba(255,255,255,.1), rgba(255,255,255,0), rgba(255,255,255,.12)),
-      radial-gradient(circle, var(--fx-color, rgba(255,255,255,.9)) 1px, rgba(255,255,255,0) 1.8px),
-      radial-gradient(circle, var(--fx-color, rgba(255,255,255,.6)) 1px, rgba(255,255,255,0) 1.8px));
-    background-size: 400% 100%, 10px 10px, 14px 14px;
-    background-position: 0 0, var(--fx-offset-x, 0px) var(--fx-offset-y, 0px), calc(4px + var(--fx-offset-x, 0px)) calc(6px + var(--fx-offset-y, 0px));
-    animation: hbTextGlitterWave var(--fx-speed, 8000ms) ease-in-out infinite;
-    opacity: var(--fx-opacity, .55);
-    filter: saturate(1.1) blur(.2px);
-  }
-  /* Overlays */
-  .hb-anim-overlay { position:absolute; inset:0; pointer-events:none; z-index:5; mix-blend-mode:screen; }
-  .hb-anim-overlay.hb-mist { background: radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.06) 60%, rgba(255,255,255,0) 100%); filter: blur(12px); opacity: .35; animation: hbMist 6s ease-in-out infinite alternate; }
-  .hb-anim-overlay.hb-gradient { background: linear-gradient(120deg, rgba(255,255,255,0.08), rgba(255,255,255,0.0), rgba(255,255,255,0.12)); background-size: 200% 100%; animation: hbGradientDrift 8s linear infinite; opacity:.35; }
-  .hb-anim-overlay.hb-flare { background: radial-gradient(60% 60% at -10% 50%, rgba(255,255,200,0.45) 0%, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0) 60%); animation: hbFlare 5s ease-in-out infinite; opacity:.45; }
-  /* Sparkle overlay: lightweight tiled dots with drift */
-  @keyframes hbSparkleDrift { 0%{background-position:0 0, 12px 8px, 6px 16px;} 100%{background-position:200px 0, 212px 8px, 206px 16px;} }
-  .hb-anim-overlay.hb-sparkle { 
-    background-image:
-      radial-gradient(circle, var(--sp-color, rgba(255,255,255,.9)) 0.8px, rgba(255,255,255,0) 1.2px),
-      radial-gradient(circle, var(--sp-color, rgba(255,255,255,.65)) 0.7px, rgba(255,255,255,0) 1.1px),
-      radial-gradient(circle, var(--sp-color, rgba(255,255,255,.45)) 0.6px, rgba(255,255,255,0) 1px);
-    background-size: 18px 18px, 24px 24px, 36px 36px;
-    background-position: 0 0, 12px 8px, 6px 16px;
-    animation: hbSparkleDrift var(--sp-speed, 16s) linear infinite;
-    opacity: var(--sp-opacity, .6);
-    filter: drop-shadow(0 0 2px rgba(255,255,255,.25));
-  }
-  /* Glitter overlay: dense texture with slow wave */
-  @keyframes hbGlitterWave { 0%{background-position:0 0, 0 0, 0 0;} 50%{background-position:40px 20px, -30px 10px, 20px -10px;} 100%{background-position:0 0, 0 0, 0 0;} }
-  .hb-anim-overlay.hb-glitter {
-    background-image:
-      linear-gradient(120deg, rgba(255,255,255,.08), rgba(255,255,255,0), rgba(255,255,255,.12)),
-      radial-gradient(circle, var(--gl-color, rgba(255,255,255,.8)) 1px, rgba(255,255,255,0) 1.8px),
-      radial-gradient(circle, var(--gl-color, rgba(255,255,255,.5)) 1px, rgba(255,255,255,0) 1.8px);
-    background-size: 400% 100%, 10px 10px, 14px 14px;
-    mix-blend-mode: screen;
-    animation: hbGlitterWave var(--gl-speed, 12s) ease-in-out infinite;
-    opacity: var(--gl-opacity, .5);
-    filter: saturate(1.15) blur(.2px);
-  }
-  @keyframes hbGradientDrift { 0%{background-position:0% 50%} 100%{background-position:100% 50%} }
-  @keyframes hbMist { 0%{transform:translateX(-12%)} 100%{transform:translateX(12%)} }
-  @keyframes hbFlare { 0%{transform:translateX(-120%)} 100%{transform:translateX(120%)} }
-  /* Swipe/cover overlays for image slide-ins */
-  .hb-swipe-overlay { position:absolute; inset:0; pointer-events:none; z-index:6; background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.55), rgba(255,255,255,0)); mix-blend-mode:screen; transform: translateX(-110%); }
-  .hb-swipe-overlay[data-axis="y"]{ background: linear-gradient(0deg, rgba(255,255,255,0.9), rgba(255,255,255,0.55), rgba(255,255,255,0)); transform: translateY(-110%); }
-  /* Per-slide independent positioned pieces */
-  .hero-banner-agg__slidePiece{position:absolute;z-index:16;display:flex;flex-direction:column;gap:.55rem;max-width:var(--maxw,{{ s.text_max_width }}ch);padding:0;margin:0}
-  /* When slide is fully linked we add .is-passive to allow underlying link clicks */
-  .hero-banner-agg__slidePiece.is-passive{pointer-events:none}
-  .hero-banner-agg__pieceHeadline{color:var(--headline-color,#fff);font-weight:700;line-height:1.1;margin:0;font-size:var(--headline-size,clamp(1.6rem,3.4vw,{{ s.headline_size }}px));text-shadow:0 2px 4px rgba(0,0,0,.55);}
-  .hero-banner-agg__pieceSub{color:var(--sub-color,#fff);margin:0;font-size:var(--sub-size,clamp(1rem,1.6vw,{{ s.subheadline_size }}px));line-height:1.45;text-shadow:0 2px 4px rgba(0,0,0,.55);}
-  .hero-banner-agg__slideButtons{display:flex;flex-wrap:wrap;gap:var(--cta-gap,.85rem);margin-top:.35rem}
-  @media (max-width:749px){.hero-banner-agg__slideButtons{gap:var(--cta-gap-m,var(--cta-gap,.85rem));}}
-  .hero-banner-agg__slideBtn{background:{{ s.cta_bg }};color:{{ s.cta_color }};padding:var(--btn-pad-y,.85rem) var(--btn-pad-x,1.6rem);border-radius:{{ s.button_radius }}px;font-weight:600;text-decoration:none;font-size:var(--btn-font,.95rem);line-height:1;box-shadow:0 2px 4px rgba(0,0,0,.35);transition:background .3s ease,opacity .3s ease,transform .25s ease,box-shadow .35s ease;display:inline-flex;align-items:center;justify-content:center;min-width:140px;position:relative;overflow:hidden}
-  /* CTA size scale increased */
-  /* CTA size tiers balanced: small ~= old medium, medium ~= old large, large expanded */
-  .hero-banner-agg__slideBtn[data-size="small"]{--btn-pad-y:1rem;--btn-pad-x:1.9rem;--btn-font:1.05rem;min-width:175px}
-  .hero-banner-agg__slideBtn[data-size="medium"], .hero-banner-agg__slideBtn:not([data-size]){--btn-pad-y:1.3rem;--btn-pad-x:2.6rem;--btn-font:1.18rem;min-width:215px}
-  .hero-banner-agg__slideBtn[data-size="large"]{--btn-pad-y:1.55rem;--btn-pad-x:3.1rem;--btn-font:1.32rem;min-width:255px}
-  .hero-banner-agg__slideBtn:active{transform:scale(.97)}
-  /* CTA 3D / visual style variants */
-  .hero-banner-agg__slideBtn[data-style="raised"]{box-shadow:0 4px 12px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.08);}
-  .hero-banner-agg__slideBtn[data-style="raised"]:hover{box-shadow:0 6px 18px rgba(0,0,0,.5);transform:translateY(-2px);} 
-  .hero-banner-agg__slideBtn[data-style="raised"]:active{box-shadow:0 3px 8px rgba(0,0,0,.45);transform:translateY(0);} 
-  .hero-banner-agg__slideBtn[data-style="inset"]{box-shadow:inset 0 3px 6px rgba(0,0,0,.55),inset 0 -2px 4px rgba(255,255,255,.15);} 
-  .hero-banner-agg__slideBtn[data-style="inset"]:hover{box-shadow:inset 0 4px 8px rgba(0,0,0,.6),inset 0 -2px 4px rgba(255,255,255,.2);} 
-  .hero-banner-agg__slideBtn[data-style="inset"]:active{box-shadow:inset 0 5px 10px rgba(0,0,0,.65);} 
-  .hero-banner-agg__slideBtn[data-style="neumorphic"]{background:{{ s.cta_bg }};box-shadow:8px 8px 16px rgba(0,0,0,.35),-6px -6px 14px rgba(255,255,255,.12);} 
-  .hero-banner-agg__slideBtn[data-style="neumorphic"]:hover{box-shadow:10px 10px 20px rgba(0,0,0,.4),-7px -7px 16px rgba(255,255,255,.15);} 
-  .hero-banner-agg__slideBtn[data-style="neumorphic"]:active{box-shadow:inset 6px 6px 12px rgba(0,0,0,.45),inset -4px -4px 10px rgba(255,255,255,.1);} 
-  .hero-banner-agg__slideBtn[data-style="glass"]{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(0,0,0,.4);} 
-  .hero-banner-agg__slideBtn[data-style="glass"]:hover{background:rgba(255,255,255,.22);} 
-  .hero-banner-agg__slideBtn[data-style="glass"]:active{background:rgba(255,255,255,.28);} 
-  .hero-banner-agg__slideBtn[data-style="embossed"]{background:{{ s.cta_bg }};box-shadow:inset 0 2px 4px rgba(0,0,0,.5),inset 0 -2px 4px rgba(255,255,255,.2);text-shadow:0 1px 1px rgba(0,0,0,.6);} 
-  .hero-banner-agg__slideBtn[data-style="embossed"]:hover{box-shadow:inset 0 3px 6px rgba(0,0,0,.55),inset 0 -2px 5px rgba(255,255,255,.25);} 
-  .hero-banner-agg__slideBtn[data-style="embossed"]:active{box-shadow:inset 0 4px 8px rgba(0,0,0,.6);} 
-  /* CTA animation framework */
-  /* Shimmer */
-  @keyframes ctaShimmer { 0%{background-position:-200% 0;}100%{background-position:200% 0;} }
-  .hero-banner-agg__slideBtn[data-anim-style="shimmer"],
-  .hero-banner-agg__slideBtn[data-anim-style-cont="shimmer"],
-  .hero-banner-agg__slideBtn[data-anim-style-hover="shimmer"],
-  .hero-banner-agg__slideBtn[data-anim-style-click="shimmer"]{position:relative;overflow:hidden}
-  .hero-banner-agg__slideBtn[data-anim-style="shimmer"]::before,
-  .hero-banner-agg__slideBtn[data-anim-style-cont="shimmer"]::before,
-  .hero-banner-agg__slideBtn[data-anim-style-hover="shimmer"]::before,
-  .hero-banner-agg__slideBtn[data-anim-style-click="shimmer"]::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,
-    rgba(255,215,128,0) calc(50% - (var(--cta-shimmer-band-w,200px) / 2)),
-    rgba(255,215,128,.12) calc(50% - (var(--cta-shimmer-band-w,200px) / 4)),
-    rgba(255,215,128,.45) 50%,
-    rgba(255,215,128,.12) calc(50% + (var(--cta-shimmer-band-w,200px) / 4)),
-    rgba(255,215,128,0) calc(50% + (var(--cta-shimmer-band-w,200px) / 2))
-  );background-size:200% 100%;mix-blend-mode:screen;pointer-events:none;opacity:0;transition:opacity .3s ease}
-  .hero-banner-agg__slideBtn[data-anim-style-cont="shimmer"][data-anim-cont="true"]::before{animation:ctaShimmer var(--anim-speed-cont,3s) linear infinite;opacity:1}
-  .hero-banner-agg__slideBtn[data-anim-style-hover="shimmer"][data-anim-hover="true"]:hover::before{animation:ctaShimmer var(--anim-speed-hover,2s) linear infinite;opacity:1}
-  .hero-banner-agg__slideBtn[data-anim-style-click="shimmer"][data-anim-click="true"]:active::before{animation:ctaShimmer var(--anim-speed-click,1s) linear 1;opacity:1}
-  /* Pulse */
-  @keyframes ctaPulse {0%{transform:scale(1);}50%{transform:scale(1.08);}100%{transform:scale(1);} }
-  .hero-banner-agg__slideBtn[data-anim-style-cont="pulse"][data-anim-cont="true"]{animation:ctaPulse var(--anim-speed-cont,3s) ease-in-out infinite}
-  .hero-banner-agg__slideBtn[data-anim-style-hover="pulse"][data-anim-hover="true"]:hover{animation:ctaPulse var(--anim-speed-hover,2s) ease-in-out infinite}
-  .hero-banner-agg__slideBtn[data-anim-style-click="pulse"][data-anim-click="true"]:active{animation:ctaPulse var(--anim-speed-click,1s) ease-in-out 1}
-  /* Glow */
-  @keyframes ctaGlow {0%{box-shadow:0 0 0 rgba(255,215,128,0),0 0 0 rgba(255,255,255,0);}50%{box-shadow:0 0 16px rgba(255,215,128,.55),0 0 4px rgba(255,255,255,.6);}100%{box-shadow:0 0 0 rgba(255,215,128,0),0 0 0 rgba(255,255,255,0);} }
-  .hero-banner-agg__slideBtn[data-anim-style-cont="glow"][data-anim-cont="true"]{animation:ctaGlow var(--anim-speed-cont,4s) ease-in-out infinite}
-  .hero-banner-agg__slideBtn[data-anim-style-hover="glow"][data-anim-hover="true"]:hover{animation:ctaGlow var(--anim-speed-hover,2.5s) ease-in-out infinite}
-  .hero-banner-agg__slideBtn[data-anim-style-click="glow"][data-anim-click="true"]:active{animation:ctaGlow var(--anim-speed-click,1.2s) ease-in-out 1}
-  /* Lift */
-  @keyframes ctaLift {0%{transform:translateY(0);}50%{transform:translateY(-4px);}100%{transform:translateY(0);} }
-  .hero-banner-agg__slideBtn[data-anim-style-cont="lift"][data-anim-cont="true"]{animation:ctaLift var(--anim-speed-cont,3.6s) ease-in-out infinite}
-  .hero-banner-agg__slideBtn[data-anim-style-hover="lift"][data-anim-hover="true"]:hover{animation:ctaLift var(--anim-speed-hover,2.2s) ease-in-out infinite}
-  .hero-banner-agg__slideBtn[data-anim-style-click="lift"][data-anim-click="true"]:active{animation:ctaLift var(--anim-speed-click,.9s) ease-in-out 1}
-  /* 9-point positioning utility classes */
-  .pos-tl{top:{{ s.padding_vertical }}px;left:{{ s.padding_horizontal }}px;text-align:left}
-  .pos-tc{top:{{ s.padding_vertical }}px;left:50%;transform:translateX(-50%);text-align:center}
-  .pos-tr{top:{{ s.padding_vertical }}px;right:{{ s.padding_horizontal }}px;text-align:right}
-  .pos-ml{top:50%;left:{{ s.padding_horizontal }}px;transform:translateY(-50%);text-align:left}
-  .pos-mc{top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
-  .pos-mr{top:50%;right:{{ s.padding_horizontal }}px;transform:translateY(-50%);text-align:right}
-  .pos-bl{bottom:{{ s.padding_vertical }}px;left:{{ s.padding_horizontal }}px;text-align:left}
-  .pos-bc{bottom:{{ s.padding_vertical }}px;left:50%;transform:translateX(-50%);text-align:center}
-  .pos-br{bottom:{{ s.padding_vertical }}px;right:{{ s.padding_horizontal }}px;text-align:right}
-  @media (max-width:749px){
-    .hero-banner-agg__pieceHeadline{font-size:var(--headline-size-m,clamp(1.4rem,5.5vw,{{ s.headline_size | divided_by: 1.6 }}px));}
-    .hero-banner-agg__pieceSub{font-size:var(--sub-size-m,clamp(.9rem,3.8vw,{{ s.subheadline_size | divided_by: 1.1 }}px));}
-  }
-  .hero-banner-agg__slideBtn[data-variant="secondary"]{background:{{ s.cta2_bg }};color:{{ s.cta2_color }}}
-  .hero-banner-agg__slideBtn[data-variant="ghost"]{background:rgba(0,0,0,.45);color:#fff}
-  .hero-banner-agg__slideBtn:hover{opacity:.85}
-  .hero-banner-agg__navBtn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);color:#fff;border:0;padding:.65rem .9rem;cursor:pointer;font-size:14px;line-height:1;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:15}
-    .hero-banner-agg__navBtn:hover{background:rgba(0,0,0,.65)}
-    .hero-banner-agg__navBtn:focus{outline:2px solid #fff}
-    .hero-banner-agg__navPrev{left:10px}
-    .hero-banner-agg__navNext{right:10px}
-  .hero-banner-agg__dots{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;justify-content:center;z-index:15}
-  .hero-banner-agg__dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;border:2px solid rgba(0,0,0,.25);box-shadow:0 0 0 2px rgba(0,0,0,.15);transition:background .3s ease,border-color .3s ease}
-    .hero-banner-agg__dot.is-active{background:#fff;}
-  .hero-banner-agg__dot:focus{outline:2px solid #fff;outline-offset:2px}
-  .hero-banner-agg__progress{position:absolute;left:0;bottom:0;width:100%;height:{{ s.progress_bar_height | default: 4 }}px;background:rgba(255,255,255,.25);overflow:hidden;z-index:17}
-  .hero-banner-agg__progressFill{display:block;width:100%;height:100%;background:{{ s.progress_bar_color | default: '#ffffff' }};transform:scaleX(0);transform-origin:left center;will-change:transform}
-    @media (prefers-reduced-motion:reduce){.hero-banner-agg__slide{transition:none}}
-  /* Global overlay container placed below per-slide pieces to preserve clickability */
-  .hero-banner-agg__inner{z-index:8;pointer-events:none}
-  .hero-banner-agg__inner a{pointer-events:auto}
+    #Hero-{{ section.id }}{position:relative;height:var(--hb-height);overflow:hidden;}
+    #Hero-{{ section.id }}::before{content:"";position:absolute;inset:0;background:var(--overlay-color);opacity:var(--overlay);pointer-events:none;z-index:1;}
+    #Hero-{{ section.id }}.hb-hero--tucked{margin-top:calc(var(--header-offset)*-1);}
+    #Hero-{{ section.id }} .hb-hero__slides{list-style:none;margin:0;padding:0;height:100%;position:relative;}
+    #Hero-{{ section.id }} .hb-hero__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;z-index:0;}
+    #Hero-{{ section.id }} .hb-hero__slide.is-active{opacity:1;z-index:2;}
+    #Hero-{{ section.id }} .hb-hero__media, #Hero-{{ section.id }} picture, #Hero-{{ section.id }} img{width:100%;height:100%;object-fit:cover;display:block;}
+    #Hero-{{ section.id }} .hb-hero__content{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;gap:1rem;padding:1rem;}
+    #Hero-{{ section.id }}.hb-hero--left .hb-hero__content{align-items:flex-start;text-align:left;}
+    #Hero-{{ section.id }}.hb-hero--center .hb-hero__content{align-items:center;text-align:center;}
+    #Hero-{{ section.id }}.hb-hero--right .hb-hero__content{align-items:flex-end;text-align:right;}
+    #Hero-{{ section.id }}.hb-hero--top .hb-hero__content{justify-content:flex-start;}
+    #Hero-{{ section.id }}.hb-hero--middle .hb-hero__content{justify-content:center;}
+    #Hero-{{ section.id }}.hb-hero--bottom .hb-hero__content{justify-content:flex-end;}
+    #Hero-{{ section.id }} .hb-hero__progress{position:absolute;left:0;bottom:0;width:100%;height:4px;overflow:hidden;z-index:4;}
+    #Hero-{{ section.id }} .hb-hero__progressBar{transform-origin:left;transform:scaleX(var(--progress-scale));height:100%;background:currentColor;}
+    #Hero-{{ section.id }} .hb-hero__arrows{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;pointer-events:none;z-index:4;}
+    #Hero-{{ section.id }} .hb-hero__arrow{pointer-events:auto;background:rgba(0,0,0,0.4);border:none;color:#fff;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s; }
+    #Hero-{{ section.id }} .hb-hero__arrow:hover{background:rgba(0,0,0,0.6);}
+    #Hero-{{ section.id }} .hb-hero__arrow:focus{outline:3px solid #fff;outline-offset:2px;}
+    #Hero-{{ section.id }} .hb-hero__dots{position:absolute;left:50%;bottom:1rem;transform:translateX(-50%);display:flex;gap:.5rem;z-index:4;}
+    #Hero-{{ section.id }} .hb-hero__dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,0.5);border:none;cursor:pointer;}
+    #Hero-{{ section.id }} .hb-hero__dot[aria-selected="true"]{background:rgba(255,255,255,1);}
+    #Hero-{{ section.id }} .hb-hero__dot:focus{outline:3px solid #fff;outline-offset:2px;}
+    @media (max-width:749px){#Hero-{{ section.id }}{--hb-height:{{ hm_px }}px;}}
+    /* Text effects */
+    #Hero-{{ section.id }} .hb-shimmer{background-image:linear-gradient(90deg,rgba(255,255,255,0)0%,rgba(255,255,255,0.8)50%,rgba(255,255,255,0)100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:hbShimmer 2.5s linear infinite;}
+    #Hero-{{ section.id }} .hb-twinkle{position:relative;}
+    #Hero-{{ section.id }} .hb-twinkle::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,0.8)0,rgba(255,255,255,0)70%);opacity:.6;animation:hbTwinkle 1.8s ease-in-out infinite;pointer-events:none;}
+    @keyframes hbShimmer{from{background-position:-200% 0;}to{background-position:200% 0;}}
+    @keyframes hbTwinkle{0%,100%{opacity:.2;}50%{opacity:1;}}
+    @media (prefers-reduced-motion:reduce){#Hero-{{ section.id }} .hb-shimmer,#Hero-{{ section.id }} .hb-twinkle::after{animation:none;}}
+    /* Reduced motion disables transitions */
+    @media (prefers-reduced-motion:reduce){#Hero-{{ section.id }} .hb-hero__slide{transition:none;}}
   </style>
+
   {% if section.blocks.size > 0 %}
-    <div class="hero-banner-agg__slideshow" data-autoplay="{{ s.slideshow_autoplay }}" data-interval="{{ s.slideshow_interval | times: 1000 }}" data-transition="{{ s.slideshow_transition }}" aria-roledescription="carousel">
-      <ul class="hero-banner-agg__slides" aria-live="polite">
-        {% for block in section.blocks %}
-          {% assign b = block.settings %}
-          {% assign slide_id = 'slide-' | append: section.id | append: '-' | append: forloop.index0 %}
-          {%- comment -%} Boolean assignments rewritten via if blocks to avoid Shopify parser error with inline comparisons {%- endcomment -%}
-          {% assign has_cta_primary = false %}
-          {% if b.slide_cta_text != blank and b.slide_cta_link != blank %}{% assign has_cta_primary = true %}{% endif %}
-          {% assign has_cta_secondary = false %}
-          {% if b.slide_cta2_text != blank and b.slide_cta2_link != blank %}{% assign has_cta_secondary = true %}{% endif %}
-          {% assign any_cta = false %}
-          {% if has_cta_primary or has_cta_secondary %}{% assign any_cta = true %}{% endif %}
-          {% assign wrap_slide_link = false %}
-          {% if b.slide_link != blank and any_cta == false %}{% assign wrap_slide_link = true %}{% endif %}
-          {%- assign slide_reset = b.reset_slide_overrides | default: false -%}
-          <li id="{{ slide_id }}" class="hero-banner-agg__slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.index0 }}" data-duration="{{ b.slide_duration | default: s.slideshow_interval | times: 1000 }}" data-combo-shimmer-fade="{{ b.combine_text_shimmer_with_fade | default: false }}" data-allow-slide-txt-shimmer="{% if slide_reset %}false{% else %}{{ b.enable_text_shimmer_slide | default: false }}{% endif %}" data-allow-slide-twinkle="{% if slide_reset %}false{% else %}{{ b.enable_text_twinkle_slide | default: false }}{% endif %}" role="group" aria-roledescription="slide" aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}" {{ block.shopify_attributes }}>
-            {% if wrap_slide_link %}<a href="{{ b.slide_link }}" style="display:block;position:absolute;inset:0;" tabindex="-1" aria-label="{{ b.slide_alt | default: s.image_alt | escape }}">{% endif %}
-              {% if b.slide_image %}
-                {% assign widths = '400,600,800,1200,1600,2048' | split: ',' %}
-                {% capture srcset %}{% for w in widths %}{{ b.slide_image | image_url: width: w | append: ' ' | append: w | append: 'w' }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
-                {% if forloop.first %}<link rel="preload" as="image" href="{{ b.slide_image | image_url: width: 1600 }}">{% endif %}
-                {% assign anim_type = b.image_anim_type | default: 'none' %}
-                {% assign anim_intensity = b.image_anim_intensity | default: 50 %}
-                {% assign anim_speed = b.image_anim_speed | default: 'medium' %}
-                {% assign anim_speed_custom = b.image_anim_speed_custom | default: 800 %}
-                {% assign anim_speed_val = anim_speed_custom %}
-                {% if anim_speed == 'slow' %}{% assign anim_speed_val = 1800 %}{% elsif anim_speed == 'medium' %}{% assign anim_speed_val = 800 %}{% elsif anim_speed == 'fast' %}{% assign anim_speed_val = 350 %}{% endif %}
-                {% assign img_slide_style = block.settings.image_slide_style | default: 'none' %}
-                <img
-                  id="hero-slide-img-{{ section.id }}-{{ forloop.index0 }}"
-                  src="{{ b.slide_image | image_url: width: 1600 }}"
-                  srcset="{{ srcset | strip }}"
-                  sizes="100vw"
-                  alt="{{ b.slide_alt | default: s.image_alt | default: s.subheadline | default: s.headline | escape }}"
-                  width="{{ b.slide_image.width }}"
-                  height="{{ b.slide_image.height }}"
-                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
-                  fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
-                  decoding="async"
-                  class="hero-banner-agg__slideImg anim-{{ anim_type }}"
-                  data-anim-type="{{ anim_type }}"
-                  data-anim-intensity="{{ anim_intensity }}"
-                  data-anim-speed="{{ anim_speed }}"
-                  data-anim-speed-val="{{ anim_speed_val }}"
-                  data-amb-direction="{{ b.ambient_direction | default: s.ambient_default_direction | default: 'diagonal' }}"
-                  data-amb-loop="{{ b.ambient_loop_style | default: s.ambient_default_loop_style | default: 'ease-in-out' }}"
-                  data-anim-slide-style="{{ img_slide_style }}"
-                  data-slide-ease="{{ block.settings.image_slide_ease | default: 'smooth' }}"
-                  data-slide-ease-custom="{{ block.settings.image_slide_ease_custom }}"
-                  data-sparkle-color="{{ b.image_sparkle_color }}"
-                  data-sparkle-density="{{ b.image_sparkle_density }}"
-                  data-sparkle-speed="{{ b.image_sparkle_speed_ms }}"
-                  data-glitter-color="{{ b.image_glitter_color }}"
-                  data-glitter-intensity="{{ b.image_glitter_intensity }}"
-                  data-glitter-speed="{{ b.image_glitter_speed_ms }}"
-                  style="width:100%;height:100%;object-fit:cover;display:block;" />
-              {% else %}
-                <div style="background:#222;width:100%;height:100%;"></div>
+    <ul class="hb-hero__slides" role="list" data-slides>
+      {% for block in section.blocks %}
+        {% assign b = block.settings %}
+        {% assign img = b.image %}
+        {% assign mob = b.mobile_image %}
+        {% assign alt = b.image_alt | default: img.alt | escape %}
+        {% assign slide_id = 'Slide-' | append: section.id | append: '-' | append: forloop.index %}
+        <li id="{{ slide_id }}" class="hb-hero__slide{% if forloop.first %} is-active{% endif %}" data-slide data-index="{{ forloop.index0 }}" role="group" aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}" {{ block.shopify_attributes }}>
+          {% if img %}
+          <div class="hb-hero__media">
+            <picture>
+              {% if mob %}
+                <source media="(max-width: 749px)" srcset="{{ mob | image_url: width: 750 }} 750w, {{ mob | image_url: width: 1500 }} 1500w" sizes="100vw">
               {% endif %}
-            {% if wrap_slide_link %}</a>{% endif %}
-            {% if s.enable_overlay %}<div class="hero-banner-agg__overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>{% endif %}
-            {%- assign global_headline_pos = s.global_headline_position | default: 'mc' -%}
-            {%- assign global_sub_pos = s.global_subheadline_position | default: global_headline_pos -%}
-            {%- assign global_ctas_pos = s.global_ctas_position | default: global_headline_pos -%}
-            {%- assign headline_pos = b.headline_position | default: global_headline_pos -%}
-            {%- assign sub_pos = b.subheadline_position | default: headline_pos | default: global_sub_pos -%}
-            {%- assign ctas_pos = b.ctas_position | default: headline_pos | default: global_ctas_pos -%}
-            {%- if s.show_global_headlines and b.slide_headline != blank -%}
-              {% assign h_anim_type = b.headline_anim_type | default: 'none' %}
-              {% if h_anim_type == 'none' and b.headline_shimmer == 'shimmer' %}{% assign h_anim_type = 'shimmer' %}{% endif %}
-              {% assign h_anim_intensity = b.headline_anim_intensity | default: 50 %}
-              {% assign h_anim_speed = b.headline_anim_speed | default: 'medium' %}
-              {% assign h_anim_speed_custom = b.headline_anim_speed_custom | default: 800 %}
-              {% assign h_anim_speed_val = h_anim_speed_custom %}
-              {% if h_anim_speed == 'slow' %}{% assign h_anim_speed_val = 1800 %}{% elsif h_anim_speed == 'medium' %}{% assign h_anim_speed_val = 900 %}{% elsif h_anim_speed == 'fast' %}{% assign h_anim_speed_val = 500 %}{% endif %}
-              <div class="hero-banner-agg__slidePiece pos-{{ headline_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--headline-color:{{ b.headline_color | default: s.headline_color }};--headline-size:{% if b.headline_size > 0 %}{{ b.headline_size }}px{% endif %};--headline-size-m:{% if b.headline_size > 0 %}{{ b.headline_size | divided_by: 1.6 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <h3 class="hero-banner-agg__pieceHeadline" data-text-anim-type="{{ h_anim_type }}" data-text-anim-intensity="{{ h_anim_intensity }}" data-text-anim-speed-val="{{ h_anim_speed_val }}" data-text-anim-ease="{{ b.headline_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.headline_anim_ease_custom }}" data-text-shimmer-color="{% if slide_reset %}{{ s.text_shimmer_color }}{% else %}{{ b.headline_shimmer_color | default: s.text_shimmer_color }}{% endif %}" data-text-shimmer-speed="{% if slide_reset %}{{ s.text_shimmer_speed_ms }}{% else %}{{ b.headline_shimmer_speed_ms }}{% endif %}" data-text-twinkle="{% if slide_reset %}{% else %}{{ b.headline_enable_twinkle }}{% endif %}" data-text-sparkle-density="{% if slide_reset %}{% else %}{{ b.headline_sparkle_density }}{% endif %}" data-text-glint-strength="{% if slide_reset %}{% else %}{{ b.headline_glint_strength }}{% endif %}" data-text-glint-width="{% if slide_reset %}{% else %}{{ b.headline_glint_width }}{% endif %}" data-text-fx="{% if slide_reset %}{% else %}{{ b.headline_text_fx }}{% endif %}" data-text-fx-color="{% if slide_reset %}{% else %}{{ b.headline_text_fx_color }}{% endif %}" data-text-fx-intensity="{% if slide_reset %}{% else %}{{ b.headline_text_fx_intensity }}{% endif %}" data-text-fx-speed="{% if slide_reset %}{% else %}{{ b.headline_text_fx_speed }}{% endif %}" data-text-fx-pos="{% if slide_reset %}{% else %}{{ b.headline_text_fx_position }}{% endif %}" data-text-fx-size="{% if slide_reset %}{% else %}{{ b.headline_text_fx_size }}{% endif %}" data-text-fx-frequency="{% if slide_reset %}{% else %}{{ b.headline_text_fx_frequency }}{% endif %}">{{ b.slide_headline }}</h3>
-              </div>
-            {%- endif -%}
-            {%- if s.show_global_subheadlines and b.slide_subheadline != blank -%}
-              {% assign s_anim_type = b.sub_anim_type | default: 'none' %}
-              {% if s_anim_type == 'none' and b.sub_shimmer == 'shimmer' %}{% assign s_anim_type = 'shimmer' %}{% endif %}
-              {% assign s_anim_intensity = b.sub_anim_intensity | default: 50 %}
-              {% assign s_anim_speed = b.sub_anim_speed | default: 'medium' %}
-              {% assign s_anim_speed_custom = b.sub_anim_speed_custom | default: 800 %}
-              {% assign s_anim_speed_val = s_anim_speed_custom %}
-              {% if s_anim_speed == 'slow' %}{% assign s_anim_speed_val = 1800 %}{% elsif s_anim_speed == 'medium' %}{% assign s_anim_speed_val = 900 %}{% elsif s_anim_speed == 'fast' %}{% assign s_anim_speed_val = 500 %}{% endif %}
-              <div class="hero-banner-agg__slidePiece pos-{{ sub_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--sub-color:{{ b.subheadline_color | default: s.subheadline_color }};--sub-size:{% if b.subheadline_size > 0 %}{{ b.subheadline_size }}px{% endif %};--sub-size-m:{% if b.subheadline_size > 0 %}{{ b.subheadline_size | divided_by: 1.1 }}px{% endif %};--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                <p class="hero-banner-agg__pieceSub" data-text-anim-type="{{ s_anim_type }}" data-text-anim-intensity="{{ s_anim_intensity }}" data-text-anim-speed-val="{{ s_anim_speed_val }}" data-text-anim-ease="{{ b.sub_anim_ease | default: 'smooth' }}" data-text-anim-ease-custom="{{ b.sub_anim_ease_custom }}" data-text-shimmer-color="{% if slide_reset %}{{ s.text_shimmer_color }}{% else %}{{ b.sub_shimmer_color | default: s.text_shimmer_color }}{% endif %}" data-text-shimmer-speed="{% if slide_reset %}{{ s.text_shimmer_speed_ms }}{% else %}{{ b.sub_shimmer_speed_ms }}{% endif %}" data-text-twinkle="{% if slide_reset %}{% else %}{{ b.sub_enable_twinkle }}{% endif %}" data-text-sparkle-density="{% if slide_reset %}{% else %}{{ b.sub_sparkle_density }}{% endif %}" data-text-glint-strength="{% if slide_reset %}{% else %}{{ b.sub_glint_strength }}{% endif %}" data-text-glint-width="{% if slide_reset %}{% else %}{{ b.sub_glint_width }}{% endif %}" data-text-fx="{% if slide_reset %}{% else %}{{ b.sub_text_fx }}{% endif %}" data-text-fx-color="{% if slide_reset %}{% else %}{{ b.sub_text_fx_color }}{% endif %}" data-text-fx-intensity="{% if slide_reset %}{% else %}{{ b.sub_text_fx_intensity }}{% endif %}" data-text-fx-speed="{% if slide_reset %}{% else %}{{ b.sub_text_fx_speed }}{% endif %}" data-text-fx-pos="{% if slide_reset %}{% else %}{{ b.sub_text_fx_position }}{% endif %}" data-text-fx-size="{% if slide_reset %}{% else %}{{ b.sub_text_fx_size }}{% endif %}" data-text-fx-frequency="{% if slide_reset %}{% else %}{{ b.sub_text_fx_frequency }}{% endif %}">{{ b.slide_subheadline }}</p>
-              </div>
-            {%- endif -%}
-            {%- if s.show_slide_ctas and any_cta -%}
-              <div class="hero-banner-agg__slidePiece pos-{{ ctas_pos }}{% if wrap_slide_link %} is-passive{% endif %}" style="--maxw:{% if b.max_width_ch > 0 %}{{ b.max_width_ch }}ch{% endif %};">
-                {%- assign use_global_anim = b.cta_anim_style_cont | default: b.cta_anim_style | default: s.cta_global_anim_style_cont -%}
-                {%- if use_global_anim == nil %}{% assign use_global_anim = true %}{% endif %}
-                {%- assign style_cont = b.cta_anim_style_cont | default: b.cta_anim_style | default: s.cta_global_anim_style_cont -%}
-                {%- assign style_hover = b.cta_anim_style_hover | default: style_cont | default: s.cta_global_anim_style_hover -%}
-                {%- assign style_click = b.cta_anim_style_click | default: style_cont | default: s.cta_global_anim_style_click -%}
-                {%- if use_global_anim %}
-                  {%- assign style_cont = s.cta_global_anim_style_cont -%}
-                  {%- assign style_hover = s.cta_global_anim_style_hover -%}
-                  {%- assign style_click = s.cta_global_anim_style_click -%}
-                {%- endif -%}
-                {%- assign speed_cont = b.cta_anim_speed_continuous | default: s.cta_global_anim_speed_continuous -%}
-                {%- assign speed_hover = b.cta_anim_speed_hover | default: s.cta_global_anim_speed_hover -%}
-                {%- assign speed_click = b.cta_anim_speed_click | default: s.cta_global_anim_speed_click -%}
-                {%- if use_global_anim %}
-                  {%- assign speed_cont = s.cta_global_anim_speed_continuous -%}
-                  {%- assign speed_hover = s.cta_global_anim_speed_hover -%}
-                  {%- assign speed_click = s.cta_global_anim_speed_click -%}
-                {%- endif -%}
-                {%- assign gap_px = b.cta_gap | default: s.cta_global_cta_gap | default: 14 -%}
-                {%- assign gap_px_m = b.cta_gap_mobile | default: s.cta_global_cta_gap_mobile | default: gap_px -%}
-                {%- assign style_3d_global = b.cta_style | default: s.cta_global_style | default: 'raised' -%}
-                {%- comment %} Per-button animation/style override resolution (Option A) {%- endcomment -%}
-                {%- assign prim_style_cont = b.primary_anim_style_cont | default: b.cta_anim_style_cont | default: b.cta_anim_style | default: s.cta_global_anim_style_cont -%}
-                {%- assign prim_style_hover = b.primary_anim_style_hover | default: b.cta_anim_style_hover | default: prim_style_cont | default: s.cta_global_anim_style_hover -%}
-                {%- assign prim_style_click = b.primary_anim_style_click | default: b.cta_anim_style_click | default: prim_style_cont | default: s.cta_global_anim_style_click -%}
-                {%- assign sec_style_cont = b.secondary_anim_style_cont | default: b.cta_anim_style_cont | default: b.cta_anim_style | default: s.cta_global_anim_style_cont -%}
-                {%- assign sec_style_hover = b.secondary_anim_style_hover | default: b.cta_anim_style_hover | default: sec_style_cont | default: s.cta_global_anim_style_hover -%}
-                {%- assign sec_style_click = b.secondary_anim_style_click | default: b.cta_anim_style_click | default: sec_style_cont | default: s.cta_global_anim_style_click -%}
-                {%- assign prim_cont = b.primary_anim_continuous | default: b.cta_anim_continuous -%}
-                {%- assign prim_hover = b.primary_anim_hover | default: b.cta_anim_hover -%}
-                {%- assign prim_click = b.primary_anim_click | default: b.cta_anim_click -%}
-                {%- assign sec_cont = b.secondary_anim_continuous | default: b.cta_anim_continuous -%}
-                {%- assign sec_hover = b.secondary_anim_hover | default: b.cta_anim_hover -%}
-                {%- assign sec_click = b.secondary_anim_click | default: b.cta_anim_click -%}
-                {%- assign speed_cont_primary = b.primary_anim_speed_continuous -%}
-                {%- if speed_cont_primary == 0 or speed_cont_primary == blank %}{% assign speed_cont_primary = b.cta_anim_speed_continuous | default: s.cta_global_anim_speed_continuous %}{% endif %}
-                {%- assign speed_hover_primary = b.primary_anim_speed_hover -%}
-                {%- if speed_hover_primary == 0 or speed_hover_primary == blank %}{% assign speed_hover_primary = b.cta_anim_speed_hover | default: s.cta_global_anim_speed_hover %}{% endif %}
-                {%- assign speed_click_primary = b.primary_anim_speed_click -%}
-                {%- if speed_click_primary == 0 or speed_click_primary == blank %}{% assign speed_click_primary = b.cta_anim_speed_click | default: s.cta_global_anim_speed_click %}{% endif %}
-                {%- assign speed_cont_secondary = b.secondary_anim_speed_continuous -%}
-                {%- if speed_cont_secondary == 0 or speed_cont_secondary == blank %}{% assign speed_cont_secondary = b.cta_anim_speed_continuous | default: s.cta_global_anim_speed_continuous %}{% endif %}
-                {%- assign speed_hover_secondary = b.secondary_anim_speed_hover -%}
-                {%- if speed_hover_secondary == 0 or speed_hover_secondary == blank %}{% assign speed_hover_secondary = b.cta_anim_speed_hover | default: s.cta_global_anim_speed_hover %}{% endif %}
-                {%- assign speed_click_secondary = b.secondary_anim_speed_click -%}
-                {%- if speed_click_secondary == 0 or speed_click_secondary == blank %}{% assign speed_click_secondary = b.cta_anim_speed_click | default: s.cta_global_anim_speed_click %}{% endif %}
-                {%- comment %} Per-variant shimmer speed multipliers (apply only when style is shimmer) {%- endcomment -%}
-                {%- assign prim_mult_pct = s.cta_shimmer_speed_multiplier_primary | default: 100 -%}
-                {%- assign sec_mult_pct = s.cta_shimmer_speed_multiplier_secondary | default: 100 -%}
-                {%- assign prim_mult = prim_mult_pct | times: 0.01 -%}
-                {%- assign sec_mult = sec_mult_pct | times: 0.01 -%}
-                {%- assign speed_cont_primary_final = speed_cont_primary -%}
-                {%- assign speed_hover_primary_final = speed_hover_primary -%}
-                {%- assign speed_click_primary_final = speed_click_primary -%}
-                {%- if prim_style_cont == 'shimmer' -%}{%- assign speed_cont_primary_final = speed_cont_primary | times: prim_mult -%}{%- endif -%}
-                {%- if prim_style_hover == 'shimmer' -%}{%- assign speed_hover_primary_final = speed_hover_primary | times: prim_mult -%}{%- endif -%}
-                {%- if prim_style_click == 'shimmer' -%}{%- assign speed_click_primary_final = speed_click_primary | times: prim_mult -%}{%- endif -%}
-                {%- assign speed_cont_secondary_final = speed_cont_secondary -%}
-                {%- assign speed_hover_secondary_final = speed_hover_secondary -%}
-                {%- assign speed_click_secondary_final = speed_click_secondary -%}
-                {%- if sec_style_cont == 'shimmer' -%}{%- assign speed_cont_secondary_final = speed_cont_secondary | times: sec_mult -%}{%- endif -%}
-                {%- if sec_style_hover == 'shimmer' -%}{%- assign speed_hover_secondary_final = speed_hover_secondary | times: sec_mult -%}{%- endif -%}
-                {%- if sec_style_click == 'shimmer' -%}{%- assign speed_click_secondary_final = speed_click_secondary | times: sec_mult -%}{%- endif -%}
-                {%- assign prim_3d = b.primary_3d_style | default: b.cta_style | default: s.cta_global_style | default: 'raised' -%}
-                {%- assign sec_3d = b.secondary_3d_style | default: b.cta_style | default: s.cta_global_style | default: 'raised' -%}
-                {%- comment %} Consolidated per-slide CTA visual overrides with enable/reset flags {%- endcomment -%}
-                {%- if b.enable_cta_visual_overrides and b.reset_slide_overrides != true -%}
-                  {%- assign cta_border_w = b.cta_border_width | default: 0 -%}
-                  {%- assign cta_border_style = b.cta_border_style | default: 'none' -%}
-                  {%- assign cta_border_color = b.cta_border_color | default: '#ffffff' -%}
-                  {%- assign cta_radius = b.cta_radius_override | default: 0 -%}
-                  {%- assign cta_fixed_w = b.cta_fixed_width | default: 0 -%}
-                  {%- assign cta_width_scale = b.cta_width_scale | default: 0 -%}
-                  {%- assign cta_fixed_h = b.cta_fixed_height | default: 0 -%}
-                  {%- assign prim_bg_color = b.primary_bg_color | default: b.slide_cta_bg | default: s.cta_bg -%}
-                  {%- assign prim_bg_grad = b.primary_bg_gradient -%}
-                  {%- assign prim_text_color = b.primary_text_color | default: s.cta_color -%}
-                  {%- assign sec_bg_color = b.secondary_bg_color | default: b.slide_cta2_bg | default: s.cta2_bg -%}
-                  {%- assign sec_bg_grad = b.secondary_bg_gradient -%}
-                  {%- assign sec_text_color = b.secondary_text_color | default: s.cta2_color -%}
-                {%- else -%}
-                  {%- assign cta_border_w = 0 -%}
-                  {%- assign cta_border_style = 'none' -%}
-                  {%- assign cta_border_color = '' -%}
-                  {%- assign cta_radius = 0 -%}
-                  {%- assign cta_fixed_w = 0 -%}
-                  {%- assign cta_width_scale = 0 -%}
-                  {%- assign cta_fixed_h = 0 -%}
-                  {%- assign prim_bg_color = b.slide_cta_bg | default: s.cta_bg -%}
-                  {%- assign prim_bg_grad = '' -%}
-                  {%- assign prim_text_color = s.cta_color -%}
-                  {%- assign sec_bg_color = b.slide_cta2_bg | default: s.cta2_bg -%}
-                  {%- assign sec_bg_grad = '' -%}
-                  {%- assign sec_text_color = s.cta2_color -%}
-                {%- endif -%}
-        {%- capture base_border_style -%}{% if cta_border_w > 0 and cta_border_style != 'none' %}border:{{ cta_border_w }}px {{ cta_border_style }} {{ cta_border_color }};{% else %}border:none;{% endif %}{%- endcapture -%}
-        {%- capture base_radius_style -%}{% if cta_radius > 0 %}border-radius:{{ cta_radius }}px;{% endif %}{%- endcapture -%}
-                {%- assign scale_factor = 1 -%}
-                {%- if cta_width_scale != 0 -%}
-                  {%- assign scale_factor = 1.0 | plus: 0 -%}
-                  {%- assign scale_factor = scale_factor | plus: cta_width_scale | divided_by: 100.0 -%}
-                {%- endif -%}
-                {%- capture base_dim_style -%}{% if cta_fixed_w > 0 %}min-width:{{ cta_fixed_w }}px;width:{{ cta_fixed_w }}px;{% endif %}{% if cta_fixed_h > 0 %}height:{{ cta_fixed_h }}px;{% endif %}{% if cta_width_scale != 0 %}--wscale:{{ scale_factor }};--_orig-transform:inherit;transform:scaleX(var(--wscale));{% endif %}{%- endcapture -%}
-        {%- capture prim_bg_style -%}{% if prim_bg_grad != blank %}background:{{ prim_bg_grad }};{% else %}background:{{ prim_bg_color }};{% endif %}color:{{ prim_text_color }};{%- endcapture -%}
-        {%- capture sec_bg_style -%}{% if sec_bg_grad != blank %}background:{{ sec_bg_grad }};{% else %}background:{{ sec_bg_color }};{% endif %}color:{{ sec_text_color }};{%- endcapture -%}
-        <div class="hero-banner-agg__slideButtons" style="justify-content:{% if b.ctas_inline_align == 'start' %}flex-start{% elsif b.ctas_inline_align == 'end' %}flex-end{% else %}center{% endif %};--cta-gap:{{ gap_px }}px;--cta-gap-m:{{ gap_px_m }}px;">
-                  {% if has_cta_primary %}
-          <a href="{{ b.slide_cta_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta_variant }}" data-size="{{ b.cta_size }}" data-style="{{ prim_3d }}"{% if prim_style_cont != 'none' or prim_style_hover != 'none' or prim_style_click != 'none' %} data-anim-style-cont="{{ prim_style_cont }}" data-anim-style-hover="{{ prim_style_hover }}" data-anim-style-click="{{ prim_style_click }}" data-anim-cont="{{ prim_cont }}" data-anim-hover="{{ prim_hover }}" data-anim-click="{{ prim_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_primary_final | default: 3 }}s; --anim-speed-hover: {{ speed_hover_primary_final | default: 2 }}s; --anim-speed-click: {{ speed_click_primary_final | default: 1 }}s; {{ prim_bg_style }} {{ base_border_style }} {{ base_radius_style }} {{ base_dim_style }}{% if b.primary_shimmer_band_width and b.primary_shimmer_band_width > 0 %} --cta-shimmer-band-w: {{ b.primary_shimmer_band_width }}px;{% elsif s.cta_shimmer_band_width_primary and s.cta_shimmer_band_width_primary > 0 %} --cta-shimmer-band-w: {{ s.cta_shimmer_band_width_primary }}px;{% else %} --cta-shimmer-band-w: {{ s.cta_global_shimmer_band_width | default: 200 }}px;{% endif %}">{{ b.slide_cta_text }}</a>
-                  {% endif %}
-                  {% if has_cta_secondary %}
-          <a href="{{ b.slide_cta2_link }}" class="hero-banner-agg__slideBtn" data-variant="{{ b.slide_cta2_variant }}" data-size="{{ b.cta_size }}" data-style="{{ sec_3d }}"{% if sec_style_cont != 'none' or sec_style_hover != 'none' or sec_style_click != 'none' %} data-anim-style-cont="{{ sec_style_cont }}" data-anim-style-hover="{{ sec_style_hover }}" data-anim-style-click="{{ sec_style_click }}" data-anim-cont="{{ sec_cont }}" data-anim-hover="{{ sec_hover }}" data-anim-click="{{ sec_click }}"{% endif %} style="--anim-speed-cont: {{ speed_cont_secondary_final | default: 3 }}s; --anim-speed-hover: {{ speed_hover_secondary_final | default: 2 }}s; --anim-speed-click: {{ speed_click_secondary_final | default: 1 }}s; {{ sec_bg_style }} {{ base_border_style }} {{ base_radius_style }} {{ base_dim_style }}{% if b.secondary_shimmer_band_width and b.secondary_shimmer_band_width > 0 %} --cta-shimmer-band-w: {{ b.secondary_shimmer_band_width }}px;{% elsif s.cta_shimmer_band_width_secondary and s.cta_shimmer_band_width_secondary > 0 %} --cta-shimmer-band-w: {{ s.cta_shimmer_band_width_secondary }}px;{% else %} --cta-shimmer-band-w: {{ s.cta_global_shimmer_band_width | default: 200 }}px;{% endif %}">{{ b.slide_cta2_text }}</a>
-                  {% endif %}
-                </div>
-              </div>
-            {%- endif -%}
-          </li>
-        {% endfor %}
-      </ul>
-      {% if s.show_nav and section.blocks.size > 1 %}
-        <button type="button" class="hero-banner-agg__navBtn hero-banner-agg__navPrev" aria-label="Previous slide" data-prev>&lsaquo;</button>
-        <button type="button" class="hero-banner-agg__navBtn hero-banner-agg__navNext" aria-label="Next slide" data-next>&rsaquo;</button>
-      {% endif %}
-      {% if s.show_dots and section.blocks.size > 1 %}
-        <div class="hero-banner-agg__dots" role="tablist">
-          {% for block in section.blocks %}
-            {% assign slide_id = 'slide-' | append: section.id | append: '-' | append: forloop.index0 %}
-            <button type="button" class="hero-banner-agg__dot{% if forloop.first %} is-active{% endif %}" role="tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="{{ slide_id }}" aria-label="Go to slide {{ forloop.index }}" data-dot="{{ forloop.index0 }}"></button>
-          {% endfor %}
-        </div>
-      {% endif %}
-      <div class="visually-hidden" aria-live="polite" data-carousel-announcer></div>
-      {% if s.show_progress_bar and section.blocks.size > 1 %}
-        <div class="hero-banner-agg__progress" aria-hidden="true"><span class="hero-banner-agg__progressFill"></span></div>
-      {% endif %}
-    </div>
-  {% else %}
-    {%- comment -%} Fallback as single-slide so animations apply {%- endcomment -%}
-    <div class="hero-banner-agg__slideshow" data-autoplay="false" data-interval="{{ s.slideshow_interval | times: 1000 }}" aria-roledescription="carousel" style="height:{{ s.image_height }}px;">
-      <ul class="hero-banner-agg__slides" aria-live="polite">
-        <li class="hero-banner-agg__slide is-active" data-index="0" data-duration="0" role="group" aria-roledescription="slide" aria-label="Slide 1 of 1">
-          {% if s.hero_image %}
-            {%- assign image = s.hero_image -%}
-            {%- assign widths = '400,600,800,1200,1600,2048' | split: ',' -%}
-            {%- capture srcset -%}{% for w in widths %}{{ image | image_url: width: w | append: ' ' | append: w | append: 'w' }}{% unless forloop.last %}, {% endunless %}{% endfor %}{%- endcapture -%}
-            {%- assign fb_anim_type = s.fallback_image_anim_type | default: 'none' -%}
-            {%- assign fb_anim_intensity = s.fallback_image_anim_intensity | default: 50 -%}
-            {%- assign fb_anim_speed = s.fallback_image_anim_speed | default: 'medium' -%}
-            {%- assign fb_anim_speed_custom = s.fallback_image_anim_speed_custom | default: 800 -%}
-            {%- assign fb_anim_speed_val = fb_anim_speed_custom -%}
-            {%- if fb_anim_speed == 'slow' -%}{% assign fb_anim_speed_val = 1800 %}{%- elsif fb_anim_speed == 'medium' -%}{% assign fb_anim_speed_val = 800 %}{%- elsif fb_anim_speed == 'fast' -%}{% assign fb_anim_speed_val = 350 %}{%- endif -%}
-            {%- assign fb_slide_style = s.fallback_image_slide_style | default: 'none' -%}
-            <img
-              id="hero-fallback-img-{{ section.id }}"
-              src="{{ image | image_url: width: 1600 }}"
-              srcset="{{ srcset | strip }}"
-              sizes="100vw"
-              alt="{{ s.image_alt | default: s.subheadline | default: s.headline | escape }}"
-              width="{{ image.width }}"
-              height="{{ image.height }}"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              class="hero-banner-agg__slideImg anim-{{ fb_anim_type }}"
-              data-anim-type="{{ fb_anim_type }}"
-              data-anim-intensity="{{ fb_anim_intensity }}"
-              data-anim-speed="{{ fb_anim_speed }}"
-              data-anim-speed-val="{{ fb_anim_speed_val }}"
-              data-amb-direction="{{ s.fallback_ambient_direction | default: s.ambient_default_direction | default: 'diagonal' }}"
-              data-amb-loop="{{ s.fallback_ambient_loop_style | default: s.ambient_default_loop_style | default: 'ease-in-out' }}"
-              data-anim-slide-style="{{ fb_slide_style }}"
-              data-slide-ease="{{ s.fallback_image_slide_ease | default: 'smooth' }}"
-              data-slide-ease-custom="{{ s.fallback_image_slide_ease_custom }}"
-              data-sparkle-color="{{ s.fallback_image_sparkle_color | default: s.global_sparkle_color }}"
-              data-sparkle-density="{{ s.fallback_image_sparkle_density | default: 0 }}"
-              data-sparkle-speed="{{ s.fallback_image_sparkle_speed_ms | default: 0 }}"
-              data-glitter-color="{{ s.fallback_image_glitter_color | default: s.global_glitter_color }}"
-              data-glitter-intensity="{{ s.fallback_image_glitter_intensity | default: 0 }}"
-              data-glitter-speed="{{ s.fallback_image_glitter_speed_ms | default: 0 }}"
-              style="width:100%;height:100%;object-fit:cover;display:block;" />
-            {% if s.enable_overlay %}
-              <div class="hero-banner-agg__overlay" style="position:absolute;inset:0;background:{{ s.overlay_color }};opacity:{{ overlay_opacity }};pointer-events:none;"></div>
-            {% endif %}
-          {% else %}
-            <div style="background:#222;height:100%;width:100%;"></div>
+              <source media="(min-width: 750px)" srcset="{{ img | image_url: width: 1500 }} 1500w, {{ img | image_url: width: 3000 }} 3000w" sizes="100vw">
+              <img src="{{ img | image_url: width: 1500 }}" srcset="{{ img | image_url: width: 1500 }} 1500w, {{ img | image_url: width: 3000 }} 3000w" sizes="100vw" width="{{ img.width }}" height="{{ img.height }}" {% if img.aspect_ratio %}style="aspect-ratio:{{ img.aspect_ratio }}"{% endif %} alt="{{ alt }}" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+            </picture>
+          </div>
           {% endif %}
+          <div class="hb-hero__content">
+            {% if b.headline != blank %}
+              {% assign h_classes = '' %}
+              {% if txt_shimmer != 'off' and shimmer_headline %}{% assign h_classes = h_classes | append: ' hb-shimmer' %}{% endif %}
+              {% if txt_twinkle == 'on' and twinkle_headline %}{% assign h_classes = h_classes | append: ' hb-twinkle' %}{% endif %}
+              <h2 class="hb-hero__headline{{ h_classes }}">{{ b.headline }}</h2>
+            {% endif %}
+            {% if b.subheadline != blank %}
+              {% assign s_classes = '' %}
+              {% if txt_shimmer != 'off' and shimmer_subheadline %}{% assign s_classes = s_classes | append: ' hb-shimmer' %}{% endif %}
+              {% if txt_twinkle == 'on' and twinkle_subheadline %}{% assign s_classes = s_classes | append: ' hb-twinkle' %}{% endif %}
+              <p class="hb-hero__subheadline{{ s_classes }}">{{ b.subheadline }}</p>
+            {% endif %}
+            {% if b.button_label or b.button_label_2 %}
+              <div class="hb-hero__buttons">
+                {% if b.button_label and b.button_link %}
+                  <a href="{{ b.button_link }}" class="hb-hero__btn">{{ b.button_label }}</a>
+                {% endif %}
+                {% if b.button_label_2 and b.button_link_2 %}
+                  <a href="{{ b.button_link_2 }}" class="hb-hero__btn hb-hero__btn--alt">{{ b.button_label_2 }}</a>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
         </li>
-      </ul>
-    </div>
-  {% endif %}
-  <div class="hero-banner-agg__inner" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:{{ flex_align }};text-align:{{ s.text_align }};padding:{{ s.padding_vertical }}px {{ s.padding_horizontal }}px;gap:1rem;">
-  {% if s.show_global_section_headline and s.headline != blank %}
-    <h1 itemprop="headline" style="margin:0;color:{{ s.headline_color }};font-size:{{ s.headline_size }}px;line-height:1.1;font-weight:700;max-width:{{ s.text_max_width }}ch;">{{ s.headline }}</h1>
-  {% endif %}
-  {% if s.show_global_section_subheadline and s.subheadline != blank %}
-    <p style="margin:0 0 0.5rem 0;color:{{ s.subheadline_color }};font-size:{{ s.subheadline_size }}px;line-height:1.4;max-width:{{ s.text_max_width }}ch;">{{ s.subheadline }}</p>
-  {% endif %}
-    {% if s.show_ctas %}
-      <div class="hero-banner-agg__ctas" style="display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:{{ flex_align }};">
-        {% if s.cta_link and s.cta_text != blank %}
-          <a href="{{ s.cta_link }}" class="btn" style="background:{{ s.cta_bg }};color:{{ s.cta_color }};padding:0.9rem 1.8rem;border-radius:{{ s.button_radius }}px;text-decoration:none;font-weight:600;">{{ s.cta_text }}</a>
-        {% endif %}
-        {% if s.cta_link_2 and s.cta_text_2 != blank %}
-          <a href="{{ s.cta_link_2 }}" class="btn" style="background:{{ s.cta2_bg }};color:{{ s.cta2_color }};padding:0.9rem 1.8rem;border-radius:{{ s.button_radius }}px;text-decoration:none;font-weight:600;">{{ s.cta_text_2 }}</a>
-        {% endif %}
+      {% endfor %}
+    </ul>
+    {% if show_arrows and section.blocks.size > 1 %}
+      <div class="hb-hero__arrows" aria-hidden="true">
+        <button class="hb-hero__arrow" type="button" data-prev aria-label="Previous slide">&#10094;</button>
+        <button class="hb-hero__arrow" type="button" data-next aria-label="Next slide">&#10095;</button>
       </div>
     {% endif %}
-  </div>
-  {% if s.custom_css %}<style>{{ s.custom_css }}</style>{% endif %}
-  <script>
-    (function(){
-      var root=document.getElementById('hero-slideshow-{{ section.id }}'); if(!root) return;
-      var initialized = root.getAttribute('data-enhanced'); if(initialized) return; root.setAttribute('data-enhanced','true');
-      var wrap=root.querySelector('.hero-banner-agg__slideshow'); if(!wrap) return;
-  var slides=[].slice.call(root.querySelectorAll('.hero-banner-agg__slide'));
-  var isCarousel = slides.length>1;
-  var isFallback = (root.getAttribute('data-slide-count') === '0');
-      var dots=[].slice.call(root.querySelectorAll('.hero-banner-agg__dot'));
-      var announcer = root.querySelector('[data-carousel-announcer]');
-      var idx=0;
-  var autoplayAttr = wrap.getAttribute('data-autoplay');
-  var autoplay = (autoplayAttr==='' || autoplayAttr==='true' || autoplayAttr==='1') && isCarousel;
-  var interval = parseInt(wrap.getAttribute('data-interval'),10) || 5000;
-      var loop = {{ s.loop_slides | default: true }};
-      var pauseOnHover = {{ s.pause_on_hover | default: true }};
-  var pointerStartX=null; var pointerDelta=0; var SWIPE_THRESHOLD=40;
-      function setAria(oldI,newI){ if(dots[oldI]){dots[oldI].setAttribute('aria-selected','false');} if(dots[newI]){dots[newI].setAttribute('aria-selected','true');} if(announcer){announcer.textContent='Slide '+(newI+1)+' of '+slides.length;} }
-    function show(i){ if(i===idx) return; var old=idx; if(i>=slides.length){ if(loop){ i=0;} else {return stop();} } if(i<0){ if(loop){ i=slides.length-1;} else {return;} } slides[old].classList.remove('is-active'); if(dots[old]) dots[old].classList.remove('is-active'); idx=i; slides[idx].classList.add('is-active'); if(dots[idx]) dots[idx].classList.add('is-active'); setAria(old,idx); applyImageAnimation(idx); }
-      function nextSlide(){ show(idx+1); }
-      function prevSlide(){ show(idx-1); }
-  var hovering=false; var timer=null; var slideStart=Date.now(); var currentDuration=interval; var progress=root.querySelector('.hero-banner-agg__progressFill');
-  function applyDuration(){ var durAttr = slides[idx].getAttribute('data-duration'); var d=parseInt(durAttr,10); if(!isNaN(d) && d>0){ currentDuration=d; } else { currentDuration=interval; } }
-  applyDuration();
-  function schedule(){ if(!autoplay || hovering || !isCarousel) return; clearTimeout(timer); timer=setTimeout(function(){ nextSlide(); }, currentDuration); }
-  function start(){ if(!autoplay || !isCarousel) return; schedule(); }
-  function stop(){ clearTimeout(timer); timer=null; }
-  function rafTick(){ if(autoplay && !hovering && isCarousel){ var now=Date.now(); var elapsed = now - slideStart; var frac = elapsed / currentDuration; if(progress){ if(frac>1) frac=1; progress.style.transform='scaleX('+ frac +')'; } if(elapsed >= currentDuration){ nextSlide(); } } requestAnimationFrame(rafTick); }
-  requestAnimationFrame(rafTick);
-  start();
-      // Event delegation for buttons & dots (resilient to re-render)
-      wrap.addEventListener('click', function(e){
-        var t=e.target;
-    if(isCarousel && t.closest('[data-next]')){ e.preventDefault(); nextSlide(); start(); }
-  else if(isCarousel && t.closest('[data-prev]')){ e.preventDefault(); prevSlide(); start(); }
-  else if(isCarousel && t.classList.contains('hero-banner-agg__dot')){ e.preventDefault(); var n=parseInt(t.getAttribute('data-dot')); show(n); start(); }
-      });
-    dots.forEach(function(d){ d.setAttribute('tabindex','0'); d.addEventListener('keydown', function(e){ if(!isCarousel) return; if(e.key==='Enter' || e.key===' '){ e.preventDefault(); var n=parseInt(d.getAttribute('data-dot')); show(n); start(); }}); });
-    if(pauseOnHover && isCarousel){
-    root.addEventListener('mouseenter', function(){ hovering=true; stop(); }, {passive:true});
-    root.addEventListener('mouseleave', function(){ hovering=false; start(); }, {passive:true});
-      }
-      root.setAttribute('tabindex','0');
-    root.addEventListener('keydown', function(e){ if(!isCarousel) return; if(e.key==='ArrowRight'){ e.preventDefault(); nextSlide(); start(); } else if(e.key==='ArrowLeft'){ e.preventDefault(); prevSlide(); start(); } });
-      root.addEventListener('pointerdown', function(e){ pointerStartX=e.clientX; pointerDelta=0; });
-      root.addEventListener('pointermove', function(e){ if(pointerStartX!=null){ pointerDelta=e.clientX-pointerStartX; }});
-  root.addEventListener('pointerup', function(){ if(pointerStartX!=null){ if(isCarousel && Math.abs(pointerDelta)>SWIPE_THRESHOLD){ if(pointerDelta<0){ nextSlide(); } else { prevSlide(); } start(); } pointerStartX=null; pointerDelta=0; }});
-  document.addEventListener('visibilitychange', function(){ if(document.hidden){ stop(); } else { setTimeout(function(){ start(); },120); } });
-  root.__heroSlider = { next: nextSlide, prev: prevSlide, pause: function(){ autoplay=false; stop(); }, play: function(){ if(!autoplay){ autoplay=true; start(); } } };
-
-  // Enhance show() to reset timers & progress (monkey patch after definition)
-  var _showOrig = show; show = function(i){ var before = idx; _showOrig(i); if(before!==idx){ applyDuration(); slideStart=Date.now(); if(progress){ progress.style.transform='scaleX(0)'; } schedule(); } };
-
-  // Image animation logic
-  function clearOverlays(slide){ var olds = slide.querySelectorAll('.hb-anim-overlay'); olds.forEach(function(n){ n.remove(); }); }
-  function makeOverlay(slide, cls){ var ov=document.createElement('div'); ov.className='hb-anim-overlay '+cls; slide.appendChild(ov); return ov; }
-  var mouseMoveHandler = null;
-  function applyImageAnimation(slideIdx) {
-    slides.forEach(function(slide, i) {
-      var img = slide.querySelector('.hero-banner-agg__slideImg');
-      if (!img) return;
-  var type = img.getAttribute('data-anim-type');
-      var intensity = parseInt(img.getAttribute('data-anim-intensity'), 10) || 50;
-      var speed = parseInt(img.getAttribute('data-anim-speed-val'), 10) || 800;
-      var slideStyle = img.getAttribute('data-anim-slide-style') || 'none';
-  // Global image effect override/fallback
-  var gEff = root.getAttribute('data-global-img-effect') || 'none';
-  var gForce = (root.getAttribute('data-global-img-effect-force') === 'true' || root.getAttribute('data-global-img-effect-force') === '1');
-  if (gForce && gEff !== 'none') { type = gEff; }
-  if (!type || type === 'none') { if (gEff && gEff !== 'none') { type = gEff; } }
-      // Reset all styles
-      img.style.transform = '';
-      img.style.filter = '';
-      img.style.boxShadow = '';
-      img.style.transition = '';
-      img.style.setProperty('--img-anim-speed', speed + 'ms');
-      img.style.transitionDuration = speed + 'ms';
-      clearOverlays(slide);
-      img.classList.remove('is-animating');
-      img.style.animation = 'none';
-      // Reset any text animations in this slide
-      var txtAll = slide.querySelectorAll('[data-text-anim-type]');
-      txtAll.forEach(function(el){ el.classList.remove('hb-text-shimmer'); el.style.animation='none'; el.style.removeProperty('--txt-shimmer-color'); el.style.removeProperty('--txt-shimmer-speed'); });
-      // Only animate active slide
-      if (i !== slideIdx) return;
-      var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReduced) return;
-
-      // Directional slide-in (image enters)
-      if (slideStyle && slideStyle !== 'none') {
-        var axis = 'x';
-        var from = 0;
-        // Per-slide easing for slide-in
-        var slideEaseSel = img.getAttribute('data-slide-ease') || 'smooth';
-        var slideEaseCustom = img.getAttribute('data-slide-ease-custom') || '';
-        var easingMap = { 'ease':'ease', 'ease-in':'ease-in', 'ease-out':'ease-out', 'ease-in-out':'ease-in-out', 'smooth':'cubic-bezier(.22,.61,.36,1)', 'linear':'linear' };
-        var easing = (slideEaseSel==='custom' && slideEaseCustom) ? slideEaseCustom : (easingMap[slideEaseSel] || 'cubic-bezier(.22,.61,.36,1)');
-        var cover = false; // cover = overlay sweeps on top; uncover = overlay reveals image
-        switch(slideStyle){
-          case 'slide_in_left': from = -110; axis='x'; break;
-          case 'slide_in_right': from = 110; axis='x'; break;
-          case 'slide_in_top': from = -110; axis='y'; break;
-          case 'slide_in_bottom': from = 110; axis='y'; break;
-          case 'swipe_cover_left': from = -110; axis='x'; cover = true; break;
-          case 'swipe_cover_right': from = 110; axis='x'; cover = true; break;
-          case 'swipe_cover_top': from = -110; axis='y'; cover = true; break;
-          case 'swipe_cover_bottom': from = 110; axis='y'; cover = true; break;
-          case 'swipe_uncover_left': from = -110; axis='x'; cover = false; break;
-          case 'swipe_uncover_right': from = 110; axis='x'; cover = false; break;
-          case 'swipe_uncover_top': from = -110; axis='y'; cover = false; break;
-          case 'swipe_uncover_bottom': from = 110; axis='y'; cover = false; break;
-        }
-        // Initialize position with forced reflow to retrigger on repeat activations
-        img.style.opacity = '1';
-        img.style.transition = 'none';
-        img.style.transform = axis==='x' ? 'translateX('+from+'%)' : 'translateY('+from+'%)';
-        // Force layout
-        void img.getBoundingClientRect();
-        // Apply transition and target in next frame
-        requestAnimationFrame(function(){
-          img.style.transition = 'transform '+speed+'ms '+easing;
-          img.style.transform = axis==='x' ? 'translateX(0%)' : 'translateY(0%)';
-        });
-        // Optional swipe overlay
-        var swipe;
-        if (slideStyle.indexOf('swipe_')===0) {
-          swipe = document.createElement('div');
-          swipe.className = 'hb-swipe-overlay';
-          if (axis==='y') swipe.setAttribute('data-axis','y');
-          slide.appendChild(swipe);
-          // place overlay depending on cover/uncover
-          swipe.style.zIndex = cover ? 7 : 4; // over image for cover, below for uncover
-          swipe.style.transition = 'none';
-          swipe.style.transform = axis==='x' ? 'translateX('+(from)+'%)' : 'translateY('+(from)+'%)';
-          void swipe.getBoundingClientRect();
-          swipe.style.transition = 'transform ' + speed + 'ms ' + easing + ', opacity '+Math.max(250, speed*0.6)+'ms ease-out';
-          // start animation after a frame
-          requestAnimationFrame(function(){ swipe.style.transform = axis==='x' ? 'translateX(0%)' : 'translateY(0%)'; swipe.style.opacity = '0'; setTimeout(function(){ swipe && swipe.remove(); }, speed+220); });
-        }
-        // image final transform is applied above
-      }
-
-      switch(type) {
-        case 'sparkle_overlay':
-          var spColor = img.getAttribute('data-sparkle-color') || root.getAttribute('data-global-sparkle-color') || '#ffffff';
-          var spDen = parseInt(img.getAttribute('data-sparkle-density')||'0',10); if (isNaN(spDen) || spDen<=0) spDen = parseInt(root.getAttribute('data-global-sparkle-density')||'60',10);
-          var spSpeed = parseInt(img.getAttribute('data-sparkle-speed')||'0',10); if (isNaN(spSpeed) || spSpeed<=0) spSpeed = parseInt(root.getAttribute('data-global-sparkle-speed')||'16000',10);
-          var ovS = makeOverlay(slide, 'hb-sparkle');
-          ovS.style.setProperty('--sp-color', spColor);
-          var spOpacity = Math.max(0.15, Math.min(1, 0.15 + (spDen/100)*0.75));
-          ovS.style.setProperty('--sp-opacity', spOpacity);
-          ovS.style.setProperty('--sp-speed', Math.max(2000, spSpeed) + 'ms');
-          break;
-        case 'glitter_overlay':
-          var glColor = img.getAttribute('data-glitter-color') || root.getAttribute('data-global-glitter-color') || '#ffffff';
-          var glInt = parseInt(img.getAttribute('data-glitter-intensity')||'0',10); if (isNaN(glInt) || glInt<=0) glInt = parseInt(root.getAttribute('data-global-glitter-intensity')||'45',10);
-          var glSpeed = parseInt(img.getAttribute('data-glitter-speed')||'0',10); if (isNaN(glSpeed) || glSpeed<=0) glSpeed = parseInt(root.getAttribute('data-global-glitter-speed')||'12000',10);
-          var ovG = makeOverlay(slide, 'hb-glitter');
-          ovG.style.setProperty('--gl-color', glColor);
-          var glOpacity = Math.max(0.12, Math.min(0.9, 0.12 + (glInt/100)*0.78));
-          ovG.style.setProperty('--gl-opacity', glOpacity);
-          ovG.style.setProperty('--gl-speed', Math.max(1200, glSpeed) + 'ms');
-          break;
-        case 'ken_burns':
-          var scale = (1 + (intensity/180)).toFixed(3);
-          img.style.setProperty('--kb-scale', scale);
-          img.classList.add('is-animating');
-          img.style.animation = 'hbKenBurns ' + (speed*1.8) + 'ms ease-in-out 1 both';
-          break;
-        case 'ambient_drift':
-          try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { break; } } catch(e) {}
-          var ambCtl = parseInt(root.getAttribute('data-amb-subtlety')||'50',10);
-          var ambFactor = 0.5 + (isNaN(ambCtl)?0.5:ambCtl)/100; // 0.5..1.5
-          var ambX = Math.max(1.5, intensity/10) * ambFactor;
-          var ambY = Math.max(1.0, intensity/14) * ambFactor;
-          var dir = (img.getAttribute('data-amb-direction') || root.getAttribute('data-amb-default-direction') || 'diagonal').toLowerCase();
-          if (dir === 'horizontal') { ambY = 0; }
-          else if (dir === 'vertical') { ambX = 0; }
-          var ambScale = 1 + Math.min(0.03, intensity/1300) * ambFactor; // clamp gentler
-          img.style.setProperty('--amb-x', ambX+'px');
-          img.style.setProperty('--amb-y', ambY+'px');
-          img.style.setProperty('--amb-scale', ambScale.toFixed(3));
-          var loopStyle = (img.getAttribute('data-amb-loop') || root.getAttribute('data-amb-default-loop') || 'ease-in-out').toLowerCase();
-          var animName = loopStyle === 'bounce' ? 'hbAmbientDriftBounce' : 'hbAmbientDrift';
-          var timing = loopStyle === 'linear' ? 'linear' : 'ease-in-out';
-          img.style.animation = animName + ' ' + Math.max(speed*3, 5000) + 'ms ' + timing + ' infinite alternate both';
-          break;
-        case 'parallax':
-          var shift = (Math.max(6, intensity/4)).toFixed(2) + 'px';
-          img.style.setProperty('--parallax-shift', shift);
-          img.classList.add('is-animating');
-          img.style.animation = 'hbParallaxUp ' + (speed*1.2) + 'ms ease-out 1 both';
-          break;
-        case 'crossfade':
-          img.style.transition = 'opacity ' + speed + 'ms ease-in-out';
-          img.style.opacity = '1';
-          break;
-        case 'zoom':
-          var z = (1 + (intensity/90)).toFixed(3);
-          img.style.setProperty('--zoom-scale', z);
-          img.classList.add('is-animating');
-          img.style.animation = 'hbZoomPulse ' + (speed*1.6) + 'ms ease-in-out 1 both';
-          break;
-        case 'blur_focus':
-          var blur = (Math.max(1, intensity/12)).toFixed(1) + 'px';
-          img.style.setProperty('--blur-amt', blur);
-          img.classList.add('is-animating');
-          img.style.animation = 'hbBlurFocus ' + (speed*1.2) + 'ms ease-in-out 1 both';
-          break;
-        case 'light_sweep':
-          // Simple shimmer effect using box-shadow
-          img.style.transition = 'box-shadow ' + speed + 'ms ease-in-out';
-          img.style.boxShadow = '0 0 ' + (intensity/2) + 'px rgba(255,255,255,0.5)';
-          setTimeout(function(){ img.style.boxShadow = 'none'; }, speed);
-          break;
-        case 'mist_fog':
-          var ov1 = makeOverlay(slide, 'hb-mist');
-          ov1.style.animationDuration = Math.max(speed*2, 3000) + 'ms';
-          ov1.style.opacity = Math.min(0.75, 0.2 + intensity/120);
-          break;
-        case 'gradient_drift':
-          var ov2 = makeOverlay(slide, 'hb-gradient');
-          ov2.style.animationDuration = Math.max(speed*1.5, 2000) + 'ms';
-          ov2.style.opacity = Math.min(0.7, 0.15 + intensity/200);
-          break;
-        case 'lens_flare':
-          var ov3 = makeOverlay(slide, 'hb-flare');
-          ov3.style.animationDuration = Math.max(speed*1.8, 2200) + 'ms';
-          ov3.style.opacity = Math.min(0.8, 0.25 + intensity/180);
-          break;
-        case 'mouse_parallax':
-          var maxShift = Math.max(4, intensity/6);
-          if (root.__mouseParallaxHandler) { root.removeEventListener('mousemove', root.__mouseParallaxHandler); root.__mouseParallaxHandler=null; }
-          mouseMoveHandler = function(e){
-            var rect = root.getBoundingClientRect();
-            var cx = rect.left + rect.width/2; var cy = rect.top + rect.height/2;
-            var dx = (e.clientX - cx) / rect.width; var dy = (e.clientY - cy) / rect.height;
-            var tx = (-dx * maxShift).toFixed(2); var ty = (-dy * maxShift).toFixed(2);
-            img.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
-          };
-          root.__mouseParallaxHandler = mouseMoveHandler;
-          root.addEventListener('mousemove', mouseMoveHandler);
-          break;
-        // Ambient overlays, mouse parallax, etc. can be extended here
-        default:
-          // No animation
-          break;
-      }
-
-  // Text animations for headline and subheadline in active slide
-  var txtElems = slide.querySelectorAll('[data-text-anim-type]');
-      txtElems.forEach(function(el){
-        var t = el.getAttribute('data-text-anim-type') || 'none';
-        var ti = parseInt(el.getAttribute('data-text-anim-intensity'),10) || 50;
-        var ts = parseInt(el.getAttribute('data-text-anim-speed-val'),10) || 900;
-        var easeSel = el.getAttribute('data-text-anim-ease') || 'smooth';
-        var easeCustom = el.getAttribute('data-text-anim-ease-custom') || '';
-        var easingMap = { 'ease':'ease', 'ease-in':'ease-in', 'ease-out':'ease-out', 'ease-in-out':'ease-in-out', 'smooth':'cubic-bezier(.22,.61,.36,1)', 'linear':'linear' };
-        var textEasing = (easeSel==='custom' && easeCustom) ? easeCustom : (easingMap[easeSel] || 'cubic-bezier(.22,.61,.36,1)');
-        var shift = Math.max(6, ti/2);
-        el.style.setProperty('--txt-shift', shift+'px');
-  // Clear inline animation so class-based animations (e.g., shimmer) can apply
-  el.style.removeProperty('animation');
-        el.style.opacity = '1';
-        el.classList.remove('hb-text-shimmer');
-        el.classList.remove('hb-text-shimmer-hover');
-        // Determine text FX type if selected (distinct from shimmer)
-        var gFx = root.getAttribute('data-global-text-fx') || 'none';
-        var gForceFx = (root.getAttribute('data-global-text-fx-force') === 'true' || root.getAttribute('data-global-text-fx-force') === '1');
-        var slideFx = el.getAttribute('data-text-fx');
-        var fxType = '';
-        if (gForceFx && gFx !== 'none') {
-          fxType = gFx; // force overrides slide
-        } else {
-          if (slideFx && slideFx !== 'none') {
-            fxType = slideFx;
-          } else if (gFx && gFx !== 'none') {
-            fxType = gFx; // apply global default when slide is unset/none
-          }
-        }
-  var fxColor = el.getAttribute('data-text-fx-color') || root.getAttribute('data-global-text-fx-color') || '#ffffff';
-        var fxIntensity = parseInt(el.getAttribute('data-text-fx-intensity')||'0',10); if (isNaN(fxIntensity) || fxIntensity<=0) fxIntensity = parseInt(root.getAttribute('data-global-text-fx-intensity')||'50',10);
-        var fxSpeed = parseInt(el.getAttribute('data-text-fx-speed')||'0',10); if (isNaN(fxSpeed) || fxSpeed<=0) fxSpeed = parseInt(root.getAttribute('data-global-text-fx-speed')||'6000',10);
-        var fxPos = el.getAttribute('data-text-fx-pos') || root.getAttribute('data-global-text-fx-pos') || 'mc';
-  var fxSize = parseInt(el.getAttribute('data-text-fx-size')||'0',10); if (isNaN(fxSize) || fxSize<=0) fxSize = parseInt(root.getAttribute('data-global-text-fx-size')||'16',10);
-  var fxFreq = parseInt(el.getAttribute('data-text-fx-frequency')||'0',10); if (isNaN(fxFreq) || fxFreq<=0) fxFreq = parseInt(root.getAttribute('data-global-text-fx-frequency')||'10',10);
-        // Map pos to offsets
-        var posMap = { tl:[-4,-4], tc:[0,-4], tr:[4,-4], ml:[-4,0], mc:[0,0], mr:[4,0], bl:[-4,4], bc:[0,4], br:[4,4], cover:[0,0] };
-        var off = posMap[fxPos] || [0,0];
-        // Clear old fx classes
-  el.classList.remove('hb-text-fx','sparkle','glitter');
-        el.style.removeProperty('--fx-color');
-        el.style.removeProperty('--fx-opacity');
-        el.style.removeProperty('--fx-speed');
-        el.style.removeProperty('--fx-offset-x');
-        el.style.removeProperty('--fx-offset-y');
-  el.removeAttribute('data-text-fx-content');
-        // Opacity from intensity curve
-        var fxOpacity = 0.2 + Math.min(1, Math.max(0, fxIntensity/100)) * 0.7;
-  if (fxType === 'sparkle' || fxType === 'glitter'){
-          el.classList.add('hb-text-fx');
-          el.classList.add(fxType === 'sparkle' ? 'sparkle' : 'glitter');
-          try { el.setAttribute('data-text-fx-content', (el.textContent || '').trim()); } catch(e) { /* no-op */ }
-          el.style.setProperty('--fx-color', fxColor);
-          el.style.setProperty('--fx-opacity', fxOpacity.toFixed(2));
-          el.style.setProperty('--fx-speed', Math.max(1000, fxSpeed) + 'ms');
-          el.style.setProperty('--fx-offset-x', off[0] + 'px');
-          el.style.setProperty('--fx-offset-y', off[1] + 'px');
-          // Optional canvas-based procedural texture for sparkle/glitter
-          try {
-            var key = fxType+':'+fxColor+':'+fxSize+':'+fxFreq+':'+(fxIntensity|0);
-            root.__fxTileCache = root.__fxTileCache || {};
-            if (!root.__fxTileCache[key]){
-              var cnv = document.createElement('canvas');
-              var sz = Math.max(8, Math.min(64, fxSize));
-              cnv.width = cnv.height = sz;
-              var ctx = cnv.getContext('2d', { willReadFrequently: false });
-              ctx.clearRect(0,0,sz,sz);
-              // base subtle noise
-              var count = Math.max(2, Math.min(40, fxFreq));
-              for (var i=0;i<count;i++){
-                var x = Math.random()*sz; var y = Math.random()*sz;
-                var r = (fxType==='glitter' ? 0.7 : 0.5) + Math.random()*1.1;
-                var g = ctx.createRadialGradient(x,y,0,x,y,r*2.2);
-                var col = fxColor;
-                g.addColorStop(0, col);
-                g.addColorStop(1, 'rgba(255,255,255,0)');
-                ctx.globalCompositeOperation = 'lighter';
-                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
-              }
-              root.__fxTileCache[key] = ctx.createPattern(cnv, 'repeat');
-              // Convert to data URL for CSS var usage
-              root.__fxTileCache[key+'-url'] = 'url('+cnv.toDataURL('image/png')+')';
-            }
-            el.style.setProperty('--fx-bg', root.__fxTileCache[key+'-url']);
-            // Size mapping
-            el.style.setProperty('background-size', sz+'px '+sz+'px');
-          } catch(e) {
-            // fall back to CSS gradients above
-          }
-        }
-
-        switch(t){
-          case 'fade_in':
-            el.style.animation = 'hbTextFadeIn '+ts+'ms '+textEasing+' 1 both';
-            break;
-          case 'fade_up':
-            el.style.animation = 'hbTextFadeUp '+ts+'ms '+textEasing+' 1 both';
-            break;
-          case 'fade_down':
-            el.style.animation = 'hbTextFadeDown '+ts+'ms '+textEasing+' 1 both';
-            break;
-          case 'fade_left':
-            el.style.animation = 'hbTextFadeLeft '+ts+'ms '+textEasing+' 1 both';
-            break;
-          case 'fade_right':
-            el.style.animation = 'hbTextFadeRight '+ts+'ms '+textEasing+' 1 both';
-            break;
-          case 'shimmer':
-            var allowGlobal = (root.getAttribute('data-allow-text-shimmer') === 'true' || root.getAttribute('data-allow-text-shimmer') === '1');
-            var slideNode = el.closest('.hero-banner-agg__slide');
-            var allowSlide = !!(slideNode && (slideNode.getAttribute('data-allow-slide-txt-shimmer') === 'true' || slideNode.getAttribute('data-allow-slide-txt-shimmer') === '1'));
-            // If shimmer is explicitly selected for this element, allow it regardless of global toggles
-            var allow = allowGlobal || allowSlide || true;
-            if (allow) {
-              var hoverOnly = (root.getAttribute('data-text-shimmer-hover-only') === 'true' || root.getAttribute('data-text-shimmer-hover-only') === '1');
-              var once = (root.getAttribute('data-text-shimmer-once') === 'true' || root.getAttribute('data-text-shimmer-once') === '1');
-              var col = el.getAttribute('data-text-shimmer-color') || root.getAttribute('data-txt-shimmer-color') || '#ffffff';
-              if (col && col.toLowerCase && col.toLowerCase() === 'transparent') {
-                col = root.getAttribute('data-txt-shimmer-color') || '#ffffff';
-              }
-              // global default shimmer speed may override
-              var gSpeed = parseInt(root.getAttribute('data-txt-shimmer-speed')||'0',10);
-              var pSpeed = parseInt(el.getAttribute('data-text-shimmer-speed')||'0',10);
-              var computedSpeed = (pSpeed>0 ? pSpeed : (gSpeed>0 ? gSpeed : Math.max(ts*1.1, 1600)));
-              var speed = computedSpeed + 'ms';
-              el.style.setProperty('--txt-shimmer-color', col);
-              el.style.setProperty('--txt-shimmer-speed', speed);
-
-              // Sparkle/glint base layers with per-element overrides (0/blank = inherit)
-              var elSpark = parseInt(el.getAttribute('data-text-sparkle-density')||'0',10);
-              var spark = elSpark>0 ? elSpark : parseInt(root.getAttribute('data-txt-sparkle-density')||'50',10);
-              var elGlint = parseInt(el.getAttribute('data-text-glint-strength')||'0',10);
-              var glint = elGlint>0 ? elGlint : parseInt(root.getAttribute('data-txt-glint-strength')||'35',10);
-              var elGlintW = parseInt(el.getAttribute('data-text-glint-width')||'0',10);
-              var glintW = elGlintW>0 ? elGlintW : parseInt(root.getAttribute('data-txt-glint-width')||'35',10);
-              var twk = parseInt(root.getAttribute('data-txt-twinkle-speed')||'1800',10);
-              var allowTwGlobal = (root.getAttribute('data-allow-text-twinkle') === 'true' || root.getAttribute('data-allow-text-twinkle') === '1');
-              var allowTwSlide = !!(slideNode && (slideNode.getAttribute('data-allow-slide-twinkle') === 'true' || slideNode.getAttribute('data-allow-slide-twinkle') === '1'));
-              // Per-element override: data-text-twinkle = true|false to force enable/disable
-              var elTw = el.getAttribute('data-text-twinkle');
-              var allowTwElemTrue = (elTw === 'true' || elTw === '1');
-              var allowTwElemFalse = (elTw === 'false' || elTw === '0');
-              var allowTw = allowTwElemTrue || (!allowTwElemFalse && (allowTwGlobal || allowTwSlide));
-
-              var sparkNorm = Math.max(0, Math.min(100, spark)) / 100; // 0..1
-              var glintNorm = Math.max(0, Math.min(100, glint)); // 0..100
-              el.style.setProperty('--txt-sparkle-density', sparkNorm);
-              el.style.setProperty('--txt-glint-strength', glintNorm);
-              el.style.setProperty('--txt-glint-width', glintW);
-              el.style.setProperty('--txt-twinkle-speed', Math.max(600, twk)+'ms');
-              // Twinkle overlay opacity controlled separately so base sparkles remain when twinkle is off
-              el.style.setProperty('--txt-twinkle-opacity', allowTw ? (sparkNorm*0.9) : 0);
-
-              el.style.removeProperty('animation');
-              if (hoverOnly) {
-                el.classList.add('hb-text-shimmer-hover');
-              } else {
-                el.classList.add('hb-text-shimmer');
-                if (once) {
-                  setTimeout(function(){
-                    el.style.animationPlayState = 'paused';
-                    el.classList.remove('hb-text-shimmer');
-                    el.style.removeProperty('-webkit-text-fill-color');
-                    el.style.color = '';
-                  }, Math.max(2200, parseInt(ts,10)+1200));
-                }
-              }
-              // Compose shimmer + fade only when not hover-only
-              var combo = el.closest('.hero-banner-agg__slide')?.getAttribute('data-combo-shimmer-fade') === 'true';
-              if (combo && !hoverOnly) {
-                var fadeDur = Math.min(computedSpeed, 900);
-                el.style.animation = 'hbTextShimmer var(--txt-shimmer-speed, '+speed+') linear infinite, hbTextFadeUp '+fadeDur+'ms ease-out 1 both';
-              }
-            }
-            break;
-        }
-      });
-      // In fallback mode, also apply global text shimmer and text FX defaults to the section-level headline/subheadline
-      if (isFallback) {
-        var headerEls = [].slice.call(root.querySelectorAll('.hero-banner-agg__inner h1, .hero-banner-agg__inner p'));
-        var allowGlobalShimmer = (root.getAttribute('data-allow-text-shimmer') === 'true' || root.getAttribute('data-allow-text-shimmer') === '1');
-        var hoverOnlyGlobal = (root.getAttribute('data-text-shimmer-hover-only') === 'true' || root.getAttribute('data-text-shimmer-hover-only') === '1');
-        var onceGlobal = (root.getAttribute('data-text-shimmer-once') === 'true' || root.getAttribute('data-text-shimmer-once') === '1');
-        var gShimmerColor = root.getAttribute('data-txt-shimmer-color') || '#ffffff';
-        var gShimmerSpeed = parseInt(root.getAttribute('data-txt-shimmer-speed')||'0',10) || 2200;
-        var gSparkleDen = parseInt(root.getAttribute('data-txt-sparkle-density')||'50',10);
-        var gGlintStr = parseInt(root.getAttribute('data-txt-glint-strength')||'35',10);
-        var gGlintW = parseInt(root.getAttribute('data-txt-glint-width')||'35',10);
-        var allowTwinkleGlobal = (root.getAttribute('data-allow-text-twinkle') === 'true' || root.getAttribute('data-allow-text-twinkle') === '1');
-        var gTwinkleSpeed = parseInt(root.getAttribute('data-txt-twinkle-speed')||'1800',10);
-        var gFxType = root.getAttribute('data-global-text-fx') || 'none';
-        var gFxForce = (root.getAttribute('data-global-text-fx-force') === 'true' || root.getAttribute('data-global-text-fx-force') === '1');
-        var gFxColor = root.getAttribute('data-global-text-fx-color') || '#ffffff';
-        var gFxIntensity = parseInt(root.getAttribute('data-global-text-fx-intensity')||'50',10);
-        var gFxSpeed = parseInt(root.getAttribute('data-global-text-fx-speed')||'6000',10);
-        var gFxPos = root.getAttribute('data-global-text-fx-pos') || 'mc';
-        var gFxSize = parseInt(root.getAttribute('data-global-text-fx-size')||'16',10);
-        var gFxFreq = parseInt(root.getAttribute('data-global-text-fx-frequency')||'10',10);
-        var posMapH = { tl:[-4,-4], tc:[0,-4], tr:[4,-4], ml:[-4,0], mc:[0,0], mr:[4,0], bl:[-4,4], bc:[0,4], br:[4,4], cover:[0,0] };
-        var offH = posMapH[gFxPos] || [0,0];
-        headerEls.forEach(function(el){
-          // Clear previous
-          el.classList.remove('hb-text-shimmer','hb-text-shimmer-hover','hb-text-fx','sparkle','glitter');
-          el.style.removeProperty('--txt-shimmer-color');
-          el.style.removeProperty('--txt-shimmer-speed');
-          el.style.removeProperty('--txt-sparkle-density');
-          el.style.removeProperty('--txt-glint-strength');
-          el.style.removeProperty('--txt-glint-width');
-          el.style.removeProperty('--txt-twinkle-speed');
-          el.style.removeProperty('--txt-twinkle-opacity');
-          el.style.removeProperty('--fx-color');
-          el.style.removeProperty('--fx-opacity');
-          el.style.removeProperty('--fx-speed');
-          el.style.removeProperty('--fx-offset-x');
-          el.style.removeProperty('--fx-offset-y');
-          el.removeAttribute('data-text-fx-content');
-          // Apply shimmer if globally enabled
-          if (allowGlobalShimmer) {
-            el.style.setProperty('--txt-shimmer-color', gShimmerColor);
-            el.style.setProperty('--txt-shimmer-speed', Math.max(600, gShimmerSpeed)+'ms');
-            var sparkNormH = Math.max(0, Math.min(100, gSparkleDen)) / 100;
-            el.style.setProperty('--txt-sparkle-density', sparkNormH);
-            el.style.setProperty('--txt-glint-strength', Math.max(0, Math.min(100, gGlintStr)));
-            el.style.setProperty('--txt-glint-width', Math.max(5, gGlintW));
-            el.style.setProperty('--txt-twinkle-speed', Math.max(400, gTwinkleSpeed)+'ms');
-            el.style.setProperty('--txt-twinkle-opacity', allowTwinkleGlobal ? (sparkNormH*0.9) : 0);
-            if (hoverOnlyGlobal) {
-              el.classList.add('hb-text-shimmer-hover');
-            } else {
-              el.classList.add('hb-text-shimmer');
-              if (onceGlobal) {
-                setTimeout(function(){ el.style.animationPlayState='paused'; el.classList.remove('hb-text-shimmer'); el.style.removeProperty('-webkit-text-fill-color'); el.style.color=''; }, Math.max(2200, gShimmerSpeed+1200));
-              }
-            }
-          }
-          // Apply text FX (sparkle/glitter) if global default is set or forced
-          var applyFx = (gFxType && gFxType !== 'none');
-          if (applyFx) {
-            var fxOpacityH = 0.2 + Math.min(1, Math.max(0, gFxIntensity/100)) * 0.7;
-            el.classList.add('hb-text-fx');
-            el.classList.add(gFxType === 'sparkle' ? 'sparkle' : 'glitter');
-            try { el.setAttribute('data-text-fx-content', (el.textContent || '').trim()); } catch(e) {}
-            el.style.setProperty('--fx-color', gFxColor);
-            el.style.setProperty('--fx-opacity', fxOpacityH.toFixed(2));
-            el.style.setProperty('--fx-speed', Math.max(1000, gFxSpeed)+'ms');
-            el.style.setProperty('--fx-offset-x', offH[0]+'px');
-            el.style.setProperty('--fx-offset-y', offH[1]+'px');
-            // Optional canvas tiling: reuse existing mechanism if available is complex; rely on CSS gradients by default.
-          }
-        });
-      }
-    });
-  }
-  // Initial animation
-  applyImageAnimation(idx);
-})();
-  </script>
+    {% if show_dots and section.blocks.size > 1 %}
+      <div class="hb-hero__dots">
+        {% for block in section.blocks %}
+          <button class="hb-hero__dot" type="button" data-dot data-index="{{ forloop.index0 }}" aria-label="Go to slide {{ forloop.index }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"></button>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if show_progress and section.blocks.size > 1 %}
+      <div class="hb-hero__progress" aria-hidden="true">
+        <div class="hb-hero__progressBar" data-progress></div>
+      </div>
+    {% endif %}
+    <div class="visually-hidden" aria-live="polite" aria-atomic="true" data-live>Slide 1 of {{ section.blocks.size }}</div>
+  {% else %}
+    <div class="hb-hero__empty" style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;">Add slides to hero banner</div>
+  {% endif %}
 </section>
-{% comment %} SEO: Structured data for image gallery / single image {% endcomment %}
-{% if section.blocks.size > 1 %}
-  <script type="application/ld+json">{
-    "@context":"https://schema.org",
-    "@type":"ImageGallery",
-    "name": {{ s.headline | json }},
-    "description": {{ s.subheadline | default: s.headline | json }},
-    "image": [
-      {% for block in section.blocks %}{% assign b = block.settings %}{% if b.slide_image %}{{ b.slide_image | image_url: width: 1600 | json }}{% if forloop.last == false %}, {% endif %}{% endif %}{% endfor %}
-    ]
-  }</script>
-{% elsif section.blocks.size == 1 %}
-  {% for block in section.blocks %}{% assign b = block.settings %}{% if b.slide_image %}
-  <script type="application/ld+json">{
-    "@context":"https://schema.org",
-    "@type":"ImageObject",
-    "name": {{ s.headline | json }},
-    "description": {{ s.subheadline | default: s.headline | json }},
-    "contentUrl": {{ b.slide_image | image_url: width: 1600 | json }},
-    "caption": {{ b.slide_alt | default: s.subheadline | default: s.headline | json }}
-  }</script>
-  {% endif %}{% endfor %}
-{% endif %}
+
+<script>
+(() => {
+  const root = document.getElementById('Hero-{{ section.id }}');
+  if (!root) return;
+  const slides = root.querySelectorAll('[data-slide]');
+  const dots = root.querySelectorAll('[data-dot]');
+  const prev = root.querySelector('[data-prev]');
+  const next = root.querySelector('[data-next]');
+  const live = root.querySelector('[data-live]');
+  const progress = root.querySelector('[data-progress]');
+  const pauseHover = root.dataset.pauseHover === 'true';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches && root.dataset.reduce === 'true';
+  let autoplay = root.dataset.autoplay === 'true' && !reduce;
+  const delay = parseInt(root.dataset.delay, 10) || 5000;
+  let index = 0, timer;
+
+  function announce(){ if(live) live.textContent = 'Slide ' + (index+1) + ' of ' + slides.length; }
+  function setActive(i){
+    slides[index].classList.remove('is-active');
+    dots[index] && dots[index].setAttribute('aria-selected','false');
+    index = (i + slides.length) % slides.length;
+    slides[index].classList.add('is-active');
+    dots[index] && dots[index].setAttribute('aria-selected','true');
+    announce();
+  }
+  function nextSlide(){ setActive(index+1); restart(); }
+  function prevSlide(){ setActive(index-1); restart(); }
+  function restart(){
+    if(!autoplay) return;
+    stop();
+    if(progress){
+      progress.style.transitionDuration = delay + 'ms';
+      progress.style.transform = 'scaleX(0)';
+      requestAnimationFrame(()=>{progress.style.transform = 'scaleX(1)';});
+    }
+    timer = setTimeout(nextSlide, delay);
+  }
+  function start(){ if(!autoplay) return; restart(); }
+  function stop(){ clearTimeout(timer); if(progress){progress.style.transitionDuration='';progress.style.transform='scaleX(0)';} }
+
+  prev && prev.addEventListener('click', prevSlide);
+  next && next.addEventListener('click', nextSlide);
+  root.addEventListener('click', e => {
+    const dot = e.target.closest('[data-dot]');
+    if(dot){ setActive(parseInt(dot.dataset.index)); restart(); }
+  });
+  root.addEventListener('keydown', e => {
+    if(e.key === 'ArrowLeft'){ e.preventDefault(); prevSlide(); }
+    if(e.key === 'ArrowRight'){ e.preventDefault(); nextSlide(); }
+  });
+  root.addEventListener('pointerdown', e => {
+    root.setPointerCapture(e.pointerId);
+    root._x = e.clientX;
+  });
+  root.addEventListener('pointerup', e => {
+    const dx = e.clientX - (root._x || 0);
+    if(Math.abs(dx) > 50){ dx < 0 ? nextSlide() : prevSlide(); }
+    root.releasePointerCapture(e.pointerId);
+  });
+
+  if(pauseHover){
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+    root.addEventListener('focusin', stop);
+    root.addEventListener('focusout', start);
+  }
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+
+  root.__heroSlider = { next: nextSlide, prev: prevSlide, pause: stop, play: start };
+  start();
+})();
+</script>
+
+{% comment %}
+Migration notes:
+- overlay_opacity -> overlay_percent
+- text_align / headline_position -> content_horizontal / content_vertical
+- image_height -> height_desktop
+- mobile_height -> height_mobile
+- show_nav -> show_arrows
+- show_dots -> show_dots
+- show_progress_bar -> show_progress
+- slideshow_autoplay -> autoplay
+- slideshow_interval (s) -> autoplay_delay_ms
+- pause_on_hover -> pause_on_hover
+- tuck_under_header -> tuck_under_header
+- header_offset_px -> header_offset_px
+- enable_text_shimmer(+text_shimmer_once/text_shimmer_hover_only) -> text_shimmer
+- enable_text_shimmer_twinkle -> text_twinkle
+- global_image_effect_default/fallback_image_anim_type -> image_fx
+- fallback_image_anim_intensity -> image_fx_intensity
+Manual test checklist:
+- [ ] Verify slides auto-advance and pause on hover, focus and tab hidden.
+- [ ] Check arrow, dot, swipe and keyboard navigation.
+- [ ] Ensure progress bar syncs with slide duration.
+- [ ] Toggle tuck-under option and confirm header offset.
+- [ ] Confirm shimmer/twinkle respect reduced motion.
+- [ ] Validate alt text, focus outlines and live announcements.
+{% endcomment %}
 {% schema %}
 {
-  "name": "AGG Slideshow Hero",
-  "tag": "section",
-  "class": "section hero-banner-agg hero-banner-agg--slideshow",
+  "name": "Hero banner AGG slideshow",
   "settings": [
-  {"type":"header","content":"SEO & Accessibility"},
-    {"type":"image_picker","id":"hero_image","label":"Fallback image"},
-    {"type":"text","id":"image_alt","label":"Global fallback alt text"},
-  {"type":"text","id":"headline","label":"Headline","default":"Explore Your Next Adventure"},
-  {"type":"checkbox","id":"show_global_section_headline","label":"Show section headline","default":true},
-  {"type":"text","id":"subheadline","label":"Subheadline","default":"Premium gear curated for unforgettable getaways."},
-  {"type":"checkbox","id":"show_global_section_subheadline","label":"Show section subheadline","default":true},
-    {"type":"text","id":"section_aria","label":"ARIA label override"},
-    {"type":"select","id":"text_align","label":"Text alignment","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}],"default":"center"},
-    {"type":"range","id":"headline_size","label":"Headline size (px)","min":24,"max":120,"step":4,"default":72},
-    {"type":"range","id":"subheadline_size","label":"Subheadline size (px)","min":12,"max":60,"step":2,"default":24},
-    {"type":"range","id":"text_max_width","label":"Text max width (ch)","min":20,"max":80,"step":2,"default":60},
-    {"type":"color","id":"headline_color","label":"Headline color","default":"#ffffff"},
-    {"type":"color","id":"subheadline_color","label":"Subheadline color","default":"#ffffff"},
-    {"type":"range","id":"padding_vertical","label":"Vertical padding (px)","min":0,"max":160,"step":8,"default":40},
-    {"type":"range","id":"padding_horizontal","label":"Horizontal padding (px)","min":0,"max":160,"step":8,"default":40},
-    {"type":"checkbox","id":"show_ctas","label":"Show global CTAs","default":true},
-    {"type":"url","id":"cta_link","label":"Primary CTA link"},
-    {"type":"text","id":"cta_text","label":"Primary CTA text","default":"Shop Now"},
-    {"type":"color","id":"cta_bg","label":"Primary CTA background","default":"#ff6a1a"},
-    {"type":"color","id":"cta_color","label":"Primary CTA text color","default":"#ffffff"},
-    {"type":"url","id":"cta_link_2","label":"Secondary CTA link"},
-    {"type":"text","id":"cta_text_2","label":"Secondary CTA text","default":"Learn More"},
-    {"type":"color","id":"cta2_bg","label":"Secondary CTA background","default":"#004b80"},
-    {"type":"color","id":"cta2_color","label":"Secondary CTA text color","default":"#ffffff"},
-    {"type":"range","id":"button_radius","label":"Button radius","min":0,"max":32,"step":2,"default":6},
-    {"type":"range","id":"top_spacing","label":"Top spacing (px)","min":0,"max":160,"step":8,"default":0},
-  {"type":"range","id":"image_height","label":"Desktop height (px)","min":300,"max":1000,"step":20,"default":600},
-  {"type":"range","id":"mobile_height","label":"Mobile height (px)","min":300,"max":900,"step":20,"default":480},
-    {"type":"checkbox","id":"enable_overlay","label":"Enable color overlay","default":true},
-    {"type":"color","id":"overlay_color","label":"Overlay color","default":"#000000"},
-    {"type":"range","id":"overlay_opacity","label":"Overlay opacity","min":0,"max":100,"step":5,"unit":"%","default":35},
-    {"type":"checkbox","id":"show_nav","label":"Show navigation arrows","default":true},
-    {"type":"checkbox","id":"show_dots","label":"Show pagination dots","default":true},
-    {"type":"checkbox","id":"show_progress_bar","label":"Show progress bar","default":true},
-    {"type":"range","id":"progress_bar_height","label":"Progress bar height (px)","min":2,"max":12,"step":1,"default":4},
-    {"type":"color","id":"progress_bar_color","label":"Progress bar color","default":"#ffffff"},
-    {"type":"checkbox","id":"slideshow_autoplay","label":"Autoplay","default":true},
-    {"type":"range","id":"slideshow_interval","label":"Default slide duration (s)","min":2,"max":15,"step":1,"default":5},
-    {"type":"range","id":"transition_speed","label":"Fade transition (ms)","min":100,"max":2000,"step":50,"default":800},
+    {"type":"header","content":"Basics"},
+    {"type":"range","id":"overlay_percent","label":"Overlay opacity","min":0,"max":80,"step":5,"unit":"%","default":30},
+    {"type":"select","id":"content_horizontal","label":"Horizontal alignment","default":"center","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}]},
+    {"type":"select","id":"content_vertical","label":"Vertical alignment","default":"middle","options":[{"value":"top","label":"Top"},{"value":"middle","label":"Middle"},{"value":"bottom","label":"Bottom"}]},
+
+    {"type":"header","content":"Media height"},
+    {"type":"select","id":"height_desktop","label":"Desktop height","default":"medium","options":[{"value":"short","label":"Short"},{"value":"medium","label":"Medium"},{"value":"tall","label":"Tall"}]},
+    {"type":"select","id":"height_mobile","label":"Mobile height","default":"medium","options":[{"value":"short","label":"Short"},{"value":"medium","label":"Medium"},{"value":"tall","label":"Tall"}]},
+
+    {"type":"header","content":"Navigation"},
+    {"type":"checkbox","id":"show_arrows","label":"Show arrows","default":true},
+    {"type":"checkbox","id":"show_dots","label":"Show dots","default":true},
+
+    {"type":"header","content":"Autoplay"},
+    {"type":"checkbox","id":"autoplay","label":"Enable autoplay","default":true},
+    {"type":"range","id":"autoplay_delay_ms","label":"Delay between slides (ms)","min":3000,"max":10000,"step":500,"default":5000},
     {"type":"checkbox","id":"pause_on_hover","label":"Pause on hover","default":true},
-    {"type":"checkbox","id":"loop_slides","label":"Loop slides","default":true},
-    {"type":"header","content":"Fallback Image FX"},
-    {"type":"select","id":"fallback_image_anim_type","label":"Fallback image animation","default":"none","options":[
-      {"value":"none","label":"None"},
-      {"value":"ambient_drift","label":"Ambient Drift"},
-      {"value":"ken_burns","label":"Ken Burns"},
-      {"value":"parallax","label":"Parallax"},
-      {"value":"crossfade","label":"Crossfade"},
-      {"value":"zoom","label":"Zoom"},
-      {"value":"blur_focus","label":"Blur/Focus"},
-      {"value":"light_sweep","label":"Light Sweep"},
-      {"value":"mist_fog","label":"Mist/Fog"},
-      {"value":"gradient_drift","label":"Gradient Drift"},
-      {"value":"lens_flare","label":"Lens Flare"},
-      {"value":"mouse_parallax","label":"Mouse Parallax"},
-      {"value":"sparkle_overlay","label":"Sparkle Overlay"},
-      {"value":"glitter_overlay","label":"Glitter Overlay"}
-    ]},
-    {"type":"range","id":"fallback_image_anim_intensity","label":"Fallback animation intensity","min":0,"max":100,"step":1,"default":50},
-    {"type":"select","id":"fallback_image_anim_speed","label":"Fallback animation speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
-    {"type":"range","id":"fallback_image_anim_speed_custom","label":"Fallback custom speed (ms)","min":50,"max":3000,"step":50,"default":800},
-    {"type":"select","id":"fallback_ambient_direction","label":"Fallback ambient direction","default":"","options":[
-      {"value":"","label":"Inherit global"},
-      {"value":"diagonal","label":"Diagonal"},
-      {"value":"horizontal","label":"Horizontal"},
-      {"value":"vertical","label":"Vertical"}
-    ]},
-    {"type":"select","id":"fallback_ambient_loop_style","label":"Fallback ambient loop","default":"","options":[
-      {"value":"","label":"Inherit global"},
-      {"value":"ease-in-out","label":"Ease-in-out"},
-      {"value":"linear","label":"Linear"},
-      {"value":"bounce","label":"Gentle bounce"}
-    ]},
-    {"type":"select","id":"fallback_image_slide_style","label":"Fallback slide-in style","default":"none","options":[
-      {"value":"none","label":"None"},
-      {"value":"slide_in_left","label":"Slide-in Left"},
-      {"value":"slide_in_right","label":"Slide-in Right"},
-      {"value":"slide_in_top","label":"Slide-in Top"},
-      {"value":"slide_in_bottom","label":"Slide-in Bottom"},
-      {"value":"swipe_cover_left","label":"Cover Left→Right"},
-      {"value":"swipe_cover_right","label":"Cover Right→Left"},
-      {"value":"swipe_cover_top","label":"Cover Top→Bottom"},
-      {"value":"swipe_cover_bottom","label":"Cover Bottom→Top"},
-      {"value":"swipe_uncover_left","label":"Uncover Left→Right"},
-      {"value":"swipe_uncover_right","label":"Uncover Right→Left"},
-      {"value":"swipe_uncover_top","label":"Uncover Top→Bottom"},
-      {"value":"swipe_uncover_bottom","label":"Uncover Bottom→Top"}
-    ]},
-    {"type":"select","id":"fallback_image_slide_ease","label":"Fallback slide-in easing","default":"smooth","options":[
-      {"value":"smooth","label":"Smooth"},
-      {"value":"ease","label":"Ease"},
-      {"value":"ease-in","label":"Ease-in"},
-      {"value":"ease-out","label":"Ease-out"},
-      {"value":"ease-in-out","label":"Ease-in-out"},
-      {"value":"linear","label":"Linear"},
-      {"value":"custom","label":"Custom cubic-bezier()"}
-    ]},
-    {"type":"text","id":"fallback_image_slide_ease_custom","label":"Fallback custom cubic-bezier(...)"},
-    {"type":"header","content":"Fallback Sparkle/Glitter"},
-    {"type":"color","id":"fallback_image_sparkle_color","label":"Fallback sparkle color","default":"#ffffff"},
-    {"type":"range","id":"fallback_image_sparkle_density","label":"Fallback sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
-    {"type":"range","id":"fallback_image_sparkle_speed_ms","label":"Fallback sparkle speed (ms, 0 = inherit)","min":0,"max":9000,"step":250,"default":0},
-    {"type":"color","id":"fallback_image_glitter_color","label":"Fallback glitter color","default":"#ffffff"},
-    {"type":"range","id":"fallback_image_glitter_intensity","label":"Fallback glitter intensity (0 = inherit)","min":0,"max":100,"step":5,"default":0},
-    {"type":"range","id":"fallback_image_glitter_speed_ms","label":"Fallback glitter speed (ms, 0 = inherit)","min":0,"max":9000,"step":250,"default":0},
-  {"type":"header","content":"Ambient & Text Shimmer"},
-  {"type":"range","id":"ambient_subtlety","label":"Ambient subtlety (global)","min":0,"max":100,"step":5,"default":50},
-  {"type":"select","id":"ambient_default_direction","label":"Ambient direction (global)","default":"diagonal","options":[
-    {"value":"diagonal","label":"Diagonal"},
-    {"value":"horizontal","label":"Horizontal"},
-    {"value":"vertical","label":"Vertical"}
-  ]},
-  {"type":"select","id":"ambient_default_loop_style","label":"Ambient loop style (global)","default":"ease-in-out","options":[
-    {"value":"ease-in-out","label":"Ease-in-out"},
-    {"value":"linear","label":"Linear"},
-    {"value":"bounce","label":"Gentle bounce"}
-  ],"info":"Controls timing curve for ambient drift. "},
-  {"type":"color","id":"text_shimmer_color","label":"Default text shimmer color","default":"#ffffff","info":"Used if a slide doesn’t override color."},
-  {"type":"range","id":"text_shimmer_speed_ms","label":"Default text shimmer speed (ms)","min":800,"max":6000,"step":100,"default":2200,"info":"0 in slide = use this global speed."},
-  {"type":"checkbox","id":"enable_text_shimmer","label":"Enable text shimmer globally","default":true,"info":"Slides can also force shimmer on individually."},
-  {"type":"checkbox","id":"text_shimmer_hover_only","label":"Text shimmer: hover only","default":false},
-  {"type":"checkbox","id":"text_shimmer_once","label":"Text shimmer: run once then stop","default":false},
-  {"type":"range","id":"text_shimmer_sparkle_density","label":"Sparkle density","min":0,"max":100,"step":5,"default":50,"info":"Higher = more sparkles."},
-  {"type":"range","id":"text_shimmer_glint_strength","label":"Glint strength","min":0,"max":100,"step":5,"default":35},
-  {"type":"range","id":"text_shimmer_glint_width","label":"Glint width","min":5,"max":50,"step":1,"default":35},
-  {"type":"checkbox","id":"enable_text_shimmer_twinkle","label":"Enable twinkle overlay","default":true,"info":"Slides can also force twinkle on."},
-  {"type":"range","id":"text_shimmer_twinkle_speed_ms","label":"Twinkle speed (ms)","min":400,"max":4000,"step":100,"default":1800},
-  {"type":"checkbox","id":"tuck_under_header","label":"Tuck under sticky header (remove top gap)","default":true},
-  {"type":"range","id":"header_offset_px","label":"Header bottom offset (px)","min":0,"max":120,"step":2,"default":48,"info":"Adjust if a small gap remains."},
-  {"type":"header","content":"Effect Customization Controls"},
-  {"type":"header","content":"Global Image Effects"},
-  {"type":"select","id":"global_image_effect_default","label":"Default image effect","default":"none","options":[
-    {"value":"none","label":"None"},
-    {"value":"sparkle_overlay","label":"Sparkle overlay"},
-    {"value":"glitter_overlay","label":"Glitter overlay"}
-  ],"info":"Applies when a slide selects 'none' or when forced below."},
-  {"type":"checkbox","id":"global_image_effect_force","label":"Force global image effect (override slide)","default":false},
-  {"type":"color","id":"global_sparkle_color","label":"Default sparkle color","default":"#ffffff"},
-  {"type":"range","id":"global_sparkle_density","label":"Default sparkle density","min":10,"max":100,"step":5,"default":60},
-  {"type":"range","id":"global_sparkle_speed_ms","label":"Default sparkle speed (ms)","min":1000,"max":9000,"step":250,"default":6000},
-  {"type":"color","id":"global_glitter_color","label":"Default glitter color","default":"#ffffff"},
-  {"type":"range","id":"global_glitter_intensity","label":"Default glitter intensity","min":10,"max":100,"step":5,"default":45},
-  {"type":"range","id":"global_glitter_speed_ms","label":"Default glitter speed (ms)","min":1000,"max":9000,"step":250,"default":8000},
-  {"type":"header","content":"Global Text Effects (Sparkle/Glitter)"},
-  {"type":"select","id":"global_text_fx_default","label":"Default text effect","default":"none","options":[{"value":"none","label":"None"},{"value":"sparkle","label":"Sparkle"},{"value":"glitter","label":"Glitter"}]},
-  {"type":"checkbox","id":"global_text_fx_force","label":"Force global text effect (override slide)","default":false},
-  {"type":"color","id":"global_text_fx_color","label":"Default text FX color","default":"#ffffff"},
-  {"type":"range","id":"global_text_fx_intensity","label":"Default text FX intensity","min":0,"max":100,"step":5,"default":50},
-  {"type":"range","id":"global_text_fx_speed_ms","label":"Default text FX speed (ms)","min":1000,"max":9000,"step":250,"default":6000},
-  {"type":"range","id":"global_text_fx_size","label":"Default text FX size (px)","min":8,"max":64,"step":1,"default":16,"info":"Tile size for sparkle/glitter pattern (canvas)."},
-  {"type":"range","id":"global_text_fx_frequency","label":"Default text FX frequency","min":4,"max":40,"step":1,"default":10,"info":"Number of sparkles per tile (approx)."},
-  {"type":"select","id":"global_text_fx_position","label":"Default text FX position","default":"mc","options":[
-    {"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},
-    {"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},
-    {"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"},
-    {"value":"cover","label":"Cover (full text)"}
-  ]},
-  {"type":"header","content":"Button Effects"},
-  {"type":"select","id":"cta_global_anim_style_cont","label":"Global continuous style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"select","id":"cta_global_anim_style_hover","label":"Global hover style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"select","id":"cta_global_anim_style_click","label":"Global click style","default":"shimmer","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"range","id":"cta_global_anim_speed_continuous","label":"Global continuous speed (s)","min":1,"max":10,"step":0.5,"default":3},
-  {"type":"range","id":"cta_global_anim_speed_hover","label":"Global hover speed (s)","min":0.5,"max":6,"step":0.5,"default":2},
-  {"type":"range","id":"cta_global_anim_speed_click","label":"Global click speed (s)","min":0.3,"max":3,"step":0.1,"default":1},
-  {"type":"range","id":"cta_shimmer_speed_multiplier_primary","label":"Primary shimmer speed multiplier (%)","min":50,"max":400,"step":5,"default":100,"unit":"%","info":"Applies only to shimmer speeds; 100% = unchanged"},
-  {"type":"range","id":"cta_shimmer_speed_multiplier_secondary","label":"Secondary shimmer speed multiplier (%)","min":50,"max":400,"step":5,"default":120,"unit":"%","info":"Applies only to shimmer speeds; 100% = unchanged"},
-  {"type":"range","id":"cta_global_shimmer_band_width","label":"CTA shimmer band width (px) (fallback)","min":50,"max":400,"step":10,"default":200,"info":"Fallback width if no variant-specific width is set."},
-  {"type":"range","id":"cta_shimmer_band_width_primary","label":"Primary button shimmer width (px)","min":0,"max":400,"step":10,"default":0,"info":"0 = use global fallback"},
-  {"type":"range","id":"cta_shimmer_band_width_secondary","label":"Secondary button shimmer width (px)","min":0,"max":400,"step":10,"default":0,"info":"0 = use global fallback"},
-  {"type":"range","id":"cta_global_cta_gap","label":"Global CTA gap (px)","min":4,"max":60,"step":2,"default":14},
-  {"type":"range","id":"cta_global_cta_gap_mobile","label":"Global CTA gap mobile (px)","min":4,"max":60,"step":2,"default":12},
-  {"type":"select","id":"cta_global_style","label":"Global CTA 3D style","default":"raised","options":[{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
-  {"type":"header","content":"Global Content Positioning"},
-  {"type":"select","id":"global_headline_position","label":"Global headline position","default":"mc","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
-  {"type":"select","id":"global_subheadline_position","label":"Global subheadline position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
-  {"type":"select","id":"global_ctas_position","label":"Global CTAs position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
-  {"type":"checkbox","id":"show_global_headlines","label":"Show slide headlines","default":true},
-  {"type":"checkbox","id":"show_global_subheadlines","label":"Show slide subheadlines","default":true},
-    {"type":"checkbox","id":"show_slide_ctas","label":"Show slide CTA buttons","default":true},
-    {"type":"checkbox","id":"show_advanced_settings","label":"Show Advanced Settings","default":false,"info":"Reveal additional technical controls for fine-tuning effects."},
-    {"type":"textarea","id":"custom_css","label":"Custom CSS"}
+
+    {"type":"header","content":"Header tuck"},
+    {"type":"checkbox","id":"tuck_under_header","label":"Tuck under header","default":false},
+    {"type":"range","id":"header_offset_px","label":"Header offset (px)","min":0,"max":200,"step":4,"default":0},
+
+    {"type":"header","content":"Progress"},
+    {"type":"checkbox","id":"show_progress","label":"Show progress bar","default":true},
+
+    {"type":"header","content":"Effects (Advanced)"},
+    {"type":"select","id":"image_fx","label":"Image effect","default":"crossfade","options":[{"value":"none","label":"None"},{"value":"kenburns","label":"Ken Burns"},{"value":"parallax","label":"Parallax"},{"value":"zoom","label":"Zoom"},{"value":"crossfade","label":"Crossfade"},{"value":"fade","label":"Fade"}]},
+    {"type":"select","id":"image_fx_intensity","label":"Image effect intensity","default":"medium","options":[{"value":"low","label":"Low"},{"value":"medium","label":"Medium"},{"value":"high","label":"High"}]},
+    {"type":"select","id":"text_shimmer","label":"Text shimmer","default":"off","options":[{"value":"off","label":"Off"},{"value":"once","label":"Once"},{"value":"hover","label":"On hover"}]},
+    {"type":"select","id":"text_twinkle","label":"Text twinkle","default":"off","options":[{"value":"off","label":"Off"},{"value":"on","label":"On"}]},
+    {"type":"checkbox","id":"shimmer_headline","label":"Shimmer headline","default":true},
+    {"type":"checkbox","id":"shimmer_subheadline","label":"Shimmer subheadline","default":true},
+    {"type":"checkbox","id":"twinkle_headline","label":"Twinkle headline","default":false},
+    {"type":"checkbox","id":"twinkle_subheadline","label":"Twinkle subheadline","default":false},
+    {"type":"checkbox","id":"fx_reduced_motion_fallback","label":"Reduce motion when prefers-reduced-motion","default":true}
   ],
   "blocks": [
-    {"type":"image","name":"Slide","settings":[
-  {"type":"header","content":"Slide Basics"},
-      {"type":"image_picker","id":"slide_image","label":"Image"},
-  {"type":"text","id":"slide_alt","label":"Alt text","info":"Describe the image for accessibility and SEO."},
-  {"type":"url","id":"slide_link","label":"Full-slide link"},
-  {"type":"header","content":"Image Animation"},
-      {"type":"header","content":"Image Animation Settings"},
-      {"type":"select","id":"image_anim_type","label":"Image Animation Type","default":"none","options":[
-        {"value":"none","label":"None"},
-  {"value":"ambient_drift","label":"Ambient Drift (subtle looping)"},
-        {"value":"ken_burns","label":"Ken Burns Effect"},
-        {"value":"parallax","label":"Parallax Movement"},
-        {"value":"crossfade","label":"Crossfade / Soft Fade"},
-        {"value":"zoom","label":"Zoom In / Zoom Out"},
-        {"value":"blur_focus","label":"Ambient Blur / Focus Shift"},
-        {"value":"light_sweep","label":"Light Sweep / Shimmer Overlay"},
-        {"value":"mist_fog","label":"Floating Mist / Fog Overlay"},
-        {"value":"gradient_drift","label":"Gradient Drift"},
-        {"value":"lens_flare","label":"Lens Flare / Glow"},
-        {"value":"mouse_parallax","label":"Mouse Parallax / Tilt"},
-        {"value":"sparkle_overlay","label":"Sparkle Overlay"},
-        {"value":"glitter_overlay","label":"Glitter Overlay"}
-      ]},
-  {"type":"header","content":"Sparkle Options"},
-  {"type":"color","id":"image_sparkle_color","label":"Sparkle color","default":"#ffffff"},
-  {"type":"range","id":"image_sparkle_density","label":"Sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
-  {"type":"range","id":"image_sparkle_speed_ms","label":"Sparkle speed (ms, 0 = inherit)","min":0,"max":9000,"step":250,"default":0},
-  {"type":"header","content":"Glitter Options"},
-  {"type":"color","id":"image_glitter_color","label":"Glitter color","default":"#ffffff"},
-  {"type":"range","id":"image_glitter_intensity","label":"Glitter intensity (0 = inherit)","min":0,"max":100,"step":5,"default":0},
-  {"type":"range","id":"image_glitter_speed_ms","label":"Glitter speed (ms, 0 = inherit)","min":0,"max":9000,"step":250,"default":0},
-      {"type":"range","id":"image_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
-      {"type":"select","id":"image_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
-          {"type":"range","id":"image_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800,"info":"Only used when speed = Custom"},
-      {"type":"select","id":"ambient_direction","label":"Ambient direction (slide)","default":"","options":[
-        {"value":"","label":"Inherit global"},
-        {"value":"diagonal","label":"Diagonal"},
-        {"value":"horizontal","label":"Horizontal"},
-        {"value":"vertical","label":"Vertical"}
-      ]},
-      {"type":"select","id":"ambient_loop_style","label":"Ambient loop style (slide)","default":"","options":[
-        {"value":"","label":"Inherit global"},
-        {"value":"ease-in-out","label":"Ease-in-out"},
-        {"value":"linear","label":"Linear"},
-        {"value":"bounce","label":"Gentle bounce"}
-      ]},
-  {"type":"header","content":"Directional Image Slide-in"},
-      {"type":"select","id":"image_slide_style","label":"Image Slide-in Style","default":"none","options":[
-        {"value":"none","label":"None"},
-        {"value":"slide_in_left","label":"Slide-in from Left"},
-        {"value":"slide_in_right","label":"Slide-in from Right"},
-        {"value":"slide_in_top","label":"Slide-in from Top"},
-        {"value":"slide_in_bottom","label":"Slide-in from Bottom"},
-        {"value":"swipe_cover_left","label":"Cover swipe Left→Right"},
-        {"value":"swipe_cover_right","label":"Cover swipe Right→Left"},
-        {"value":"swipe_cover_top","label":"Cover swipe Top→Bottom"},
-        {"value":"swipe_cover_bottom","label":"Cover swipe Bottom→Top"},
-        {"value":"swipe_uncover_left","label":"Uncover swipe Left→Right"},
-        {"value":"swipe_uncover_right","label":"Uncover swipe Right→Left"},
-        {"value":"swipe_uncover_top","label":"Uncover swipe Top→Bottom"},
-        {"value":"swipe_uncover_bottom","label":"Uncover swipe Bottom→Top"}
-      ]},
-      {"type":"select","id":"image_slide_ease","label":"Image Slide-in Easing","default":"smooth","options":[
-        {"value":"smooth","label":"Smooth"},
-        {"value":"ease","label":"Ease"},
-        {"value":"ease-in","label":"Ease-in"},
-        {"value":"ease-out","label":"Ease-out"},
-        {"value":"ease-in-out","label":"Ease-in-out"},
-        {"value":"linear","label":"Linear"},
-        {"value":"custom","label":"Custom cubic-bezier()"}
-      ]},
-      {"type":"text","id":"image_slide_ease_custom","label":"Custom cubic-bezier(...) for Image Slide-in"},
-  {"type":"header","content":"Headline Animation"},
-      {"type":"select","id":"headline_anim_type","label":"Headline Animation","default":"none","options":[
-        {"value":"none","label":"None"},
-        {"value":"fade_in","label":"Fade In"},
-        {"value":"fade_up","label":"Fade Up"},
-        {"value":"fade_down","label":"Fade Down"},
-        {"value":"fade_left","label":"Fade Left"},
-        {"value":"fade_right","label":"Fade Right"},
-        {"value":"shimmer","label":"Shimmer (uses color setting)"}
-      ]},
-      {"type":"range","id":"headline_anim_intensity","label":"Headline Animation Intensity","min":0,"max":100,"step":1,"default":50},
-  {"type":"select","id":"headline_anim_speed","label":"Headline Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
-      {"type":"select","id":"headline_anim_ease","label":"Headline Easing","default":"smooth","options":[
-        {"value":"smooth","label":"Smooth"},
-        {"value":"ease","label":"Ease"},
-        {"value":"ease-in","label":"Ease-in"},
-        {"value":"ease-out","label":"Ease-out"},
-        {"value":"ease-in-out","label":"Ease-in-out"},
-        {"value":"linear","label":"Linear"},
-        {"value":"custom","label":"Custom cubic-bezier()"}
-      ]},
-      {"type":"text","id":"headline_anim_ease_custom","label":"Custom cubic-bezier(...) for Headline"},
-      {"type":"select","id":"headline_shimmer","label":"Headline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
-      {"type":"color","id":"headline_shimmer_color","label":"Headline shimmer color"},
-  {"type":"range","id":"headline_shimmer_speed_ms","label":"Headline shimmer speed (ms)","min":0,"max":6000,"step":100,"default":0,"info":"0 = use global"},
-  {"type":"range","id":"headline_sparkle_density","label":"Headline sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
-  {"type":"range","id":"headline_glint_strength","label":"Headline glint strength (0 = inherit)","min":0,"max":100,"step":5,"default":0},
-  {"type":"range","id":"headline_glint_width","label":"Headline glint width (0 = inherit)","min":0,"max":50,"step":1,"default":0},
-      {"type":"checkbox","id":"headline_enable_twinkle","label":"Headline: enable twinkle overlay (override global)","default":false},
-  {"type":"range","id":"headline_anim_speed_custom","label":"Headline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900,"info":"Only used when speed = Custom"},
-  {"type":"header","content":"Subheadline Animation"},
-      {"type":"select","id":"sub_anim_type","label":"Subheadline Animation","default":"none","options":[
-        {"value":"none","label":"None"},
-        {"value":"fade_in","label":"Fade In"},
-        {"value":"fade_up","label":"Fade Up"},
-        {"value":"fade_down","label":"Fade Down"},
-        {"value":"fade_left","label":"Fade Left"},
-        {"value":"fade_right","label":"Fade Right"},
-        {"value":"shimmer","label":"Shimmer (uses color setting)"}
-      ]},
-      {"type":"range","id":"sub_anim_intensity","label":"Subheadline Animation Intensity","min":0,"max":100,"step":1,"default":40},
-  {"type":"select","id":"sub_anim_speed","label":"Subheadline Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
-      {"type":"select","id":"sub_anim_ease","label":"Subheadline Easing","default":"smooth","options":[
-        {"value":"smooth","label":"Smooth"},
-        {"value":"ease","label":"Ease"},
-        {"value":"ease-in","label":"Ease-in"},
-        {"value":"ease-out","label":"Ease-out"},
-        {"value":"ease-in-out","label":"Ease-in-out"},
-        {"value":"linear","label":"Linear"},
-        {"value":"custom","label":"Custom cubic-bezier()"}
-      ]},
-      {"type":"text","id":"sub_anim_ease_custom","label":"Custom cubic-bezier(...) for Subheadline"},
-      {"type":"select","id":"sub_shimmer","label":"Subheadline Shimmer","default":"none","options":[{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"}]},
-      {"type":"color","id":"sub_shimmer_color","label":"Subheadline shimmer color"},
-  {"type":"range","id":"sub_shimmer_speed_ms","label":"Subheadline shimmer speed (ms)","min":0,"max":6000,"step":100,"default":0,"info":"0 = use global"},
-  {"type":"range","id":"sub_sparkle_density","label":"Subheadline sparkle density (0 = inherit)","min":0,"max":100,"step":5,"default":0},
-  {"type":"range","id":"sub_glint_strength","label":"Subheadline glint strength (0 = inherit)","min":0,"max":100,"step":5,"default":0},
-  {"type":"range","id":"sub_glint_width","label":"Subheadline glint width (0 = inherit)","min":0,"max":50,"step":1,"default":0},
-      {"type":"checkbox","id":"sub_enable_twinkle","label":"Subheadline: enable twinkle overlay (override global)","default":false},
-      {"type":"checkbox","id":"enable_text_shimmer_slide","label":"Enable text shimmer for this slide (override global)","default":false},
-      {"type":"checkbox","id":"enable_text_twinkle_slide","label":"Enable sparkle twinkle for this slide (override global)","default":false},
-      {"type":"checkbox","id":"combine_text_shimmer_with_fade","label":"Combine shimmer with subtle fade-up on activate","default":false},
-  {"type":"range","id":"sub_anim_speed_custom","label":"Subheadline Custom Speed (ms)","min":100,"max":4000,"step":50,"default":900,"info":"Only used when speed = Custom"},
-  {"type":"header","content":"Slide Content"},
-      {"type":"text","id":"slide_headline","label":"Slide headline"},
-      {"type":"text","id":"slide_subheadline","label":"Slide subheadline"},
-      {"type":"header","content":"Headline Text FX (Sparkle/Glitter)"},
-      {"type":"select","id":"headline_text_fx","label":"Headline text effect","default":"none","options":[{"value":"none","label":"None"},{"value":"sparkle","label":"Sparkle"},{"value":"glitter","label":"Glitter"}]},
-      {"type":"color","id":"headline_text_fx_color","label":"Headline FX color","default":"#ffffff"},
-      {"type":"range","id":"headline_text_fx_intensity","label":"Headline FX intensity","min":0,"max":100,"step":5,"default":0},
-      {"type":"range","id":"headline_text_fx_speed","label":"Headline FX speed (ms)","min":0,"max":9000,"step":250,"default":0},
-  {"type":"range","id":"headline_text_fx_size","label":"Headline FX size (px)","min":0,"max":64,"step":1,"default":0,"info":"0 = inherit global"},
-  {"type":"range","id":"headline_text_fx_frequency","label":"Headline FX frequency","min":0,"max":40,"step":1,"default":0,"info":"0 = inherit global"},
-      {"type":"select","id":"headline_text_fx_position","label":"Headline FX position","default":"mc","options":[
-        {"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},
-        {"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},
-        {"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"},
-        {"value":"cover","label":"Cover (full text)"}
-      ]},
-      {"type":"header","content":"Subheadline Text FX (Sparkle/Glitter)"},
-      {"type":"select","id":"sub_text_fx","label":"Subheadline text effect","default":"none","options":[{"value":"none","label":"None"},{"value":"sparkle","label":"Sparkle"},{"value":"glitter","label":"Glitter"}]},
-      {"type":"color","id":"sub_text_fx_color","label":"Subheadline FX color","default":"#ffffff"},
-      {"type":"range","id":"sub_text_fx_intensity","label":"Subheadline FX intensity","min":0,"max":100,"step":5,"default":0},
-      {"type":"range","id":"sub_text_fx_speed","label":"Subheadline FX speed (ms)","min":0,"max":9000,"step":250,"default":0},
-  {"type":"range","id":"sub_text_fx_size","label":"Subheadline FX size (px)","min":0,"max":64,"step":1,"default":0,"info":"0 = inherit global"},
-  {"type":"range","id":"sub_text_fx_frequency","label":"Subheadline FX frequency","min":0,"max":40,"step":1,"default":0,"info":"0 = inherit global"},
-      {"type":"select","id":"sub_text_fx_position","label":"Subheadline FX position","default":"mc","options":[
-        {"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},
-        {"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},
-        {"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"},
-        {"value":"cover","label":"Cover (full text)"}
-      ]},
-  {"type":"header","content":"CTA Buttons"},
-      {"type":"text","id":"slide_cta_text","label":"Slide CTA text"},
-      {"type":"url","id":"slide_cta_link","label":"Slide CTA link"},
-      {"type":"select","id":"slide_cta_variant","label":"Slide CTA variant","default":"primary","options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"ghost","label":"Ghost"}]},
-  {"type":"text","id":"slide_cta2_text","label":"Secondary CTA text"},
-  {"type":"url","id":"slide_cta2_link","label":"Secondary CTA link"},
-  {"type":"select","id":"slide_cta2_variant","label":"Secondary CTA variant","default":"secondary","options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"ghost","label":"Ghost"}]},
-  {"type":"header","content":"CTA Visual Overrides"},
-  {"type":"checkbox","id":"enable_cta_visual_overrides","label":"Enable CTA visual overrides for this slide","default":false},
-  {"type":"range","id":"cta_border_width","label":"CTA border width (px)","min":0,"max":8,"step":1,"default":0},
-  {"type":"select","id":"cta_border_style","label":"CTA border style","default":"none","options":[{"value":"none","label":"None"},{"value":"solid","label":"Solid"},{"value":"dashed","label":"Dashed"},{"value":"dotted","label":"Dotted"}]},
-  {"type":"color","id":"cta_border_color","label":"CTA border color"},
-  {"type":"range","id":"cta_radius_override","label":"CTA border radius override (px)","min":0,"max":32,"step":1,"default":0},
-  {"type":"range","id":"cta_fixed_width","label":"CTA fixed width (px)","min":0,"max":600,"step":10,"default":0,"info":"0 = auto"},
-  {"type":"range","id":"cta_width_scale","label":"CTA width scale (%)","min":-50,"max":200,"step":5,"default":0},
-  {"type":"range","id":"cta_fixed_height","label":"CTA fixed height (px)","min":0,"max":200,"step":5,"default":0},
-  {"type":"color","id":"primary_bg_color","label":"Primary CTA background color"},
-  {"type":"text","id":"primary_bg_gradient","label":"Primary CTA background gradient CSS"},
-  {"type":"color","id":"primary_text_color","label":"Primary CTA text color"},
-  {"type":"color","id":"secondary_bg_color","label":"Secondary CTA background color"},
-  {"type":"text","id":"secondary_bg_gradient","label":"Secondary CTA background gradient CSS"},
-  {"type":"color","id":"secondary_text_color","label":"Secondary CTA text color"},
-  {"type":"header","content":"Layout & Position"},
-  {"type":"select","id":"cta_size","label":"CTA size","default":"medium","options":[{"value":"small","label":"Small"},{"value":"medium","label":"Medium"},{"value":"large","label":"Large"}]},
-  {"type":"select","id":"cta_anim_style","label":"CTA animation style","default":"shimmer","options":[
-    {"value":"none","label":"None"},
-    {"value":"shimmer","label":"Shimmer / Sheen"},
-    {"value":"hover_shimmer","label":"Hover Shimmer"},
-    {"value":"pulse","label":"Pulse / Glow"},
-    {"value":"ripple","label":"Ripple"},
-    {"value":"gradient_shift","label":"Gradient Shift"},
-    {"value":"border_reveal","label":"Border Reveal"},
-    {"value":"micro_pulse","label":"Micro Pulse (gentle scale)"},
-    {"value":"soft_glow_fade","label":"Soft Glow Fade"},
-    {"value":"gradient_drift","label":"Gradient Drift"},
-    {"value":"shadow_shift","label":"Shadow Shift"},
-    {"value":"color_tint_pulse","label":"Color Tint Pulse"}
-  ]},
-  {"type":"range","id":"cta_anim_intensity","label":"Animation Intensity (Subtlety)","min":0,"max":100,"step":1,"default":50},
-  {"type":"select","id":"cta_anim_speed","label":"Animation Speed","default":"medium","options":[{"value":"slow","label":"Slow"},{"value":"medium","label":"Medium"},{"value":"fast","label":"Fast"},{"value":"custom","label":"Custom (ms)"}]},
-  {"type":"range","id":"cta_anim_speed_custom","label":"Custom Speed (ms)","min":50,"max":3000,"step":50,"default":800},
-  {"type":"checkbox","id":"cta_anim_continuous","label":"Continuous shimmer","default":false},
-  {"type":"checkbox","id":"cta_anim_hover","label":"Shimmer on hover","default":true},
-  {"type":"checkbox","id":"cta_anim_click","label":"Shimmer on click","default":true},
-  {"type":"range","id":"cta_anim_speed_continuous","label":"Continuous speed (s)","min":1,"max":10,"step":0.5,"default":3},
-  {"type":"range","id":"cta_anim_speed_hover","label":"Hover speed (s)","min":0.5,"max":6,"step":0.5,"default":2},
-  {"type":"range","id":"cta_anim_speed_click","label":"Click burst speed (s)","min":0.3,"max":3,"step":0.1,"default":1},
-  {"type":"checkbox","id":"use_global_cta_anim","label":"Use global animation defaults","default":true},
-  {"type":"select","id":"cta_anim_style_cont","label":"Override continuous style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"select","id":"cta_anim_style_hover","label":"Override hover style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"select","id":"cta_anim_style_click","label":"Override click style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"range","id":"cta_gap","label":"CTA gap override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit"},
-  {"type":"range","id":"cta_gap_mobile","label":"CTA gap mobile override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit"},
-  {"type":"select","id":"cta_style","label":"CTA 3D style override","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
-  {"type":"header","content":"Primary Button Options"},
-  {"type":"range","id":"primary_shimmer_band_width","label":"Primary shimmer width (px)","min":0,"max":400,"step":10,"default":0,"info":"0 = use variant/global"},
-  {"type":"checkbox","id":"primary_anim_continuous","label":"Primary: continuous enabled"},
-  {"type":"checkbox","id":"primary_anim_hover","label":"Primary: hover enabled"},
-  {"type":"checkbox","id":"primary_anim_click","label":"Primary: click enabled"},
-  {"type":"select","id":"primary_anim_style_cont","label":"Primary continuous style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"select","id":"primary_anim_style_hover","label":"Primary hover style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"select","id":"primary_anim_style_click","label":"Primary click style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"range","id":"primary_anim_speed_continuous","label":"Primary continuous speed (s)","min":0,"max":10,"step":0.5,"default":0,"info":"0 = inherit"},
-  {"type":"range","id":"primary_anim_speed_hover","label":"Primary hover speed (s)","min":0,"max":6,"step":0.5,"default":0,"info":"0 = inherit"},
-  {"type":"range","id":"primary_anim_speed_click","label":"Primary click speed (s)","min":0,"max":3,"step":0.1,"default":0,"info":"0 = inherit"},
-  {"type":"select","id":"primary_3d_style","label":"Primary 3D style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
-  {"type":"header","content":"Secondary Button Options"},
-  {"type":"range","id":"secondary_shimmer_band_width","label":"Secondary shimmer width (px)","min":0,"max":400,"step":10,"default":0,"info":"0 = use variant/global"},
-  {"type":"checkbox","id":"secondary_anim_continuous","label":"Secondary: continuous enabled"},
-  {"type":"checkbox","id":"secondary_anim_hover","label":"Secondary: hover enabled"},
-  {"type":"checkbox","id":"secondary_anim_click","label":"Secondary: click enabled"},
-  {"type":"select","id":"secondary_anim_style_cont","label":"Secondary continuous style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"select","id":"secondary_anim_style_hover","label":"Secondary hover style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"select","id":"secondary_anim_style_click","label":"Secondary click style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"shimmer","label":"Shimmer"},{"value":"pulse","label":"Pulse"},{"value":"glow","label":"Glow"},{"value":"lift","label":"Lift"}]},
-  {"type":"range","id":"secondary_anim_speed_continuous","label":"Secondary continuous speed (s)","min":0,"max":10,"step":0.5,"default":0,"info":"0 = inherit"},
-  {"type":"range","id":"secondary_anim_speed_hover","label":"Secondary hover speed (s)","min":0,"max":6,"step":0.5,"default":0,"info":"0 = inherit"},
-  {"type":"range","id":"secondary_anim_speed_click","label":"Secondary click speed (s)","min":0,"max":3,"step":0.1,"default":0,"info":"0 = inherit"},
-  {"type":"select","id":"secondary_3d_style","label":"Secondary 3D style","default":"","options":[{"value":"","label":"(Inherit)"},{"value":"none","label":"None"},{"value":"raised","label":"Raised"},{"value":"inset","label":"Inset"},{"value":"neumorphic","label":"Neumorphic"},{"value":"glass","label":"Glass"},{"value":"embossed","label":"Embossed"}]},
-  {"type":"header","content":"Reset"},
-  {"type":"checkbox","id":"reset_slide_overrides","label":"Reset to global defaults","info":"Disables slide-level overrides (shimmer/twinkle/CTA)","default":false},
-  {"type":"range","id":"headline_size","label":"Headline size override (px)","min":0,"max":120,"step":2,"default":0,"info":"0 = inherit global"},
-  {"type":"range","id":"subheadline_size","label":"Subheadline size override (px)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit global"},
-  {"type":"color","id":"headline_color","label":"Headline color override"},
-  {"type":"color","id":"subheadline_color","label":"Subheadline color override"},
-  {"type":"range","id":"max_width_ch","label":"Max text width (ch)","min":0,"max":80,"step":2,"default":0,"info":"0 = inherit global"},
-  {"type":"select","id":"headline_position","label":"Headline position","default":"mc","options":[{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
-  {"type":"select","id":"subheadline_position","label":"Subheadline position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
-  {"type":"select","id":"ctas_position","label":"CTAs position","default":"","options":[{"value":"","label":"Match Headline"},{"value":"tl","label":"Top Left"},{"value":"tc","label":"Top Center"},{"value":"tr","label":"Top Right"},{"value":"ml","label":"Middle Left"},{"value":"mc","label":"Middle Center"},{"value":"mr","label":"Middle Right"},{"value":"bl","label":"Bottom Left"},{"value":"bc","label":"Bottom Center"},{"value":"br","label":"Bottom Right"}]},
-  {"type":"select","id":"ctas_inline_align","label":"CTAs inline alignment","default":"center","options":[{"value":"start","label":"Start"},{"value":"center","label":"Center"},{"value":"end","label":"End"}]},
-      {"type":"range","id":"slide_duration","label":"Custom duration (s)","min":0,"max":25,"step":1,"default":0,"info":"0 uses default duration"}
+    {"type":"slide","name":"Slide","settings":[
+      {"type":"image_picker","id":"image","label":"Image"},
+      {"type":"image_picker","id":"mobile_image","label":"Mobile image"},
+      {"type":"text","id":"image_alt","label":"Image alt text"},
+      {"type":"text","id":"headline","label":"Headline","default":"Tell your story"},
+      {"type":"text","id":"subheadline","label":"Subheadline","default":"Share details about your promotion"},
+      {"type":"text","id":"button_label","label":"Primary button label"},
+      {"type":"url","id":"button_link","label":"Primary button link"},
+      {"type":"text","id":"button_label_2","label":"Secondary button label"},
+      {"type":"url","id":"button_link_2","label":"Secondary button link"}
     ]}
   ],
   "presets": [
     {
-      "name": "AGG Slideshow Hero",
+      "name": "Slideshow hero",
       "category": "Hero",
+      "settings": {
+        "overlay_percent": 30,
+        "content_horizontal": "center",
+        "content_vertical": "middle",
+        "autoplay_delay_ms": 5000,
+        "image_fx": "crossfade",
+        "show_progress": true
+      },
       "blocks": [
-        {"type": "image"},
-        {"type": "image"},
-        {"type": "image"}
+        {"type": "slide"},
+        {"type": "slide"}
       ]
     }
   ]
