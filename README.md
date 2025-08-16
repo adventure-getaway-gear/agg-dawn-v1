@@ -54,9 +54,6 @@ Use [Conventional Commits](https://www.conventionalcommits.org/). Examples:
 - Example commit message:  
 docs: update README with workflow & safeguards
 
-php-template
-Copy
-Edit
 - Click **Commit to adventure-getaway-gear-staging**.  
 - Click **Push origin**.  
 
@@ -115,8 +112,6 @@ Repo structure and workflows are designed for scalability (camping gear, clothin
 The repo follows Shopify Dawn’s structure with AGG custom sections:
 
 bash
-Copy
-Edit
 ├── assets/         # Stylesheets, scripts, images
 ├── config/         # Theme settings
 ├── layout/         # Theme.liquid
