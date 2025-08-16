@@ -1,0 +1,22 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node / build
+node_modules/
+dist/
+build/
+.cache/
+*.log
+
+# Env & Ruby (if used)
+.env
+.env.*
+.bundle/
+vendor/
+
+# Temp
+*.tmp
+*.swp
