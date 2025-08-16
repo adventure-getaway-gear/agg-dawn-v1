@@ -1,61 +1,120 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
-    "image_banner": {
-      "type": "image-banner",
+    "pro_agg_hero_slider_MdA34j": {
+      "type": "pro_agg_hero_slider",
       "blocks": {
-        "heading": {
-          "type": "heading",
+        "slide_PgNgNt": {
+          "type": "slide",
           "settings": {
-            "heading": "Browse our latest products",
-            "heading_size": "h0"
+            "image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
+            "image_alt": "",
+            "kicker": "Adventure awaits",
+            "heading": "Tow. Haul. Explore.",
+            "subheading": "Built for family road trips and weekend warriors.",
+            "richtext": "",
+            "text_align": "center",
+            "heading_size": "clamp(28px,4vw,56px)",
+            "subheading_size": "clamp(16px,1.6vw,22px)",
+            "object_position": "50% 50%",
+            "enable_shimmer": false,
+            "overlay_color": "#000000",
+            "overlay_opacity": 0,
+            "overlay_blend": "inherit",
+            "content_position_desktop": "mc",
+            "content_position_mobile": "inherit",
+            "btn_1_label": "Shop Now",
+            "btn_1_link": "shopify://products/sample-coconut-bar-soap",
+            "btn_1_new_tab": false,
+            "btn_1_style": "primary",
+            "btn_2_label": "",
+            "btn_2_link": "",
+            "btn_2_new_tab": false,
+            "btn_2_style": "secondary"
           }
         },
-        "button": {
-          "type": "buttons",
+        "slide_jLMAVM": {
+          "type": "slide",
           "settings": {
-            "button_label_1": "Shop all",
-            "button_link_1": "shopify://collections/all",
-            "button_style_secondary_1": true,
-            "button_label_2": "",
-            "button_link_2": "",
-            "button_style_secondary_2": false
+            "image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
+            "image_alt": "",
+            "kicker": "Adventure awaits",
+            "heading": "Tow. Haul. Explore.",
+            "subheading": "Built for family road trips and weekend warriors.",
+            "richtext": "",
+            "text_align": "center",
+            "heading_size": "clamp(28px,4vw,56px)",
+            "subheading_size": "clamp(16px,1.6vw,22px)",
+            "object_position": "50% 50%",
+            "enable_shimmer": false,
+            "overlay_color": "#000000",
+            "overlay_opacity": 0,
+            "overlay_blend": "inherit",
+            "content_position_desktop": "mc",
+            "content_position_mobile": "inherit",
+            "btn_1_label": "Shop Now",
+            "btn_1_link": "shopify://products/sample-coconut-bar-soap",
+            "btn_1_new_tab": false,
+            "btn_1_style": "primary",
+            "btn_2_label": "",
+            "btn_2_link": "",
+            "btn_2_new_tab": false,
+            "btn_2_style": "secondary"
           }
         }
       },
       "block_order": [
-        "heading",
-        "button"
+        "slide_PgNgNt",
+        "slide_jLMAVM"
       ],
+      "name": "AGG • Hero slider",
       "settings": {
-        "image_overlay_opacity": 40,
-        "image_height": "large",
-        "desktop_content_position": "bottom-center",
-        "show_text_box": false,
-        "image_behavior": "none",
-        "desktop_content_alignment": "center",
-        "color_scheme": "scheme-3",
-        "mobile_content_alignment": "center",
-        "stack_images_on_mobile": false,
-        "show_text_below": false
+        "region_label": "Hero carousel",
+        "height_mode": "fixed",
+        "fixed_height": 620,
+        "aspect_ratio": "16:9",
+        "container_max_width": 1600,
+        "content_max_width": 680,
+        "show_arrows": true,
+        "show_dots": true,
+        "autoplay": true,
+        "autoplay_interval": 6,
+        "loop_slides": true,
+        "enable_swipe": true,
+        "enable_keyboard": true,
+        "enable_shimmer": true,
+        "overlay_color": "#000000",
+        "overlay_opacity": 35,
+        "overlay_blend": "normal",
+        "reduce_motion_policy": "respect",
+        "content_position_desktop": "mc",
+        "content_position_mobile": "bc"
       }
     },
     "featured_collection": {
       "type": "featured-collection",
       "settings": {
+        "collection": "all",
+        "products_to_show": 8,
         "title": "Featured products",
         "heading_size": "h2",
         "description": "",
         "show_description": false,
         "description_style": "body",
-        "collection": "all",
-        "products_to_show": 8,
         "columns_desktop": 4,
-        "color_scheme": "scheme-1",
+        "enable_desktop_slider": false,
         "full_width": false,
         "show_view_all": true,
         "view_all_style": "solid",
-        "enable_desktop_slider": false,
-        "swipe_on_mobile": false,
+        "color_scheme": "scheme-1",
         "image_ratio": "adapt",
         "image_shape": "default",
         "show_secondary_image": true,
@@ -63,13 +122,14 @@
         "show_rating": false,
         "quick_add": "none",
         "columns_mobile": "2",
+        "swipe_on_mobile": false,
         "padding_top": 44,
         "padding_bottom": 36
       }
     }
   },
   "order": [
-    "image_banner",
+    "pro_agg_hero_slider_MdA34j",
     "featured_collection"
   ]
 }
