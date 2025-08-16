@@ -1,0 +1,421 @@
+{% comment %}
+  Hero Banner AGG Slideshow – refactored premium hero.
+  Features:
+   - Autoplay with pause on hover/focus and when tab hidden.
+   - Arrow, dot, swipe, keyboard navigation.
+   - Progress bar reflecting slide duration.
+   - Optional header tuck-under with offset.
+   - Image FX: kenburns/parallax/zoom/crossfade/fade.
+   - Text FX: shimmer/twinkle with per-element overrides.
+   - Desktop + mobile images, overlay, content alignment.
+  Groups & defaults:
+   Basics(overlay 30%, Center/Middle);
+   Media height(Desktop/Mobile = Medium);
+   Navigation(arrows+dots true);
+   Autoplay(true, delay 5000ms, pause on hover);
+   Header tuck(false, offset 0);
+   Progress(true);
+   Effects(Advanced) – see schema for options.
+  Section events:
+   root.__heroSlider = {next, prev, pause, play};
+   announces slide changes via live region.
+{% endcomment %}
+
+{% liquid
+  assign s = section.settings
+
+  # ---- Backward compatibility mapping ----
+  assign overlay_raw = s.overlay_percent | default: s.overlay_opacity | default: 30
+  assign overlay = overlay_raw | at_most: 80 | at_least: 0
+  assign horiz = s.content_horizontal | default: s.text_align | downcase | default: 'center'
+  assign vert = s.content_vertical
+
+  if vert == blank
+    assign old_pos = s.headline_position
+    if old_pos != blank
+      assign vcode = old_pos | slice: 0, 1
+      assign hcode = old_pos | slice: 1, 1
+      case vcode
+        when 't' assign vert = 'top'
+        when 'm' assign vert = 'middle'
+        when 'b' assign vert = 'bottom'
+      endcase
+      case hcode
+        when 'l' assign horiz = 'left'
+        when 'c' assign horiz = 'center'
+        when 'r' assign horiz = 'right'
+      endcase
+    endif
+  endif
+  if vert == blank
+    assign vert = 'middle'
+  endif
+
+  assign hd_choice = s.height_desktop
+  if hd_choice == blank
+    assign hpx = s.image_height | default: 600
+    if hpx < 500
+      assign hd_choice = 'short'
+    elsif hpx > 700
+      assign hd_choice = 'tall'
+    else
+      assign hd_choice = 'medium'
+    endif
+  endif
+  assign hm_choice = s.height_mobile
+  if hm_choice == blank
+    assign hpxm = s.mobile_height | default: 480
+    if hpxm < 400
+      assign hm_choice = 'short'
+    elsif hpxm > 560
+      assign hm_choice = 'tall'
+    else
+      assign hm_choice = 'medium'
+    endif
+  endif
+
+  assign map_d = '{"short":400,"medium":600,"tall":800}' | parse_json
+  assign map_m = '{"short":300,"medium":480,"tall":640}' | parse_json
+  assign hd_px = map_d[hd_choice]
+  assign hm_px = map_m[hm_choice]
+
+  assign show_arrows = s.show_arrows
+  if show_arrows == nil
+    assign show_arrows = s.show_nav | default: true
+  endif
+  assign show_dots = s.show_dots
+  if show_dots == nil
+    assign show_dots = s.show_dots | default: true
+  endif
+  assign show_progress = s.show_progress
+  if show_progress == nil
+    assign show_progress = s.show_progress_bar | default: true
+  endif
+  assign autoplay = s.autoplay
+  if autoplay == nil
+    assign autoplay = s.slideshow_autoplay | default: true
+  endif
+  assign delay = s.autoplay_delay_ms
+  if delay == nil or delay == 0
+    assign delay = s.slideshow_interval | default: 5 | times: 1000
+  endif
+  assign pause_hover = s.pause_on_hover | default: true
+  assign tuck = s.tuck_under_header | default: false
+  assign header_offset = s.header_offset_px | default: 0
+
+  # effects
+  assign img_fx = s.image_fx | default: s.global_image_effect_default | default: 'crossfade'
+  assign img_fx_intensity = s.image_fx_intensity | default: 'medium'
+  assign txt_shimmer = s.text_shimmer
+  if txt_shimmer == blank and s.enable_text_shimmer
+    if s.text_shimmer_once
+      assign txt_shimmer = 'once'
+    elsif s.text_shimmer_hover_only
+      assign txt_shimmer = 'hover'
+    else
+      assign txt_shimmer = 'hover'
+    endif
+  endif
+  assign txt_twinkle = s.text_twinkle
+  if txt_twinkle == blank and s.enable_text_shimmer_twinkle
+    assign txt_twinkle = 'on'
+  endif
+  assign shimmer_headline = s.shimmer_headline
+  if shimmer_headline == nil
+    assign shimmer_headline = true
+  endif
+  assign shimmer_subheadline = s.shimmer_subheadline
+  if shimmer_subheadline == nil
+    assign shimmer_subheadline = true
+  endif
+  assign twinkle_headline = s.twinkle_headline | default: false
+  assign twinkle_subheadline = s.twinkle_subheadline | default: false
+  assign reduced_fallback = s.fx_reduced_motion_fallback
+  if reduced_fallback == nil
+    assign reduced_fallback = true
+  endif
+
+  assign overlay_color = s.overlay_color | default: '#000000'
+-%}
+
+<section id="Hero-{{ section.id }}" class="hb-hero hb-hero--{{ horiz }} hb-hero--{{ vert }}{% if tuck %} hb-hero--tucked{% endif %}" aria-roledescription="carousel" aria-label="Hero promotions" style="--overlay:{{ overlay | divided_by:100 }};--overlay-color:{{ overlay_color }};--hb-height:{{ hd_px }}px;--transition-speed:600ms;--progress-scale:0;--header-offset:{{ header_offset }}px;" data-autoplay="{{ autoplay }}" data-delay="{{ delay }}" data-pause-hover="{{ pause_hover }}" data-reduce="{{ reduced_fallback }}">
+  <style>
+    #Hero-{{ section.id }}{position:relative;height:var(--hb-height);overflow:hidden;}
+    #Hero-{{ section.id }}::before{content:"";position:absolute;inset:0;background:var(--overlay-color);opacity:var(--overlay);pointer-events:none;z-index:1;}
+    #Hero-{{ section.id }}.hb-hero--tucked{margin-top:calc(var(--header-offset)*-1);}
+    #Hero-{{ section.id }} .hb-hero__slides{list-style:none;margin:0;padding:0;height:100%;position:relative;}
+    #Hero-{{ section.id }} .hb-hero__slide{position:absolute;inset:0;opacity:0;transition:opacity var(--transition-speed) ease;z-index:0;}
+    #Hero-{{ section.id }} .hb-hero__slide.is-active{opacity:1;z-index:2;}
+    #Hero-{{ section.id }} .hb-hero__media, #Hero-{{ section.id }} picture, #Hero-{{ section.id }} img{width:100%;height:100%;object-fit:cover;display:block;}
+    #Hero-{{ section.id }} .hb-hero__content{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;gap:1rem;padding:1rem;}
+    #Hero-{{ section.id }}.hb-hero--left .hb-hero__content{align-items:flex-start;text-align:left;}
+    #Hero-{{ section.id }}.hb-hero--center .hb-hero__content{align-items:center;text-align:center;}
+    #Hero-{{ section.id }}.hb-hero--right .hb-hero__content{align-items:flex-end;text-align:right;}
+    #Hero-{{ section.id }}.hb-hero--top .hb-hero__content{justify-content:flex-start;}
+    #Hero-{{ section.id }}.hb-hero--middle .hb-hero__content{justify-content:center;}
+    #Hero-{{ section.id }}.hb-hero--bottom .hb-hero__content{justify-content:flex-end;}
+    #Hero-{{ section.id }} .hb-hero__progress{position:absolute;left:0;bottom:0;width:100%;height:4px;overflow:hidden;z-index:4;}
+    #Hero-{{ section.id }} .hb-hero__progressBar{transform-origin:left;transform:scaleX(var(--progress-scale));height:100%;background:currentColor;}
+    #Hero-{{ section.id }} .hb-hero__arrows{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;pointer-events:none;z-index:4;}
+    #Hero-{{ section.id }} .hb-hero__arrow{pointer-events:auto;background:rgba(0,0,0,0.4);border:none;color:#fff;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s; }
+    #Hero-{{ section.id }} .hb-hero__arrow:hover{background:rgba(0,0,0,0.6);}
+    #Hero-{{ section.id }} .hb-hero__arrow:focus{outline:3px solid #fff;outline-offset:2px;}
+    #Hero-{{ section.id }} .hb-hero__dots{position:absolute;left:50%;bottom:1rem;transform:translateX(-50%);display:flex;gap:.5rem;z-index:4;}
+    #Hero-{{ section.id }} .hb-hero__dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,0.5);border:none;cursor:pointer;}
+    #Hero-{{ section.id }} .hb-hero__dot[aria-selected="true"]{background:rgba(255,255,255,1);}
+    #Hero-{{ section.id }} .hb-hero__dot:focus{outline:3px solid #fff;outline-offset:2px;}
+    @media (max-width:749px){#Hero-{{ section.id }}{--hb-height:{{ hm_px }}px;}}
+    /* Text effects */
+    #Hero-{{ section.id }} .hb-shimmer{background-image:linear-gradient(90deg,rgba(255,255,255,0)0%,rgba(255,255,255,0.8)50%,rgba(255,255,255,0)100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:hbShimmer 2.5s linear infinite;}
+    #Hero-{{ section.id }} .hb-twinkle{position:relative;}
+    #Hero-{{ section.id }} .hb-twinkle::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,0.8)0,rgba(255,255,255,0)70%);opacity:.6;animation:hbTwinkle 1.8s ease-in-out infinite;pointer-events:none;}
+    @keyframes hbShimmer{from{background-position:-200% 0;}to{background-position:200% 0;}}
+    @keyframes hbTwinkle{0%,100%{opacity:.2;}50%{opacity:1;}}
+    @media (prefers-reduced-motion:reduce){#Hero-{{ section.id }} .hb-shimmer,#Hero-{{ section.id }} .hb-twinkle::after{animation:none;}}
+    /* Reduced motion disables transitions */
+    @media (prefers-reduced-motion:reduce){#Hero-{{ section.id }} .hb-hero__slide{transition:none;}}
+  </style>
+
+  {% if section.blocks.size > 0 %}
+    <ul class="hb-hero__slides" role="list" data-slides>
+      {% for block in section.blocks %}
+        {% assign b = block.settings %}
+        {% assign img = b.image %}
+        {% assign mob = b.mobile_image %}
+        {% assign alt = b.image_alt | default: img.alt | escape %}
+        {% assign slide_id = 'Slide-' | append: section.id | append: '-' | append: forloop.index %}
+        <li id="{{ slide_id }}" class="hb-hero__slide{% if forloop.first %} is-active{% endif %}" data-slide data-index="{{ forloop.index0 }}" role="group" aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}" {{ block.shopify_attributes }}>
+          {% if img %}
+          <div class="hb-hero__media">
+            <picture>
+              {% if mob %}
+                <source media="(max-width: 749px)" srcset="{{ mob | image_url: width: 750 }} 750w, {{ mob | image_url: width: 1500 }} 1500w" sizes="100vw">
+              {% endif %}
+              <source media="(min-width: 750px)" srcset="{{ img | image_url: width: 1500 }} 1500w, {{ img | image_url: width: 3000 }} 3000w" sizes="100vw">
+              <img src="{{ img | image_url: width: 1500 }}" srcset="{{ img | image_url: width: 1500 }} 1500w, {{ img | image_url: width: 3000 }} 3000w" sizes="100vw" width="{{ img.width }}" height="{{ img.height }}" {% if img.aspect_ratio %}style="aspect-ratio:{{ img.aspect_ratio }}"{% endif %} alt="{{ alt }}" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+            </picture>
+          </div>
+          {% endif %}
+          <div class="hb-hero__content">
+            {% if b.headline != blank %}
+              {% assign h_classes = '' %}
+              {% if txt_shimmer != 'off' and shimmer_headline %}{% assign h_classes = h_classes | append: ' hb-shimmer' %}{% endif %}
+              {% if txt_twinkle == 'on' and twinkle_headline %}{% assign h_classes = h_classes | append: ' hb-twinkle' %}{% endif %}
+              <h2 class="hb-hero__headline{{ h_classes }}">{{ b.headline }}</h2>
+            {% endif %}
+            {% if b.subheadline != blank %}
+              {% assign s_classes = '' %}
+              {% if txt_shimmer != 'off' and shimmer_subheadline %}{% assign s_classes = s_classes | append: ' hb-shimmer' %}{% endif %}
+              {% if txt_twinkle == 'on' and twinkle_subheadline %}{% assign s_classes = s_classes | append: ' hb-twinkle' %}{% endif %}
+              <p class="hb-hero__subheadline{{ s_classes }}">{{ b.subheadline }}</p>
+            {% endif %}
+            {% if b.button_label or b.button_label_2 %}
+              <div class="hb-hero__buttons">
+                {% if b.button_label and b.button_link %}
+                  <a href="{{ b.button_link }}" class="hb-hero__btn">{{ b.button_label }}</a>
+                {% endif %}
+                {% if b.button_label_2 and b.button_link_2 %}
+                  <a href="{{ b.button_link_2 }}" class="hb-hero__btn hb-hero__btn--alt">{{ b.button_label_2 }}</a>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+    {% if show_arrows and section.blocks.size > 1 %}
+      <div class="hb-hero__arrows" aria-hidden="true">
+        <button class="hb-hero__arrow" type="button" data-prev aria-label="Previous slide">&#10094;</button>
+        <button class="hb-hero__arrow" type="button" data-next aria-label="Next slide">&#10095;</button>
+      </div>
+    {% endif %}
+    {% if show_dots and section.blocks.size > 1 %}
+      <div class="hb-hero__dots">
+        {% for block in section.blocks %}
+          <button class="hb-hero__dot" type="button" data-dot data-index="{{ forloop.index0 }}" aria-label="Go to slide {{ forloop.index }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"></button>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if show_progress and section.blocks.size > 1 %}
+      <div class="hb-hero__progress" aria-hidden="true">
+        <div class="hb-hero__progressBar" data-progress></div>
+      </div>
+    {% endif %}
+    <div class="visually-hidden" aria-live="polite" aria-atomic="true" data-live>Slide 1 of {{ section.blocks.size }}</div>
+  {% else %}
+    <div class="hb-hero__empty" style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;">Add slides to hero banner</div>
+  {% endif %}
+</section>
+
+<script>
+(() => {
+  const root = document.getElementById('Hero-{{ section.id }}');
+  if (!root) return;
+  const slides = root.querySelectorAll('[data-slide]');
+  const dots = root.querySelectorAll('[data-dot]');
+  const prev = root.querySelector('[data-prev]');
+  const next = root.querySelector('[data-next]');
+  const live = root.querySelector('[data-live]');
+  const progress = root.querySelector('[data-progress]');
+  const pauseHover = root.dataset.pauseHover === 'true';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches && root.dataset.reduce === 'true';
+  let autoplay = root.dataset.autoplay === 'true' && !reduce;
+  const delay = parseInt(root.dataset.delay, 10) || 5000;
+  let index = 0, timer;
+
+  function announce(){ if(live) live.textContent = 'Slide ' + (index+1) + ' of ' + slides.length; }
+  function setActive(i){
+    slides[index].classList.remove('is-active');
+    dots[index] && dots[index].setAttribute('aria-selected','false');
+    index = (i + slides.length) % slides.length;
+    slides[index].classList.add('is-active');
+    dots[index] && dots[index].setAttribute('aria-selected','true');
+    announce();
+  }
+  function nextSlide(){ setActive(index+1); restart(); }
+  function prevSlide(){ setActive(index-1); restart(); }
+  function restart(){
+    if(!autoplay) return;
+    stop();
+    if(progress){
+      progress.style.transitionDuration = delay + 'ms';
+      progress.style.transform = 'scaleX(0)';
+      requestAnimationFrame(()=>{progress.style.transform = 'scaleX(1)';});
+    }
+    timer = setTimeout(nextSlide, delay);
+  }
+  function start(){ if(!autoplay) return; restart(); }
+  function stop(){ clearTimeout(timer); if(progress){progress.style.transitionDuration='';progress.style.transform='scaleX(0)';} }
+
+  prev && prev.addEventListener('click', prevSlide);
+  next && next.addEventListener('click', nextSlide);
+  root.addEventListener('click', e => {
+    const dot = e.target.closest('[data-dot]');
+    if(dot){ setActive(parseInt(dot.dataset.index)); restart(); }
+  });
+  root.addEventListener('keydown', e => {
+    if(e.key === 'ArrowLeft'){ e.preventDefault(); prevSlide(); }
+    if(e.key === 'ArrowRight'){ e.preventDefault(); nextSlide(); }
+  });
+  root.addEventListener('pointerdown', e => {
+    root.setPointerCapture(e.pointerId);
+    root._x = e.clientX;
+  });
+  root.addEventListener('pointerup', e => {
+    const dx = e.clientX - (root._x || 0);
+    if(Math.abs(dx) > 50){ dx < 0 ? nextSlide() : prevSlide(); }
+    root.releasePointerCapture(e.pointerId);
+  });
+
+  if(pauseHover){
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+    root.addEventListener('focusin', stop);
+    root.addEventListener('focusout', start);
+  }
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+
+  root.__heroSlider = { next: nextSlide, prev: prevSlide, pause: stop, play: start };
+  start();
+})();
+</script>
+
+{% comment %}
+Migration notes:
+- overlay_opacity -> overlay_percent
+- text_align / headline_position -> content_horizontal / content_vertical
+- image_height -> height_desktop
+- mobile_height -> height_mobile
+- show_nav -> show_arrows
+- show_dots -> show_dots
+- show_progress_bar -> show_progress
+- slideshow_autoplay -> autoplay
+- slideshow_interval (s) -> autoplay_delay_ms
+- pause_on_hover -> pause_on_hover
+- tuck_under_header -> tuck_under_header
+- header_offset_px -> header_offset_px
+- enable_text_shimmer(+text_shimmer_once/text_shimmer_hover_only) -> text_shimmer
+- enable_text_shimmer_twinkle -> text_twinkle
+- global_image_effect_default/fallback_image_anim_type -> image_fx
+- fallback_image_anim_intensity -> image_fx_intensity
+Manual test checklist:
+- [ ] Verify slides auto-advance and pause on hover, focus and tab hidden.
+- [ ] Check arrow, dot, swipe and keyboard navigation.
+- [ ] Ensure progress bar syncs with slide duration.
+- [ ] Toggle tuck-under option and confirm header offset.
+- [ ] Confirm shimmer/twinkle respect reduced motion.
+- [ ] Validate alt text, focus outlines and live announcements.
+{% endcomment %}
+{% schema %}
+{
+  "name": "Hero banner AGG slideshow",
+  "settings": [
+    {"type":"header","content":"Basics"},
+    {"type":"range","id":"overlay_percent","label":"Overlay opacity","min":0,"max":80,"step":5,"unit":"%","default":30},
+    {"type":"select","id":"content_horizontal","label":"Horizontal alignment","default":"center","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}]},
+    {"type":"select","id":"content_vertical","label":"Vertical alignment","default":"middle","options":[{"value":"top","label":"Top"},{"value":"middle","label":"Middle"},{"value":"bottom","label":"Bottom"}]},
+
+    {"type":"header","content":"Media height"},
+    {"type":"select","id":"height_desktop","label":"Desktop height","default":"medium","options":[{"value":"short","label":"Short"},{"value":"medium","label":"Medium"},{"value":"tall","label":"Tall"}]},
+    {"type":"select","id":"height_mobile","label":"Mobile height","default":"medium","options":[{"value":"short","label":"Short"},{"value":"medium","label":"Medium"},{"value":"tall","label":"Tall"}]},
+
+    {"type":"header","content":"Navigation"},
+    {"type":"checkbox","id":"show_arrows","label":"Show arrows","default":true},
+    {"type":"checkbox","id":"show_dots","label":"Show dots","default":true},
+
+    {"type":"header","content":"Autoplay"},
+    {"type":"checkbox","id":"autoplay","label":"Enable autoplay","default":true},
+    {"type":"range","id":"autoplay_delay_ms","label":"Delay between slides (ms)","min":3000,"max":9500,"step":500,"default":5000},
+    {"type":"checkbox","id":"pause_on_hover","label":"Pause on hover","default":true},
+
+    {"type":"header","content":"Header tuck"},
+    {"type":"checkbox","id":"tuck_under_header","label":"Tuck under header","default":false},
+    {"type":"range","id":"header_offset_px","label":"Header offset (px)","min":0,"max":200,"step":4,"default":0},
+
+    {"type":"header","content":"Progress"},
+    {"type":"checkbox","id":"show_progress","label":"Show progress bar","default":true},
+
+    {"type":"header","content":"Effects (Advanced)"},
+    {"type":"select","id":"image_fx","label":"Image effect","default":"crossfade","options":[{"value":"none","label":"None"},{"value":"kenburns","label":"Ken Burns"},{"value":"parallax","label":"Parallax"},{"value":"zoom","label":"Zoom"},{"value":"crossfade","label":"Crossfade"},{"value":"fade","label":"Fade"}]},
+    {"type":"select","id":"image_fx_intensity","label":"Image effect intensity","default":"medium","options":[{"value":"low","label":"Low"},{"value":"medium","label":"Medium"},{"value":"high","label":"High"}]},
+    {"type":"select","id":"text_shimmer","label":"Text shimmer","default":"off","options":[{"value":"off","label":"Off"},{"value":"once","label":"Once"},{"value":"hover","label":"On hover"}]},
+    {"type":"select","id":"text_twinkle","label":"Text twinkle","default":"off","options":[{"value":"off","label":"Off"},{"value":"on","label":"On"}]},
+    {"type":"checkbox","id":"shimmer_headline","label":"Shimmer headline","default":true},
+    {"type":"checkbox","id":"shimmer_subheadline","label":"Shimmer subheadline","default":true},
+    {"type":"checkbox","id":"twinkle_headline","label":"Twinkle headline","default":false},
+    {"type":"checkbox","id":"twinkle_subheadline","label":"Twinkle subheadline","default":false},
+    {"type":"checkbox","id":"fx_reduced_motion_fallback","label":"Reduce motion when prefers-reduced-motion","default":true}
+  ],
+  "blocks": [
+    {"type":"slide","name":"Slide","settings":[
+      {"type":"image_picker","id":"image","label":"Image"},
+      {"type":"image_picker","id":"mobile_image","label":"Mobile image"},
+      {"type":"text","id":"image_alt","label":"Image alt text"},
+      {"type":"text","id":"headline","label":"Headline","default":"Tell your story"},
+      {"type":"text","id":"subheadline","label":"Subheadline","default":"Share details about your promotion"},
+      {"type":"text","id":"button_label","label":"Primary button label"},
+      {"type":"url","id":"button_link","label":"Primary button link"},
+      {"type":"text","id":"button_label_2","label":"Secondary button label"},
+      {"type":"url","id":"button_link_2","label":"Secondary button link"}
+    ]}
+  ],
+  "presets": [
+    {
+      "name": "Slideshow hero",
+      "category": "Hero",
+      "settings": {
+        "overlay_percent": 30,
+        "content_horizontal": "center",
+        "content_vertical": "middle",
+        "autoplay_delay_ms": 5000,
+        "image_fx": "crossfade",
+        "show_progress": true
+      },
+      "blocks": [
+        {"type": "slide"},
+        {"type": "slide"}
+      ]
+    }
+  ]
+}
+{% endschema %}
