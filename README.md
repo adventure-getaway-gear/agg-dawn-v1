@@ -113,7 +113,7 @@ Repo structure and workflows are designed for scalability (camping gear, clothin
 📂 Standard Dawn Structure
 The repo follows Shopify Dawn’s structure with AGG custom sections:
 
-bash
+```bash
 ├── assets/         # Stylesheets, scripts, images
 ├── config/         # Theme settings
 ├── layout/         # Theme.liquid
