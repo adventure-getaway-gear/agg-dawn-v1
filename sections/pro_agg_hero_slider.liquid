@@ -2,7 +2,7 @@
   assign slider_id = 'agg-hero-' | append: section.id
   assign height_mode = section.settings.height_mode
 -%}
-<link rel="stylesheet" href="{{ 'pro_agg_hero_slider.css' | asset_url }}" media="all">
+{{ 'pro_agg_hero_slider.css' | stylesheet_tag }}
 
 <section
   id="{{ slider_id }}"
@@ -159,7 +159,6 @@
 </section>
 
 <script src="{{ 'pro_agg_hero_slider.js' | asset_url }}" defer="defer"></script>
-
 {% schema %}
 {
   "name": "AGG • Hero slider",

@@ -114,6 +114,7 @@
 
     // Swipe (pointer events)
     let startX = 0, dx = 0, isSwiping = false;
+    // Pointer events
     root.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       isSwiping = true;

@@ -82,7 +82,15 @@
   .pos-mobile-cr { place-self: center end !important; text-align: right !important; }
   .pos-mobile-bl { place-self: end start !important; text-align: left !important; }
   .pos-mobile-bc { place-self: end center !important; text-align: center !important; }
-  .pos-mobile-br { place-self: end end !important; text-align: right !important; }
+  .agg-slide__content.pos-mobile-tl { place-self: start start; text-align: left; }
+  .agg-slide__content.pos-mobile-tc { place-self: start center; text-align: center; }
+  .agg-slide__content.pos-mobile-tr { place-self: start end; text-align: right; }
+  .agg-slide__content.pos-mobile-cl { place-self: center start; text-align: left; }
+  .agg-slide__content.pos-mobile-cc { place-self: center center; text-align: center; }
+  .agg-slide__content.pos-mobile-cr { place-self: center end; text-align: right; }
+  .agg-slide__content.pos-mobile-bl { place-self: end start; text-align: left; }
+  .agg-slide__content.pos-mobile-bc { place-self: end center; text-align: center; }
+  .agg-slide__content.pos-mobile-br { place-self: end end; text-align: right; }
 }
 
 /* Typography */
@@ -154,7 +162,7 @@
   display: flex; gap: 10px; justify-content: center; align-items: center;
   z-index: 3; pointer-events: none;
 }
-.agg-ctrl { pointer-events: auto; min-height: 40px; min-width: 40px; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); background: rgba(0,0,0,.35); color: #fff; backdrop-filter: blur(8px); }
+.agg-ctrl { pointer-events: auto; min-height: 44px; min-width: 44px; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); background: rgba(0,0,0,.35); color: #fff; backdrop-filter: blur(8px); }
 .agg-ctrl:hover { background: rgba(0,0,0,.5); border-color: rgba(255,255,255,.5); }
 .agg-ctrl:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
