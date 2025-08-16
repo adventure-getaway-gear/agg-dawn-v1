@@ -1,14 +1,21 @@
-/* AGG • Hero Slider — JS
-   A11y: SR status updates, keyboard (Left/Right, Home/End), aria-pressed on pause,
-   Behavior: autoplay with pause on hover/focus/off-screen, swipe on touch, loop support
-*/
+/* ==========================================================================
+   AGG • Hero Slider — JS (Dawn-compatible)
+   - SR status updates; keyboard (Left/Right, Home/End); pause toggle aria-pressed
+   - Autoplay with pause on hover/focus/off-screen; swipe with pointer events
+   - Reduced-motion handling; loop support; init guard
+   ========================================================================== */
 
 (function () {
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function initSlider(root) {
+    if (!root || root.dataset.init === 'true') return;
+    root.dataset.init = 'true';
+
     const track = root.querySelector('.agg-hero__track');
     const slides = Array.from(root.querySelectorAll('.agg-slide'));
+    if (!track || !slides.length) return;
+
     const prevBtn = root.querySelector('.agg-ctrl--prev');
     const nextBtn = root.querySelector('.agg-ctrl--next');
     const pauseBtn = root.querySelector('.agg-ctrl--pause');
@@ -48,6 +55,7 @@
         if (newIdx < 0) newIdx = count - 1;
         if (newIdx >= count) newIdx = 0;
       }
+      if (newIdx === idx) return;
       idx = newIdx;
       updateTransform();
       if (fromUser) resetAutoplay();
@@ -59,11 +67,11 @@
     function startAutoplay() {
       if (timer || isPaused) return;
       timer = setInterval(next, intervalMs);
-      pauseBtn && pauseBtn.setAttribute('aria-pressed', 'false');
+      if (pauseBtn) pauseBtn.setAttribute('aria-pressed', 'false');
     }
     function stopAutoplay() {
       if (timer) { clearInterval(timer); timer = null; }
-      pauseBtn && pauseBtn.setAttribute('aria-pressed', 'true');
+      if (pauseBtn) pauseBtn.setAttribute('aria-pressed', 'true');
     }
     function resetAutoplay() {
       if (!autoplayEnabled) return;
@@ -113,36 +121,45 @@
     io.observe(root);
 
     // Swipe (pointer events)
-    let startX = 0, dx = 0, isSwiping = false;
-    // Pointer events
+    let startX = 0, dx = 0, isSwiping = false, pointerId = null;
     root.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       isSwiping = true;
       startX = e.clientX;
       dx = 0;
-      root.setPointerCapture(e.pointerId);
+      pointerId = e.pointerId;
+      root.setPointerCapture(pointerId);
     });
     root.addEventListener('pointermove', (e) => {
       if (!isSwiping) return;
       dx = e.clientX - startX;
-      // Optional: visual drag could be added; we keep it simple for crispness
     });
-    root.addEventListener('pointerup', (e) => {
+    function endSwipe(e) {
       if (!isSwiping) return;
       isSwiping = false;
       const threshold = Math.min(80, root.clientWidth * 0.15);
       if (dx > threshold) prev(true);
       else if (dx < -threshold) next(true);
-      root.releasePointerCapture && root.releasePointerCapture(e.pointerId);
-    });
-    root.addEventListener('pointercancel', () => { isSwiping = false; });
+      if (pointerId != null) {
+        try { root.releasePointerCapture(pointerId); } catch (_) {}
+        pointerId = null;
+      }
+    }
+    root.addEventListener('pointerup', endSwipe);
+    root.addEventListener('pointercancel', endSwipe);
 
     // Initialize
     updateTransform();
     if (autoplayEnabled && !isPaused) startAutoplay();
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  function initAll() {
     document.querySelectorAll('.agg-hero').forEach(initSlider);
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll, { once: true });
+  } else {
+    initAll();
+  }
 })();

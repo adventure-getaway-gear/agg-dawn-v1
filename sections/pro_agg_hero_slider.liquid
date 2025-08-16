@@ -2,14 +2,14 @@
   assign slider_id = 'agg-hero-' | append: section.id
   assign height_mode = section.settings.height_mode
 -%}
-{{ 'pro_agg_hero_slider.css' | stylesheet_tag }}
+<link rel="stylesheet" href="{{ 'pro_agg_hero_slider.css' | asset_url }}" media="all">
 
 <section
   id="{{ slider_id }}"
-  class="agg-hero height--{{ height_mode }}"
+  class="section agg-hero color-{{ section.settings.color_scheme }} gradient height--{{ height_mode }}"
   role="region"
   aria-roledescription="carousel"
-  aria-label="{{ section.settings.accessibility_label | default: 'Hero slider' | escape }}"
+  aria-label="{{ section.settings.accessibility_label | default: 'Featured hero carousel' | escape }}"
   style="
     --h-fixed-desktop: {{ section.settings.height_fixed_desktop | default: 600 }}px;
     --h-fixed-mobile: {{ section.settings.height_fixed_mobile | default: 420 }}px;
@@ -18,6 +18,8 @@
   data-autoplay="{{ section.settings.autoplay }}"
   data-interval="{{ section.settings.autoplay_interval | times: 1000 }}"
   data-loop="{{ section.settings.loop }}"
+  data-init="false"
+  tabindex="-1"
 >
   <p class="visually-hidden" id="{{ slider_id }}-status" aria-live="polite"></p>
 
@@ -58,8 +60,11 @@
                 sizes="100vw"
                 alt="{{ b.image_alt | default: 'Hero image' | escape }}"
                 loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                decoding="async"
+                fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
                 width="{{ b.image.width }}"
                 height="{{ b.image.height }}"
+                style="object-position: {{ b.image.presentation.focal_point | default: 'center' }};"
               >
             </picture>
           {%- else -%}
@@ -80,38 +85,48 @@
         <div class="agg-slide__content">
           {%- if b.heading != blank -%}
             <{{ b.heading_tag | default: 'h2' }}
-              class="agg-heading pos-desktop-{{ b.heading_position_desktop | default: 'cc' }} pos-mobile-{{ b.heading_position_mobile | default: 'tc' }}{% if b.shimmer_text %} agg-shimmer{% endif %}"
-              style="max-width: {{ b.content_max_width | default: 40 }}rem;">
+              class="agg-heading pos-desktop-{{ b.heading_position_desktop | default: 'cc' }} pos-mobile-{{ b.heading_position_mobile | default: 'tc' }}"
+              style="
+                --offset-x: {{ b.heading_offset_x | default: 0 }}rem;
+                --offset-y: {{ b.heading_offset_y | default: 0 }}rem;
+                max-width: {{ b.content_max_width | default: 40 }}rem;">
               {{ b.heading }}
             </{{ b.heading_tag | default: 'h2' }}>
           {%- endif -%}
 
           {%- if b.subheading != blank -%}
             <p class="agg-subheading pos-desktop-{{ b.subheading_position_desktop | default: 'cc' }} pos-mobile-{{ b.subheading_position_mobile | default: 'tc' }}"
-               style="max-width: {{ b.content_max_width | default: 40 }}rem;">
+               style="
+                 --offset-x: {{ b.subheading_offset_x | default: 0 }}rem;
+                 --offset-y: {{ b.subheading_offset_y | default: 0 }}rem;
+                 max-width: {{ b.content_max_width | default: 40 }}rem;">
               {{ b.subheading }}
             </p>
           {%- endif -%}
 
           {%- if b.body != blank -%}
             <div class="agg-body rte pos-desktop-{{ b.body_position_desktop | default: 'cc' }} pos-mobile-{{ b.body_position_mobile | default: 'tc' }}"
-                 style="max-width: {{ b.content_max_width | default: 40 }}rem;">
+                 style="
+                   --offset-x: {{ b.body_offset_x | default: 0 }}rem;
+                   --offset-y: {{ b.body_offset_y | default: 0 }}rem;
+                   max-width: {{ b.content_max_width | default: 40 }}rem;">
               {{ b.body }}
             </div>
           {%- endif -%}
 
           {%- if b.button_primary_label != blank or b.button_secondary_label != blank -%}
-            <div class="agg-ctas pos-desktop-{{ b.buttons_position_desktop | default: 'cc' }} pos-mobile-{{ b.buttons_position_mobile | default: 'bc' }}">
+            <div class="agg-ctas pos-desktop-{{ b.buttons_position_desktop | default: 'cc' }} pos-mobile-{{ b.buttons_position_mobile | default: 'bc' }}"
+                 style="--offset-x: {{ b.buttons_offset_x | default: 0 }}rem; --offset-y: {{ b.buttons_offset_y | default: 0 }}rem;">
               {%- if b.button_primary_label != blank and b.button_primary_link != blank -%}
                 <a href="{{ b.button_primary_link }}"
-                   class="agg-btn agg-btn--primary"
+                   class="agg-btn agg-btn--{{ b.button_primary_style | default: 'primary' }}"
                    {% if b.button_primary_newtab %}target="_blank" rel="noopener"{% endif %}>
                    {{ b.button_primary_label }}
                 </a>
               {%- endif -%}
               {%- if b.button_secondary_label != blank and b.button_secondary_link != blank -%}
                 <a href="{{ b.button_secondary_link }}"
-                   class="agg-btn agg-btn--outline"
+                   class="agg-btn agg-btn--{{ b.button_secondary_style | default: 'outline' }}"
                    {% if b.button_secondary_newtab %}target="_blank" rel="noopener"{% endif %}>
                    {{ b.button_secondary_label }}
                 </a>
@@ -128,13 +143,13 @@
     <button class="agg-ctrl agg-ctrl--prev" type="button"
       aria-controls="{{ slider_id }}-track"
       aria-label="{{ 'sections.slideshow.previous' | t | default: 'Previous slide' }}">
-      <span aria-hidden="true">‹</span>
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" focusable="false"><path d="M12.7 15.3a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4l4-4a1 1 0 1 1 1.4 1.4L9.41 10l3.3 3.3a1 1 0 0 1 0 1.4z" /></svg>
     </button>
 
     <button class="agg-ctrl agg-ctrl--next" type="button"
       aria-controls="{{ slider_id }}-track"
       aria-label="{{ 'sections.slideshow.next' | t | default: 'Next slide' }}">
-      <span aria-hidden="true">›</span>
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" focusable="false"><path d="M7.3 4.7a1 1 0 0 1 1.4 0l4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 1 1-1.4-1.4L10.59 10 7.3 6.7a1 1 0 0 1 0-1.4z" /></svg>
     </button>
 
     <button class="agg-ctrl agg-ctrl--pause" type="button"
@@ -159,19 +174,22 @@
 </section>
 
 <script src="{{ 'pro_agg_hero_slider.js' | asset_url }}" defer="defer"></script>
+
 {% schema %}
 {
   "name": "AGG • Hero slider",
   "tag": "section",
   "class": "section",
   "settings": [
-    { "type": "text", "id": "accessibility_label", "label": "Aria label", "default": "Hero slider" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme" },
+
+    { "type": "text", "id": "accessibility_label", "label": "Aria label", "default": "Featured hero carousel" },
 
     { "type": "checkbox", "id": "autoplay", "label": "Autoplay", "default": true },
     { "type": "range", "id": "autoplay_interval", "label": "Autoplay interval (sec)", "min": 3, "max": 10, "step": 1, "unit": "s", "default": 5 },
     { "type": "checkbox", "id": "loop", "label": "Loop", "default": true },
 
-    { "type": "select", "id": "height_mode", "label": "Height", "default": "viewport", "options": [
+    { "type": "select", "id": "height_mode", "label": "Height mode", "default": "viewport", "options": [
       { "value": "viewport", "label": "Full viewport" },
       { "value": "fixed", "label": "Fixed height" },
       { "value": "aspect", "label": "Aspect ratio" }
@@ -210,9 +228,9 @@
           { "value": "h2", "label": "H2" },
           { "value": "h3", "label": "H3" }
         ]},
-        { "type": "text", "id": "heading", "label": "Heading", "default": "Adventure starts here" },
-        { "type": "text", "id": "subheading", "label": "Subheading", "default": "Gear up for every road." },
-        { "type": "richtext", "id": "body", "label": "Body", "default": "<p>Shop towing, cargo, and trail‑ready essentials.</p>" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Tow more. Go farther." },
+        { "type": "text", "id": "subheading", "label": "Subheading", "default": "Hitches, racks, cargo." },
+        { "type": "richtext", "id": "body", "label": "Body", "default": "<p>Storage made simple. Shop towing, cargo, and trail‑ready essentials.</p>" },
         { "type": "range", "id": "content_max_width", "label": "Max content width (rem)", "min": 20, "max": 60, "step": 1, "default": 40 },
 
         { "type": "select", "id": "heading_position_desktop", "label": "Heading position (desktop)", "default": "cc", "options": [
@@ -225,6 +243,9 @@
           {"value":"cl","label":"Center‑Left"},{"value":"cc","label":"Center"},{"value":"cr","label":"Center‑Right"},
           {"value":"bl","label":"Bottom‑Left"},{"value":"bc","label":"Bottom‑Center"},{"value":"br","label":"Bottom‑Right"}
         ]},
+        { "type": "range", "id": "heading_offset_x", "label": "Heading offset X (rem)", "min": -10, "max": 10, "step": 0.5, "default": 0 },
+        { "type": "range", "id": "heading_offset_y", "label": "Heading offset Y (rem)", "min": -10, "max": 10, "step": 0.5, "default": 0 },
+
         { "type": "select", "id": "subheading_position_desktop", "label": "Subheading position (desktop)", "default": "cc", "options": [
           {"value":"tl","label":"Top‑Left"},{"value":"tc","label":"Top‑Center"},{"value":"tr","label":"Top‑Right"},
           {"value":"cl","label":"Center‑Left"},{"value":"cc","label":"Center"},{"value":"cr","label":"Center‑Right"},
@@ -235,6 +256,9 @@
           {"value":"cl","label":"Center‑Left"},{"value":"cc","label":"Center"},{"value":"cr","label":"Center‑Right"},
           {"value":"bl","label":"Bottom‑Left"},{"value":"bc","label":"Bottom‑Center"},{"value":"br","label":"Bottom‑Right"}
         ]},
+        { "type": "range", "id": "subheading_offset_x", "label": "Subheading offset X (rem)", "min": -10, "max": 10, "step": 0.5, "default": 0 },
+        { "type": "range", "id": "subheading_offset_y", "label": "Subheading offset Y (rem)", "min": -10, "max": 10, "step": 0.5, "default": 0 },
+
         { "type": "select", "id": "body_position_desktop", "label": "Body position (desktop)", "default": "cc", "options": [
           {"value":"tl","label":"Top‑Left"},{"value":"tc","label":"Top‑Center"},{"value":"tr","label":"Top‑Right"},
           {"value":"cl","label":"Center‑Left"},{"value":"cc","label":"Center"},{"value":"cr","label":"Center‑Right"},
@@ -245,6 +269,9 @@
           {"value":"cl","label":"Center‑Left"},{"value":"cc","label":"Center"},{"value":"cr","label":"Center‑Right"},
           {"value":"bl","label":"Bottom‑Left"},{"value":"bc","label":"Bottom‑Center"},{"value":"br","label":"Bottom‑Right"}
         ]},
+        { "type": "range", "id": "body_offset_x", "label": "Body offset X (rem)", "min": -10, "max": 10, "step": 0.5, "default": 0 },
+        { "type": "range", "id": "body_offset_y", "label": "Body offset Y (rem)", "min": -10, "max": 10, "step": 0.5, "default": 0 },
+
         { "type": "select", "id": "buttons_position_desktop", "label": "Buttons position (desktop)", "default": "cc", "options": [
           {"value":"tl","label":"Top‑Left"},{"value":"tc","label":"Top‑Center"},{"value":"tr","label":"Top‑Right"},
           {"value":"cl","label":"Center‑Left"},{"value":"cc","label":"Center"},{"value":"cr","label":"Center‑Right"},
@@ -255,16 +282,30 @@
           {"value":"cl","label":"Center‑Left"},{"value":"cc","label":"Center"},{"value":"cr","label":"Center‑Right"},
           {"value":"bl","label":"Bottom‑Left"},{"value":"bc","label":"Bottom‑Center"},{"value":"br","label":"Bottom‑Right"}
         ]},
+        { "type": "range", "id": "buttons_offset_x", "label": "Buttons offset X (rem)", "min": -10, "max": 10, "step": 0.5, "default": 0 },
+        { "type": "range", "id": "buttons_offset_y", "label": "Buttons offset Y (rem)", "min": -10, "max": 10, "step": 0.5, "default": 0 },
 
         { "type": "checkbox", "id": "shimmer_text", "label": "Shimmer heading", "default": false },
 
         { "type": "text", "id": "button_primary_label", "label": "Primary button label", "default": "Shop now" },
         { "type": "url", "id": "button_primary_link", "label": "Primary button link" },
         { "type": "checkbox", "id": "button_primary_newtab", "label": "Open primary in new tab", "default": false },
+        { "type": "select", "id": "button_primary_style", "label": "Primary button style", "default": "primary", "options": [
+          { "value": "primary", "label": "Primary" },
+          { "value": "secondary", "label": "Secondary" },
+          { "value": "outline", "label": "Outline" },
+          { "value": "ghost", "label": "Ghost" }
+        ]},
 
         { "type": "text", "id": "button_secondary_label", "label": "Secondary button label", "default": "Learn more" },
         { "type": "url", "id": "button_secondary_link", "label": "Secondary button link" },
-        { "type": "checkbox", "id": "button_secondary_newtab", "label": "Open secondary in new tab", "default": false }
+        { "type": "checkbox", "id": "button_secondary_newtab", "label": "Open secondary in new tab", "default": false },
+        { "type": "select", "id": "button_secondary_style", "label": "Secondary button style", "default": "outline", "options": [
+          { "value": "primary", "label": "Primary" },
+          { "value": "secondary", "label": "Secondary" },
+          { "value": "outline", "label": "Outline" },
+          { "value": "ghost", "label": "Ghost" }
+        ]}
       ]
     }
   ],
@@ -272,7 +313,7 @@
     {
       "name": "AGG • Hero slider",
       "blocks": [
-        { "type": "slide", "settings": { "heading": "Tow more. Go farther.", "subheading": "Hitches, racks, cargo.", "button_primary_label": "Shop towing", "button_secondary_label": "Explore racks" } },
+        { "type": "slide", "settings": { "heading": "Adventure starts here", "subheading": "Gear up for every road.", "button_primary_label": "Shop towing", "button_secondary_label": "Explore racks" } },
         { "type": "slide", "settings": { "heading": "Road‑trip ready", "subheading": "Storage made simple.", "button_primary_label": "Shop cargo", "button_secondary_label": "See bundles" } }
       ]
     }

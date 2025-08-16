@@ -1,13 +1,14 @@
-/* AGG • Hero Slider — CSS
-   - Separates 9-point positioning per element (desktop/mobile)
-   - Ensures text/buttons sit above overlay and remain visible on mobile
-   - Uses GPU transforms; disables animations under reduced motion
-*/
+/* ==========================================================================
+   AGG • Hero Slider — CSS (Dawn-compatible)
+   - Per-element 9-point positioning (desktop & mobile) + fine offsets
+   - Crisp images (no text scaling), strong readability over overlay
+   - A11y focus rings, side-by-side buttons, polished variants
+   ========================================================================== */
 
-/* Layout wrappers */
+/* Layout */
 .agg-hero { position: relative; isolation: isolate; }
 .agg-hero__viewport { width: 100%; height: 100%; overflow: hidden; }
-.height--viewport .agg-hero__viewport { min-height: 100vh; }
+.height--viewport .agg-hero__viewport { min-height: 100svh; }
 .height--fixed .agg-hero__viewport { height: var(--h-fixed-desktop); }
 @media (max-width: 749px) {
   .height--fixed .agg-hero__viewport { height: var(--h-fixed-mobile); }
@@ -18,16 +19,17 @@
   display: flex;
   width: 100%;
   will-change: transform;
-  transition: transform 500ms ease;
+  transition: transform 480ms ease;
   touch-action: pan-y;
 }
+
 .agg-slide {
   position: relative;
   flex: 0 0 100%;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--color-background, #fff);
+  background: var(--color-background, #111);
 }
 
 /* Media & overlay */
@@ -41,7 +43,7 @@
   transform: translateZ(0);
   image-rendering: auto;
 }
-.agg-slide__placeholder { background: #e5e5e5; }
+.agg-slide__placeholder { background: #d9d9d9; }
 .agg-slide__overlay {
   position: absolute; inset: 0;
   pointer-events: none;
@@ -51,17 +53,17 @@
   z-index: 1;
 }
 
-/* Content */
+/* Content grid (each child can self-position) */
 .agg-slide__content {
   position: absolute; inset: 0;
   display: grid;
   z-index: 2;
-  color: var(--agg-foreground, #fff);
-  padding: clamp(16px, 3vw, 48px);
+  padding: clamp(16px, 3.2vw, 56px);
   gap: 12px;
+  color: var(--color-foreground, #fff);
 }
 
-/* 9-point positioning (desktop defaults) */
+/* 9-point positioning helpers — desktop defaults */
 .pos-desktop-tl { place-self: start start; text-align: left; }
 .pos-desktop-tc { place-self: start center; text-align: center; }
 .pos-desktop-tr { place-self: start end; text-align: right; }
@@ -82,57 +84,56 @@
   .pos-mobile-cr { place-self: center end !important; text-align: right !important; }
   .pos-mobile-bl { place-self: end start !important; text-align: left !important; }
   .pos-mobile-bc { place-self: end center !important; text-align: center !important; }
-  .agg-slide__content.pos-mobile-tl { place-self: start start; text-align: left; }
-  .agg-slide__content.pos-mobile-tc { place-self: start center; text-align: center; }
-  .agg-slide__content.pos-mobile-tr { place-self: start end; text-align: right; }
-  .agg-slide__content.pos-mobile-cl { place-self: center start; text-align: left; }
-  .agg-slide__content.pos-mobile-cc { place-self: center center; text-align: center; }
-  .agg-slide__content.pos-mobile-cr { place-self: center end; text-align: right; }
-  .agg-slide__content.pos-mobile-bl { place-self: end start; text-align: left; }
-  .agg-slide__content.pos-mobile-bc { place-self: end center; text-align: center; }
-  .agg-slide__content.pos-mobile-br { place-self: end end; text-align: right; }
+  .pos-mobile-br { place-self: end end !important; text-align: right !important; }
+}
+
+/* Fine tune offsets per element (applied via inline CSS vars) */
+.agg-heading, .agg-subheading, .agg-body, .agg-ctas {
+  transform: translate(var(--offset-x, 0), var(--offset-y, 0));
 }
 
 /* Typography */
-.agg-heading { font-size: clamp(28px, 5vw, 56px); line-height: 1.1; letter-spacing: -0.01em; }
-.agg-subheading { font-size: clamp(16px, 2.5vw, 22px); opacity: 0.92; }
+.agg-heading { font-size: clamp(28px, 6vw, 62px); line-height: 1.08; letter-spacing: -0.01em; font-weight: 800; }
+.agg-subheading { font-size: clamp(16px, 2.8vw, 24px); opacity: 0.96; font-weight: 600; }
 .agg-body { font-size: clamp(14px, 2.2vw, 18px); opacity: 0.95; }
 
-/* Shimmer (disabled under reduced motion) */
-.agg-shimmer {
+/* Shimmer option (disabled under reduced motion) */
+.agg-heading.agg-shimmer {
   position: relative;
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.35) 50%, rgba(255,255,255,0) 100%);
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.4) 50%, rgba(255,255,255,0) 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: agg-shimmer 2.5s linear infinite;
+  animation: agg-shimmer 2.4s linear infinite;
 }
 @keyframes agg-shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .agg-shimmer { animation: none; color: currentColor; -webkit-background-clip: initial; background-clip: initial; }
+  .agg-heading.agg-shimmer { animation: none; color: currentColor; -webkit-background-clip: initial; background-clip: initial; }
   .agg-hero__track { transition: none; }
 }
 
-/* Buttons */
+/* Buttons — polished variants */
 .agg-ctas { display: inline-flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center; }
 .agg-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  min-height: 44px; padding: 0 20px; border-radius: 999px; border: 1px solid transparent;
-  font-weight: 600; text-decoration: none; line-height: 1; transition: transform .12s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease, border-color .2s ease;
+  min-height: 44px; padding: 0 22px;
+  border-radius: 999px; border: 1px solid transparent;
+  font-weight: 700; text-decoration: none; line-height: 1;
+  transition: transform .12s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease, border-color .2s ease;
   will-change: transform;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
 }
 .agg-btn:active { transform: translateY(1px); }
 .agg-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
-/* Variants (use Dawn variables when present) */
+/* Use Dawn variables when available */
 .agg-btn--primary {
   color: var(--color-button-text, #fff);
   background: var(--color-button, #1a73e8);
-  box-shadow: 0 6px 18px rgba(0,0,0,.18);
 }
 .agg-btn--primary:hover { filter: brightness(1.05); box-shadow: 0 8px 22px rgba(0,0,0,.22); }
 
@@ -140,19 +141,23 @@
   color: var(--color-foreground, #111);
   background: var(--color-background, #fff);
   border-color: rgba(0,0,0,.12);
+  box-shadow: 0 4px 14px rgba(0,0,0,.12);
 }
-.agg-btn--secondary:hover { background: rgba(255,255,255,.9); }
+.agg-btn--secondary:hover { background: rgba(255,255,255,.92); }
 
 .agg-btn--outline {
   color: var(--color-foreground, #fff);
   background: transparent;
-  border-color: rgba(255,255,255,.7);
+  border-color: rgba(255,255,255,.75);
+  box-shadow: none;
 }
 .agg-btn--outline:hover { background: rgba(255,255,255,.08); }
 
 .agg-btn--ghost {
   color: var(--color-foreground, #fff);
-  background: transparent; border-color: transparent;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 .agg-btn--ghost:hover { background: rgba(255,255,255,.06); }
 
@@ -162,7 +167,16 @@
   display: flex; gap: 10px; justify-content: center; align-items: center;
   z-index: 3; pointer-events: none;
 }
-.agg-ctrl { pointer-events: auto; min-height: 44px; min-width: 44px; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); background: rgba(0,0,0,.35); color: #fff; backdrop-filter: blur(8px); }
+.agg-ctrl {
+  pointer-events: auto;
+  min-height: 40px; min-width: 40px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.35);
+  background: rgba(0,0,0,.35);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.agg-ctrl svg { fill: currentColor; }
 .agg-ctrl:hover { background: rgba(0,0,0,.5); border-color: rgba(255,255,255,.5); }
 .agg-ctrl:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
@@ -172,10 +186,10 @@
 .agg-dot[aria-selected="true"] { background: #fff; transform: scale(1.2); }
 .agg-dot:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
-/* Make sure text/buttons render above overlay and are not clipped */
+/* Ensure text/buttons are above overlay */
 .agg-slide__content * { z-index: 2; }
 
-/* Utility */
+/* Utility: visually hidden */
 .visually-hidden {
   position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px);
   white-space: nowrap; word-wrap: normal;
