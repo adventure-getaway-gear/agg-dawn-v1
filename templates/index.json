@@ -16,6 +16,7 @@
           "type": "slide",
           "settings": {
             "image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
+            "mobile_image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
             "image_alt": "",
             "kicker": "Adventure awaits",
             "heading": "Tow. Haul. Explore.",
