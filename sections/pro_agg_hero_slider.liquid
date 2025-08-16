@@ -2,7 +2,7 @@
   assign slider_id = 'agg-hero-' | append: section.id
   assign height_mode = section.settings.height_mode
 -%}
-<link rel="stylesheet" href="{{ 'pro_agg_hero_slider.css' | asset_url }}" media="all">
+{{ 'pro_agg_hero_slider.css' | asset_url | stylesheet_tag }}
 
 <section
   id="{{ slider_id }}"
@@ -19,7 +19,6 @@
   data-interval="{{ section.settings.autoplay_interval | times: 1000 }}"
   data-loop="{{ section.settings.loop }}"
   data-init="false"
-  tabindex="-1"
 >
   <p class="visually-hidden" id="{{ slider_id }}-status" aria-live="polite"></p>
 
