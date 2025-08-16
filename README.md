@@ -70,16 +70,18 @@ docs: update README with workflow & safeguards
 - **Naming convention for custom Liquid sections**:  
 `pro_agg_[section-name]` (max 20 chars).  
 
-- **Mark AGG customizations** with clear comment blocks:  
+- **Mark AGG customizations** with clear comment blocks:
+    
 ```liquid
 <!-- AGG: start hero slider -->
 {% section 'pro_agg_hero_slider' %}
 <!-- AGG: end hero slider -->
-Keep commits small and focused. Avoid mixing unrelated changes.
 
-Prefer preview links for review and validation instead of publishing live.
+- Keep commits small and focused. Avoid mixing unrelated changes.
 
-🤝 Contributing
+- Prefer preview links for review and validation instead of publishing live.
+
+## 🤝 Contributing
 Always branch off staging.
 
 PRs should include:
