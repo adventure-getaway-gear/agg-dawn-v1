@@ -1,5 +1,67 @@
 {
   "sections": {
+    "hero-agg-1": {
+      "type": "pro_agg_hero_slider",
+      "settings": {
+        "full_width": true,
+        "color_scheme": "background-1",
+        "height_desktop": 70,
+        "height_mobile": 60,
+        "content_max_width": 720,
+        "text_align": "left",
+        "text_valign": "middle",
+        "autoplay": true,
+        "autoplay_speed": 5,
+        "show_arrows": true,
+        "show_dots": true,
+        "show_pause": true,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "accessible_label": "Homepage hero slider"
+      },
+      "blocks": {
+        "slide-1": {
+          "type": "slide",
+          "settings": {
+            "subheading": "Adventure Getaway Gear",
+            "heading": "Towing & Cargo Made Easy",
+            "text": "<p>Hitch, haul, and organize with confidence.<\\/p>",
+            "button_label": "Shop Towing",
+            "button_link": "/collections/towing",
+            "button_style": "primary",
+            "overlay_color": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "slide-2": {
+          "type": "slide",
+          "settings": {
+            "subheading": "Built for Road Trips",
+            "heading": "Cargo & Roof Solutions",
+            "text": "<p>Secure storage for every adventure.<\\/p>",
+            "button_label": "Shop Cargo",
+            "button_link": "/collections/cargo",
+            "button_style": "secondary",
+            "overlay_color": "#000000",
+            "overlay_opacity": 30
+          }
+        },
+        "slide-3": {
+          "type": "slide",
+          "settings": {
+            "subheading": "Launching September",
+            "heading": "Get Ready to Roll",
+            "text": "<p>New gear drops for your tow rig.<\\/p>",
+            "button_label": "Browse All",
+            "button_link": "/collections/all",
+            "button_style": "primary",
+            "overlay_color": "#000000",
+            "overlay_opacity": 30
+          }
+        }
+      },
+      "block_order": ["slide-1","slide-2","slide-3"]
+    },
     "image_banner": {
       "type": "image-banner",
       "blocks": {
@@ -69,6 +131,7 @@
     }
   },
   "order": [
+    "hero-agg-1",
     "image_banner",
     "featured_collection"
   ]
