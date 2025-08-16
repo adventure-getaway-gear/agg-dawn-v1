@@ -1,15 +1,134 @@
-# OS / editor junk
+# -----------------------------------------------------------------------------
+# Shopify Dawn Theme – Recommended .gitignore
+# Purpose: Avoid committing local, build, or machine-specific files while
+#          keeping all critical theme sources tracked.
+# -----------------------------------------------------------------------------
+
+# --- Safety guards: DO NOT ignore critical theme sources ---
+# These lines only matter if broader patterns are added elsewhere.
+!config/settings_schema.json
+!config/settings_data.json
+!/assets/
+!/layout/
+!/locales/
+!/sections/
+!/snippets/
+!/templates/
+
+# --- Shopify CLI / Theme Kit / Environment files ---
+/.env
+/.env.*
+/.shopify/
+/.shopify-cli.yml
+/config.yml                 # Theme Kit legacy config (contains secrets)
+/theme.lock                 # Theme Kit asset lock file
+/config/*.local.json
+/config/*-local.json
+/config/*-dev.json
+/config/*-development.json
+
+# --- Node.js & package managers ---
+/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+/.npm
+/.pnpm
+/.npm/_logs
+
+# Optionally ignore lockfiles (uncomment if desired):
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# --- Build / cache / output directories ---
+/dist/
+/build/
+/out/
+/tmp/
+/temp/
+/.cache/
+/.cache-loader/
+/parcel-cache/
+/.parcel-cache/
+/.turbo/
+/coverage/
+/.cypress/
+/cypress/screenshots/
+/cypress/videos/
+/cypress/downloads/
+/playwright-report/
+/test-results/
+/.nyc_output/
+
+# If you use app or theme extensions, ignore their build artifacts:
+#/extensions/**/dist/
+#/extensions/**/build/
+
+# --- Asset pipeline caches & source maps ---
+/.sass-cache/
+**/*.map
+
+# --- Lint / tooling caches ---
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# --- Ruby (theme-check, bundler) ---
+/.bundle/
+/vendor/bundle/
+.theme-check/
+.theme-check-cache/
+!.theme-check.yml
+
+# --- OS junk files (macOS / Windows / Linux) ---
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon
+ 
+._*
+.Spotlight-V100
+.Trashes
+*.icloud
+
+# Windows
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+# --- Editors / IDEs ---
 .vscode/
 .idea/
+.vs/
+.history/
+*.iml
+*.sublime-workspace
+*.sublime-project
+.project
+.classpath
+.settings/
 
-# Node / build
-node_modules/
-dist/
-.cache/
+# --- Misc swap/lock/temp files ---
+.#*
+*.swp
+*.swo
+*.tmp
+*.temp
+# Do NOT blanket-ignore *.lock to preserve package manager lockfiles
+*.lock-wscript
+
+# --- Logs ---
 *.log
-
-# Env
-.env
-.env.*
+logs/
+*.log.*
