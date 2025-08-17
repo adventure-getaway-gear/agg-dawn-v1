@@ -1,0 +1,18 @@
+/* Styles for Pro AGG Hero Slider */
+.pro-agg-hero-slider__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.banner--content-align-left .pro-agg-hero-slider__buttons {
+  justify-content: flex-start;
+}
+
+.banner--content-align-center .pro-agg-hero-slider__buttons {
+  justify-content: center;
+}
+
+.banner--content-align-right .pro-agg-hero-slider__buttons {
+  justify-content: flex-end;
+}
