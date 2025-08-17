@@ -1,5 +1,9 @@
 {
   "sections": {
+    "pro_agg_hero_slider": {
+      "type": "pro-agg-hero-slider",
+      "settings": {}
+    },
     "image_banner": {
       "type": "image-banner",
       "blocks": {
@@ -69,6 +73,7 @@
     }
   },
   "order": [
+    "pro_agg_hero_slider",
     "image_banner",
     "featured_collection"
   ]

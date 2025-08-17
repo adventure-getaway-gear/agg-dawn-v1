@@ -1,0 +1,138 @@
+{{ 'pro-agg-hero-slider.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pro-agg-hero-slider.js' | asset_url }}" defer="defer"></script>
+
+<div class="pro-agg-hero-slider pro-agg-hero-slider--{{ section.settings.transition_type }} pro-agg-hero-slider--mobile-{{ section.settings.mobile_image_behavior }}" data-autoplay="{{ section.settings.autoplay }}" data-speed="{{ section.settings.autoplay_speed }}" data-transition="{{ section.settings.transition_type }}">
+  <div class="pro-agg-hero-slider__slides">
+    {% for block in section.blocks %}
+      <div class="pro-agg-hero-slider__slide{% if forloop.first %} is-active{% endif %}" {{ block.shopify_attributes }}>
+        {% if block.settings.image != blank %}
+          <picture>
+            {% if block.settings.mobile_image != blank %}
+              <source media="(max-width: 749px)" srcset="{{ block.settings.mobile_image | img_url: '750x' }}">
+            {% endif %}
+            <img src="{{ block.settings.image | img_url: '1500x' }}" alt="{{ block.settings.image.alt | escape }}" loading="lazy">
+          </picture>
+        {% endif %}
+        {% if block.settings.text != blank or block.settings.button_label != blank %}
+          <div class="pro-agg-hero-slider__overlay" style="background-color: rgba(0,0,0, {{ section.settings.overlay_opacity | divided_by: 100.0 }});">
+            <div class="pro-agg-hero-slider__text pro-agg-hero-slider__text--{{ section.settings.text_position }}">
+              {{ block.settings.text }}
+              {% if block.settings.button_label != blank and block.settings.button_link != blank %}
+                <a href="{{ block.settings.button_link }}" class="pro-agg-hero-slider__button">{{ block.settings.button_label }}</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  <button class="pro-agg-hero-slider__arrow pro-agg-hero-slider__arrow--prev" aria-label="Previous slide">&#10094;</button>
+  <button class="pro-agg-hero-slider__arrow pro-agg-hero-slider__arrow--next" aria-label="Next slide">&#10095;</button>
+  <div class="pro-agg-hero-slider__dots">
+    {% for block in section.blocks %}
+      <button class="pro-agg-hero-slider__dot{% if forloop.first %} is-active{% endif %}" aria-label="Go to slide {{ forloop.index }}"></button>
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Pro AGG Hero Slider",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay speed (ms)",
+      "min": 1000,
+      "max": 10000,
+      "step": 500,
+      "default": 5000
+    },
+    {
+      "type": "select",
+      "id": "transition_type",
+      "label": "Slide transition type",
+      "options": [
+        { "value": "slide", "label": "Slide" },
+        { "value": "fade", "label": "Fade" }
+      ],
+      "default": "slide"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Text position",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 40
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_behavior",
+      "label": "Mobile image behavior",
+      "options": [
+        { "value": "cover", "label": "Cover" },
+        { "value": "contain", "label": "Contain" }
+      ],
+      "default": "cover"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pro AGG Hero Slider",
+      "category": "Image"
+    }
+  ]
+}
+{% endschema %}
