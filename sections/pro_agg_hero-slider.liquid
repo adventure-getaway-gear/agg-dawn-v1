@@ -1,0 +1,260 @@
+{% comment %}AGG – Hero slider{% endcomment %}
+
+<section id="agg-hero-slider-{{ section.id }}" class="agg-hero-slider height-{{ section.settings.height }} transition-{{ section.settings.transition }}">
+  <div class="agg-slider-track">
+    {% for block in section.blocks %}
+      <div class="agg-slide{% if forloop.first and section.settings.transition == 'fade' %} active{% endif %}" data-index="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+        {% if block.settings.image != blank %}
+          <img src="{{ block.settings.image | image_url: width: 2000 }}"
+               alt="{% if block.settings.image_alt != blank %}{{ block.settings.image_alt | escape }}{% elsif block.settings.heading != blank %}{{ block.settings.heading | escape }}{% else %}{% endif %}"
+               loading="lazy"/>
+        {% endif %}
+        {% if block.settings.overlay %}
+          <div class="agg-slide-overlay"></div>
+        {% endif %}
+        <div class="agg-slide-content agg-position-{{ block.settings.text_position }}">
+          {% if block.settings.heading != blank %}<h2>{{ block.settings.heading }}</h2>{% endif %}
+          {% if block.settings.subheading != blank %}<p>{{ block.settings.subheading }}</p>{% endif %}
+          {% if block.settings.button_label != blank and block.settings.button_link != blank %}
+            <a href="{{ block.settings.button_link }}" class="agg-slide-button">{{ block.settings.button_label }}</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <button class="agg-slider-arrow prev" aria-label="Previous slide">&#10094;</button>
+  <button class="agg-slider-arrow next" aria-label="Next slide">&#10095;</button>
+  <div class="agg-slider-dots">
+    {% for block in section.blocks %}
+      <button class="{% if forloop.first %}active{% endif %}" data-index="{{ forloop.index0 }}" aria-label="Go to slide {{ forloop.index }}"></button>
+    {% endfor %}
+  </div>
+</section>
+
+<style>
+#agg-hero-slider-{{ section.id }} {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+#agg-hero-slider-{{ section.id }} .agg-slider-track {
+  height: 100%;
+}
+#agg-hero-slider-{{ section.id }}.transition-slide .agg-slider-track {
+  display: flex;
+  transition: transform 0.6s ease;
+}
+#agg-hero-slider-{{ section.id }}.transition-slide .agg-slide {
+  flex: 0 0 100%;
+  position: relative;
+}
+#agg-hero-slider-{{ section.id }}.transition-fade .agg-slider-track {
+  position: relative;
+}
+#agg-hero-slider-{{ section.id }}.transition-fade .agg-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+#agg-hero-slider-{{ section.id }}.transition-fade .agg-slide.active {
+  opacity: 1;
+  z-index: 1;
+}
+#agg-hero-slider-{{ section.id }} .agg-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#agg-hero-slider-{{ section.id }} .agg-slide-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+}
+#agg-hero-slider-{{ section.id }} .agg-slide-content {
+  position: absolute;
+  color: #fff;
+  padding: 1rem;
+}
+#agg-hero-slider-{{ section.id }} .agg-slide-content h2 {
+  margin: 0 0 0.5rem;
+}
+#agg-hero-slider-{{ section.id }} .agg-slide-button {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #000;
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+#agg-hero-slider-{{ section.id }} .agg-slide-button:hover {
+  background: #333;
+  transform: scale(1.05);
+}
+#agg-hero-slider-{{ section.id }} .agg-slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  z-index: 10;
+}
+#agg-hero-slider-{{ section.id }} .agg-slider-arrow.prev { left: 10px; }
+#agg-hero-slider-{{ section.id }} .agg-slider-arrow.next { right: 10px; }
+#agg-hero-slider-{{ section.id }} .agg-slider-dots {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+#agg-hero-slider-{{ section.id }} .agg-slider-dots button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.5);
+  cursor: pointer;
+}
+#agg-hero-slider-{{ section.id }} .agg-slider-dots button.active {
+  background: #fff;
+}
+#agg-hero-slider-{{ section.id }}.height-small { height: 400px; }
+#agg-hero-slider-{{ section.id }}.height-medium { height: 600px; }
+#agg-hero-slider-{{ section.id }}.height-large { height: 800px; }
+/* Text positioning */
+#agg-hero-slider-{{ section.id }} .agg-position-top-left { top:10%; left:10%; text-align:left; }
+#agg-hero-slider-{{ section.id }} .agg-position-top-center { top:10%; left:50%; transform:translateX(-50%); text-align:center; }
+#agg-hero-slider-{{ section.id }} .agg-position-top-right { top:10%; right:10%; text-align:right; }
+#agg-hero-slider-{{ section.id }} .agg-position-middle-left { top:50%; left:10%; transform:translateY(-50%); text-align:left; }
+#agg-hero-slider-{{ section.id }} .agg-position-center { top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+#agg-hero-slider-{{ section.id }} .agg-position-middle-right { top:50%; right:10%; transform:translateY(-50%); text-align:right; }
+#agg-hero-slider-{{ section.id }} .agg-position-bottom-left { bottom:10%; left:10%; text-align:left; }
+#agg-hero-slider-{{ section.id }} .agg-position-bottom-center { bottom:10%; left:50%; transform:translateX(-50%); text-align:center; }
+#agg-hero-slider-{{ section.id }} .agg-position-bottom-right { bottom:10%; right:10%; text-align:right; }
+</style>
+
+<script>
+(function() {
+  var slider = document.getElementById('agg-hero-slider-{{ section.id }}');
+  if (!slider) return;
+  var track = slider.querySelector('.agg-slider-track');
+  var slides = slider.querySelectorAll('.agg-slide');
+  var dots = slider.querySelectorAll('.agg-slider-dots button');
+  var prevBtn = slider.querySelector('.agg-slider-arrow.prev');
+  var nextBtn = slider.querySelector('.agg-slider-arrow.next');
+  var current = 0;
+  var autoplay = {{ section.settings.autoplay | json }};
+  var interval = {{ section.settings.interval | times: MILLISECONDS_PER_SECOND }};
+  var pauseOnHover = {{ section.settings.pause_on_hover | json }};
+  var timer;
+
+  function goTo(index) {
+    if (slides.length === 0) return;
+    current = (index + slides.length) % slides.length;
+    if (slider.classList.contains('transition-slide')) {
+      track.style.transform = 'translateX(' + (-100 * current) + '%)';
+    } else {
+      slides.forEach(function(slide) { slide.classList.remove('active'); });
+      slides[current].classList.add('active');
+    }
+    dots.forEach(function(dot) { dot.classList.remove('active'); });
+    dots[current].classList.add('active');
+  }
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  nextBtn.addEventListener('click', next);
+  if (nextBtn) nextBtn.addEventListener('click', next);
+  if (prevBtn) prevBtn.addEventListener('click', prev);
+  dots.forEach(function(dot) {
+    dot.addEventListener('click', function() { goTo(parseInt(this.getAttribute('data-index'))); });
+    if (dots && dots.length > 0) {
+      dots.forEach(function(dot) { dot.classList.remove('active'); });
+      if (dots[current]) dots[current].classList.add('active');
+    }
+  }
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', prev);
+  if (dots && dots.length > 0) {
+    dots.forEach(function(dot) {
+      dot.addEventListener('click', function() { goTo(parseInt(this.getAttribute('data-index'))); });
+    });
+  }
+
+  function start() { if (autoplay && slides.length > 1) { timer = setInterval(next, interval); } }
+  function stop() { clearInterval(timer); }
+  if (pauseOnHover) {
+    slider.addEventListener('mouseenter', stop);
+    slider.addEventListener('mouseleave', start);
+  }
+  start();
+})();
+</script>
+
+{% schema %}
+{
+  "name": "AGG – Hero slider",
+  "tag": "section",
+  "class": "agg-hero-slider",
+  "max_blocks": 10,
+  "settings": [
+    { "type": "checkbox", "id": "autoplay", "label": "Enable autoplay", "default": true },
+    { "type": "range", "id": "interval", "label": "Autoplay interval (seconds)", "min": 2, "max": 15, "step": 1, "default": 5 },
+    { "type": "select", "id": "transition", "label": "Slide transition effect", "options": [{"value":"fade","label":"Fade"},{"value":"slide","label":"Slide"}], "default": "slide" },
+    { "type": "checkbox", "id": "pause_on_hover", "label": "Pause on hover", "default": true },
+    { "type": "select", "id": "height", "label": "Slider height", "options": [{"value":"small","label":"Small"},{"value":"medium","label":"Medium"},{"value":"large","label":"Large"}], "default": "large" }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Slide image" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Your adventure starts here" },
+        { "type": "textarea", "id": "subheading", "label": "Subheading", "default": "Explore with Adventure Getaway Gear" },
+        { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop now" },
+        { "type": "url", "id": "button_link", "label": "Button link" },
+        { "type": "select", "id": "text_position", "label": "Text position", "options": [
+            {"value":"top-left","label":"Top Left"},
+            {"value":"top-center","label":"Top Center"},
+            {"value":"top-right","label":"Top Right"},
+            {"value":"middle-left","label":"Middle Left"},
+            {"value":"center","label":"Center"},
+            {"value":"middle-right","label":"Middle Right"},
+            {"value":"bottom-left","label":"Bottom Left"},
+            {"value":"bottom-center","label":"Bottom Center"},
+            {"value":"bottom-right","label":"Bottom Right"}
+          ], "default": "center"
+        },
+        { "type": "checkbox", "id": "overlay", "label": "Add overlay behind text", "default": true }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "AGG – Hero slider",
+      "settings": {
+        "autoplay": true,
+        "interval": 5,
+        "transition": "slide"
+      }
+    }
+  ]
+}
+{% endschema %}
