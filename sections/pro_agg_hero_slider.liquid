@@ -4,23 +4,26 @@
       {% if block.settings.image != blank %}
         <img src="{{ block.settings.image | image_url }}" loading="lazy" alt="{{ block.settings.image_alt | default: block.settings.heading | default: 'Slide image' }}">
       {% endif %}
-      <div class="slide-content box-{{ block.settings.box_align }}">
-        {% if block.settings.heading != blank %}
+      {% if block.settings.heading != blank %}
+        <div class="heading-pos--{{ block.settings.heading_position }}">
           <h2>{{ block.settings.heading }}</h2>
-        {% endif %}
-        {% if block.settings.subheading != blank %}
+        </div>
+      {% endif %}
+      {% if block.settings.subheading != blank %}
+        <div class="subheading-pos--{{ block.settings.subheading_position }}">
           <p>{{ block.settings.subheading }}</p>
-        {% endif %}
-        {% if block.settings.button_1_label != blank %}
-          <a href="{{ block.settings.button_1_url }}">{{ block.settings.button_1_label }}</a>
-        {% endif %}
-        {% if block.settings.button_2_label != blank %}
-          <a href="{{ block.settings.button_1_url }}" role="button" tabindex="0">{{ block.settings.button_1_label }}</a>
-        {% endif %}
-        {% if block.settings.button_2_label != blank %}
-          <a href="{{ block.settings.button_2_url }}" role="button" tabindex="0">{{ block.settings.button_2_label }}</a>
-        {% endif %}
-      </div>
+        </div>
+      {% endif %}
+      {% if block.settings.button_1_label != blank or block.settings.button_2_label != blank %}
+        <div class="buttons-pos--{{ block.settings.buttons_position }}">
+          {% if block.settings.button_1_label != blank %}
+            <a href="{{ block.settings.button_1_url }}">{{ block.settings.button_1_label }}</a>
+          {% endif %}
+          {% if block.settings.button_2_label != blank %}
+            <a href="{{ block.settings.button_2_url }}" role="button" tabindex="0">{{ block.settings.button_2_label }}</a>
+          {% endif %}
+        </div>
+      {% endif %}
     </div>
   {% endfor %}
   {% if section.settings.show_arrows %}
@@ -79,8 +82,42 @@
         { "type": "url", "id": "button_2_url", "label": "Button 2 URL" },
         {
           "type": "select",
-          "id": "box_align",
-          "label": "Content position",
+          "id": "heading_position",
+          "label": "Heading position",
+          "options": [
+            { "value": "top_left", "label": "Top left" },
+            { "value": "top_center", "label": "Top center" },
+            { "value": "top_right", "label": "Top right" },
+            { "value": "middle_left", "label": "Middle left" },
+            { "value": "middle_center", "label": "Middle center" },
+            { "value": "middle_right", "label": "Middle right" },
+            { "value": "bottom_left", "label": "Bottom left" },
+            { "value": "bottom_center", "label": "Bottom center" },
+            { "value": "bottom_right", "label": "Bottom right" }
+          ],
+          "default": "middle_center"
+        },
+        {
+          "type": "select",
+          "id": "subheading_position",
+          "label": "Subheading position",
+          "options": [
+            { "value": "top_left", "label": "Top left" },
+            { "value": "top_center", "label": "Top center" },
+            { "value": "top_right", "label": "Top right" },
+            { "value": "middle_left", "label": "Middle left" },
+            { "value": "middle_center", "label": "Middle center" },
+            { "value": "middle_right", "label": "Middle right" },
+            { "value": "bottom_left", "label": "Bottom left" },
+            { "value": "bottom_center", "label": "Bottom center" },
+            { "value": "bottom_right", "label": "Bottom right" }
+          ],
+          "default": "middle_center"
+        },
+        {
+          "type": "select",
+          "id": "buttons_position",
+          "label": "Buttons position",
           "options": [
             { "value": "top_left", "label": "Top left" },
             { "value": "top_center", "label": "Top center" },
