@@ -5,7 +5,9 @@
     {% for block in section.blocks %}
       <div class="agg-slide{% if forloop.first and section.settings.transition == 'fade' %} active{% endif %}" data-index="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
         {% if block.settings.image != blank %}
-          <img src="{{ block.settings.image | image_url: width: 2000 }}" alt="{{ block.settings.heading | escape }}" loading="lazy"/>
+          <img src="{{ block.settings.image | image_url: width: 2000 }}"
+               alt="{% if block.settings.image_alt != blank %}{{ block.settings.image_alt | escape }}{% elsif block.settings.heading != blank %}{{ block.settings.heading | escape }}{% else %}{% endif %}"
+               loading="lazy"/>
         {% endif %}
         {% if block.settings.overlay %}
           <div class="agg-slide-overlay"></div>
@@ -155,11 +157,12 @@
   var nextBtn = slider.querySelector('.agg-slider-arrow.next');
   var current = 0;
   var autoplay = {{ section.settings.autoplay | json }};
-  var interval = {{ section.settings.interval | times: 1000 }};
+  var interval = {{ section.settings.interval | times: MILLISECONDS_PER_SECOND }};
   var pauseOnHover = {{ section.settings.pause_on_hover | json }};
   var timer;
 
   function goTo(index) {
+    if (slides.length === 0) return;
     current = (index + slides.length) % slides.length;
     if (slider.classList.contains('transition-slide')) {
       track.style.transform = 'translateX(' + (-100 * current) + '%)';
@@ -174,10 +177,25 @@
   function prev() { goTo(current - 1); }
 
   nextBtn.addEventListener('click', next);
-  prevBtn.addEventListener('click', prev);
+  if (nextBtn) nextBtn.addEventListener('click', next);
+  if (prevBtn) prevBtn.addEventListener('click', prev);
   dots.forEach(function(dot) {
     dot.addEventListener('click', function() { goTo(parseInt(this.getAttribute('data-index'))); });
-  });
+    if (dots && dots.length > 0) {
+      dots.forEach(function(dot) { dot.classList.remove('active'); });
+      if (dots[current]) dots[current].classList.add('active');
+    }
+  }
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', prev);
+  if (dots && dots.length > 0) {
+    dots.forEach(function(dot) {
+      dot.addEventListener('click', function() { goTo(parseInt(this.getAttribute('data-index'))); });
+    });
+  }
 
   function start() { if (autoplay && slides.length > 1) { timer = setInterval(next, interval); } }
   function stop() { clearInterval(timer); }
