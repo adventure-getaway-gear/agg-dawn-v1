@@ -1,4 +1,4 @@
-<div class="pro-agg-slider slider--{{ section.settings.slide_height }}">
+<div class="pro-agg-slider slider--{{ section.settings.slide_height }}" role="region" aria-label="Hero slider" aria-live="polite">
   {% for block in section.blocks %}
     <div class="slide" {{ block.shopify_attributes }}>
       {% if block.settings.image != blank %}
