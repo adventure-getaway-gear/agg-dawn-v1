@@ -97,18 +97,31 @@
           {%- if block.settings.button_1_label != blank or block.settings.button_2_label != blank -%}
             <div class="pro-agg-slide__buttons {{ btn_container_classes }}">
               {%- for btn in (1..2) -%}
-                {%- assign label = block.settings['button_' | append: btn | append: '_label'] -%}
-                {%- assign second = block.settings['button_' | append: btn | append: '_second_label'] -%}
-                {%- assign url = block.settings['button_' | append: btn | append: '_url'] -%}
-                {%- assign style = block.settings['button_' | append: btn | append: '_style'] -%}
-                {%- assign effect = block.settings['button_' | append: btn | append: '_effect'] -%}
-                {%- assign title = block.settings['button_' | append: btn | append: '_title'] -%}
-                {%- assign text_color = block.settings['button_' | append: btn | append: '_text_color'] -%}
-                {%- assign bg_color = block.settings['button_' | append: btn | append: '_bg_color'] -%}
-                {%- assign border_color = block.settings['button_' | append: btn | append: '_border_color'] -%}
-                {%- assign hide_mobile = block.settings['button_' | append: btn | append: '_hide_on_mobile'] -%}
-                {%- assign mobile_align = block.settings['button_' | append: btn | append: '_text_alignment_mobile'] -%}
-                {%- assign mobile_size = block.settings['button_' | append: btn | append: '_text_size_mobile'] -%}
+                {%- assign button_prefix = 'button_' | append: btn -%}
+                {%- assign label_key = button_prefix | append: '_label' -%}
+                {%- assign label = block.settings[label_key] -%}
+                {%- assign second_key = button_prefix | append: '_second_label' -%}
+                {%- assign second = block.settings[second_key] -%}
+                {%- assign url_key = button_prefix | append: '_url' -%}
+                {%- assign url = block.settings[url_key] -%}
+                {%- assign style_key = button_prefix | append: '_style' -%}
+                {%- assign style = block.settings[style_key] -%}
+                {%- assign effect_key = button_prefix | append: '_effect' -%}
+                {%- assign effect = block.settings[effect_key] -%}
+                {%- assign title_key = button_prefix | append: '_title' -%}
+                {%- assign title = block.settings[title_key] -%}
+                {%- assign text_color_key = button_prefix | append: '_text_color' -%}
+                {%- assign text_color = block.settings[text_color_key] -%}
+                {%- assign bg_color_key = button_prefix | append: '_bg_color' -%}
+                {%- assign bg_color = block.settings[bg_color_key] -%}
+                {%- assign border_color_key = button_prefix | append: '_border_color' -%}
+                {%- assign border_color = block.settings[border_color_key] -%}
+                {%- assign hide_mobile_key = button_prefix | append: '_hide_on_mobile' -%}
+                {%- assign hide_mobile = block.settings[hide_mobile_key] -%}
+                {%- assign mobile_align_key = button_prefix | append: '_text_alignment_mobile' -%}
+                {%- assign mobile_align = block.settings[mobile_align_key] -%}
+                {%- assign mobile_size_key = button_prefix | append: '_text_size_mobile' -%}
+                {%- assign mobile_size = block.settings[mobile_size_key] -%}
                 {%- if label != blank -%}
                   <a
                     href="{{ url }}"
