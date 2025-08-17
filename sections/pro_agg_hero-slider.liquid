@@ -6,7 +6,7 @@
       <div class="agg-slide{% if forloop.first and section.settings.transition == 'fade' %} active{% endif %}" data-index="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
         {% if block.settings.image != blank %}
           <div class="agg-image-wrapper animation-{{ section.settings.image_animation }}">
-            <img src="{{ block.settings.image | image_url: width: 2000 }}" alt="{{ block.settings.alt_text | escape }}" loading="lazy">
+            <img src="{{ block.settings.image | image_url: width: 2000 }}" alt="{% if block.settings.alt_text != blank %}{{ block.settings.alt_text | escape }}{% elsif block.settings.heading != blank %}{{ block.settings.heading | escape }}{% else %}Hero image{% endif %}" loading="lazy">
           </div>
         {% endif %}
         {% if block.settings.overlay %}
@@ -169,6 +169,7 @@
 #agg-hero-slider-{{ section.id }} .text-shimmer:focus-visible {
   background: linear-gradient(90deg, currentColor 0%, rgba(255,255,255,0.7) 50%, currentColor 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
   animation: textShimmer 2s linear infinite;
 }
@@ -244,7 +245,7 @@
   var slider = document.getElementById('agg-hero-slider-{{ section.id }}');
   if (!slider) return;
   var track = slider.querySelector('.agg-slider-track');
-  var slides = Array.prototype.slice.call(slider.querySelectorAll('.agg-slide'));
+  var slides = [...slider.querySelectorAll('.agg-slide')];
   var dots = slider.querySelectorAll('.agg-slider-dots button');
   var prevBtn = slider.querySelector('.agg-slider-arrow.prev');
   var nextBtn = slider.querySelector('.agg-slider-arrow.next');
