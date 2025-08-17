@@ -63,10 +63,7 @@
       {%- for block in section.blocks -%}
         {%- assign img = block.settings.image -%}
         {%- assign img_mob = block.settings.image_mobile -%}
-        {%- assign use_video = false -%}
-        {%- if block.settings.video != blank or block.settings.video_url != blank -%}
-          {%- assign use_video = true -%}
-        {%- endif -%}
+        {%- assign use_video = block.settings.video != blank or block.settings.video_url != blank -%}
         {%- assign text_light = block.settings.text_on_dark -%}
         {%- assign pos_class_desktop = desktop_pos | prepend: 'pos-' -%}
         {%- assign pos_class_mobile  = mobile_pos  | prepend: 'mpos-' -%}
