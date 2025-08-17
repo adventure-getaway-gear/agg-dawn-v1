@@ -1,0 +1,360 @@
+{% comment %}
+  AGG — Pro Hero Slider (sections/pro_agg_hero.liquid)
+  - Section name kept ≤ 20 chars to match user's convention.
+  - Requires assets:
+      assets/pro-agg-hero.css
+      assets/pro-agg-hero.js
+{% endcomment %}
+
+{{ 'pro-agg-hero.css' | asset_url | stylesheet_tag }}
+{{ 'pro-agg-hero.js'  | asset_url | script_tag }}
+
+{%- liquid
+  assign section_id = section.id
+  assign layout = section.settings.layout
+  assign show_arrows = section.settings.show_arrows
+  assign show_dots = section.settings.show_dots
+  assign autoplay = section.settings.autoplay
+  assign speed = section.settings.autoplay_speed
+  assign pause_on_hover = section.settings.pause_on_hover
+  assign loop = section.settings.loop
+  assign enable_sparkles = section.settings.enable_sparkles
+  assign desktop_pos = section.settings.content_position_desktop
+  assign mobile_pos = section.settings.content_position_mobile
+  assign height_mode = section.settings.height_mode
+  assign min_height_vh = section.settings.min_height_vh
+  assign min_height_px = section.settings.min_height_px
+  assign aria_label = section.settings.accessible_label | default: 'Homepage hero'
+-%}
+
+<section
+  class="pro-agg-hero {% if layout contains 'split' %}hero--split{% else %}hero--overlay{% endif %} {% if height_mode == 'viewport' %}hero--vh{% else %}hero--px{% endif %} {% if enable_sparkles %}hero--sparkles{% endif %}"
+  id="ProAggHero-{{ section_id }}"
+  data-section-type="pro-agg-hero"
+  data-section-id="{{ section_id }}"
+  data-autoplay="{{ autoplay }}"
+  data-speed="{{ speed }}"
+  data-pause-on-hover="{{ pause_on_hover }}"
+  data-loop="{{ loop }}"
+  style="--h-vh: {{ min_height_vh }}; --h-px: {{ min_height_px }};"
+  role="region"
+  aria-roledescription="carousel"
+  aria-label="{{ aria_label | escape }}">
+
+  <div class="hero__slider" id="Slider-{{ section_id }}">
+    <ul class="slides" id="Slides-{{ section_id }}" tabindex="0" aria-live="polite">
+      {%- if section.blocks.size == 0 -%}
+        <li class="slide is-active" aria-roledescription="slide" aria-label="1 of 1">
+          <div class="slide__media">
+            <div class="media-fallback"></div>
+          </div>
+          <div class="slide__overlay" style="--overlay: rgba(0,0,0,.35);"></div>
+          <div class="slide__content pos-center-center">
+            <p class="eyebrow">Adventure Getaway Gear</p>
+            <h2 class="heading">Your next trip starts here</h2>
+            <div class="subheading"><p>Pro‑grade towing & cargo gear you can trust.</p></div>
+            <div class="cta">
+              <a class="btn btn--primary" href="/collections/all">Shop now</a>
+            </div>
+          </div>
+        </li>
+      {%- endif -%}
+
+      {%- for block in section.blocks -%}
+        {%- assign img = block.settings.image -%}
+        {%- assign img_mob = block.settings.image_mobile -%}
+        {%- assign use_video = block.settings.video != blank or block.settings.video_url != blank -%}
+        {%- assign text_light = block.settings.text_on_dark -%}
+        {%- assign pos_class_desktop = desktop_pos | prepend: 'pos-' -%}
+        {%- assign pos_class_mobile  = mobile_pos  | prepend: 'mpos-' -%}
+        {%- assign overlay_color = block.settings.overlay_color -%}
+        {%- assign overlay_opacity = block.settings.overlay_opacity | divided_by: 100.0 -%}
+        {%- assign gradient = block.settings.overlay_gradient -%}
+        {%- assign kb = block.settings.image_anim -%}
+        {%- assign content_anim = block.settings.content_anim -%}
+
+        <li class="slide {% if kb == 'kenburns' %}slide--kenburns{% endif %}"
+            id="Slide-{{ block.id }}"
+            {{ block.shopify_attributes }}
+            aria-roledescription="slide"
+            aria-label="{{ forloop.index }} of {{ section.blocks.size }}">
+          <div class="slide__media">
+            {%- if use_video -%}
+              {%- if block.settings.video != blank -%}
+                {{ block.settings.video | video_tag: autoplay: true, loop: true, muted: true, controls: false, playsinline: true, class: 'slide__video' }}
+              {%- elsif block.settings.video_url != blank -%}
+                <video class="slide__video" autoplay loop muted playsinline>
+                  <source src="{{ block.settings.video_url | escape }}" type="video/mp4">
+                </video>
+              {%- endif -%}
+            {%- else -%}
+              <picture>
+                {%- if img_mob != blank -%}
+                  <source media="(max-width: 749px)" srcset="{{ img_mob | image_url: width: 1500 }}">
+                {%- endif -%}
+                {%- if img != blank -%}
+                  {{ img | image_url: width: 3840 | image_tag:
+                    alt: block.settings.alt | default: block.settings.heading,
+                    loading: forloop.first ? 'eager' : 'lazy',
+                    fetchpriority: forloop.first ? 'high' : 'low',
+                    sizes: '100vw',
+                    widths: '375, 750, 1100, 1500, 1780, 2000, 2200, 2400, 3000, 3840',
+                    class: 'slide__image' }}
+                {%- else -%}
+                  <div class="media-fallback"></div>
+                {%- endif -%}
+              </picture>
+            {%- endif -%}
+          </div>
+
+          <div class="slide__overlay"
+               style="--overlay: {% if gradient != blank %}{{ gradient }}{% else %}{{ overlay_color | default: '#000000' }}{% endif %};
+                      --overlay-opacity: {{ overlay_opacity }};"></div>
+
+          <div class="slide__content {{ pos_class_desktop }} {{ pos_class_mobile }} {% if text_light %}content--light{% else %}content--dark{% endif %}">
+            {%- if block.settings.eyebrow != blank -%}
+              <p class="eyebrow" data-anim="{{ content_anim }}">{{ block.settings.eyebrow }}</p>
+            {%- endif -%}
+
+            {%- if block.settings.heading != blank -%}
+              <h2 class="heading" data-anim="{{ content_anim }}">{{ block.settings.heading | escape }}</h2>
+            {%- endif -%}
+
+            {%- if block.settings.subheading != blank -%}
+              <div class="subheading rte" data-anim="{{ content_anim }}">{{ block.settings.subheading }}</div>
+            {%- endif -%}
+
+            {%- if block.settings.badge != blank -%}
+              <span class="pill" data-anim="{{ content_anim }}">{{ block.settings.badge }}</span>
+            {%- endif -%}
+
+            <div class="cta">
+              {%- if block.settings.primary_label != blank and block.settings.primary_link != blank -%}
+                <a class="btn btn--primary
+                          {% if block.settings.primary_style == 'outline' %}btn--outline{% elsif block.settings.primary_style == 'ghost' %}btn--ghost{% endif %}
+                          {% if block.settings.primary_shimmer %}btn--shimmer{% endif %}
+                          {% if block.settings.primary_3d %}btn--3d{% endif %}"
+                   href="{{ block.settings.primary_link }}"
+                   aria-label="{{ block.settings.primary_label | escape }}"
+                   data-anim="{{ content_anim }}">
+                  {{ block.settings.primary_label | escape }}
+                </a>
+              {%- endif -%}
+
+              {%- if block.settings.secondary_label != blank and block.settings.secondary_link != blank -%}
+                <a class="btn btn--secondary
+                          {% if block.settings.secondary_style == 'outline' %}btn--outline{% elsif block.settings.secondary_style == 'ghost' %}btn--ghost{% endif %}
+                          {% if block.settings.secondary_shimmer %}btn--shimmer{% endif %}
+                          {% if block.settings.secondary_3d %}btn--3d{% endif %}"
+                   href="{{ block.settings.secondary_link }}"
+                   aria-label="{{ block.settings.secondary_label | escape }}"
+                   data-anim="{{ content_anim }}">
+                  {{ block.settings.secondary_label | escape }}
+                </a>
+              {%- endif -%}
+            </div>
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+
+    {%- if show_arrows -%}
+      <button class="nav nav--prev" aria-controls="Slides-{{ section_id }}" aria-label="Previous slide">
+        <span class="visually-hidden">Previous</span>
+        <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M12.7 15.3a1 1 0 0 1-1.4 0L6 10l5.3-5.3a1 1 0 1 1 1.4 1.4L8.4 10l4.3 4.3a1 1 0 0 1 0 1.4z"/></svg>
+      </button>
+      <button class="nav nav--next" aria-controls="Slides-{{ section_id }}" aria-label="Next slide">
+        <span class="visually-hidden">Next</span>
+        <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M7.3 4.7a1 1 0 0 1 1.4 0L14 10l-5.3 5.3a1 1 0 1 1-1.4-1.4L11.6 10 7.3 6.1a1 1 0 0 1 0-1.4z"/></svg>
+      </button>
+    {%- endif -%}
+
+    {%- if show_dots and section.blocks.size > 1 -%}
+      <div class="dots" role="tablist" aria-label="Slide selectors">
+        {%- for block in section.blocks -%}
+          <button role="tab"
+                  class="dot {% if forloop.first %}is-active{% endif %}"
+                  data-index="{{ forloop.index0 }}"
+                  aria-controls="Slide-{{ block.id }}"
+                  aria-selected="{{ forloop.first }}"
+                  aria-label="Go to slide {{ forloop.index }}">
+          </button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "AGG — Pro Hero Slider",
+  "tag": "section",
+  "class": "section-pro-agg-hero",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "overlay",
+      "options": [
+        { "value": "overlay", "label": "Overlay (text over media)" },
+        { "value": "split-left", "label": "Split: Image left, text right" },
+        { "value": "split-right", "label": "Split: Text left, image right" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_position_desktop",
+      "label": "Content position — desktop",
+      "default": "center-center",
+      "options": [
+        { "value": "top-left", "label": "Top left" },
+        { "value": "top-center", "label": "Top center" },
+        { "value": "top-right", "label": "Top right" },
+        { "value": "center-left", "label": "Middle left" },
+        { "value": "center-center", "label": "Middle center" },
+        { "value": "center-right", "label": "Middle right" },
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" },
+        { "value": "bottom-right", "label": "Bottom right" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_position_mobile",
+      "label": "Content position — mobile",
+      "default": "bottom-center",
+      "options": [
+        { "value": "top-left", "label": "Top left" },
+        { "value": "top-center", "label": "Top center" },
+        { "value": "top-right", "label": "Top right" },
+        { "value": "center-left", "label": "Middle left" },
+        { "value": "center-center", "label": "Middle center" },
+        { "value": "center-right", "label": "Middle right" },
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" },
+        { "value": "bottom-right", "label": "Bottom right" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "height_mode",
+      "label": "Height mode",
+      "default": "viewport",
+      "options": [
+        { "value": "viewport", "label": "Viewport (vh)" },
+        { "value": "fixed", "label": "Fixed (px)" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "min_height_vh",
+      "min": 40, "max": 100, "step": 5, "unit": "vh",
+      "label": "Min height (vh)",
+      "default": 75
+    },
+    {
+      "type": "range",
+      "id": "min_height_px",
+      "min": 420, "max": 900, "step": 10, "unit": "px",
+      "label": "Min height (px)",
+      "default": 560
+    },
+    { "type": "checkbox", "id": "show_arrows", "label": "Show arrows", "default": true },
+    { "type": "checkbox", "id": "show_dots", "label": "Show dots", "default": true },
+    { "type": "checkbox", "id": "autoplay", "label": "Autoplay", "default": true },
+    {
+      "type": "range", "id": "autoplay_speed",
+      "min": 3, "max": 10, "step": 1, "unit": "s",
+      "label": "Autoplay delay (seconds)",
+      "default": 6
+    },
+    { "type": "checkbox", "id": "pause_on_hover", "label": "Pause on hover", "default": true },
+    { "type": "checkbox", "id": "loop", "label": "Infinite loop", "default": true },
+    { "type": "checkbox", "id": "enable_sparkles", "label": "Subtle sparkles overlay", "default": false },
+    { "type": "text", "id": "accessible_label", "label": "Accessible label", "default": "Hero promotions" }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "limit": 8,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image (desktop)" },
+        { "type": "image_picker", "id": "image_mobile", "label": "Image (mobile)" },
+        { "type": "video", "id": "video", "label": "Background video (optional)" },
+        { "type": "url", "id": "video_url", "label": "Background video URL (MP4)" },
+        { "type": "text", "id": "alt", "label": "Image alt text" },
+        { "type": "color", "id": "overlay_color", "label": "Overlay color", "default": "#000000" },
+        { "type": "range", "id": "overlay_opacity", "label": "Overlay opacity", "min": 0, "max": 90, "step": 5, "unit": "%", "default": 35 },
+        { "type": "text", "id": "overlay_gradient", "label": "CSS gradient (optional)", "info": "e.g., linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.6))" },
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow (small heading)", "default": "Adventure Getaway Gear" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Built for the long haul" },
+        { "type": "richtext", "id": "subheading", "label": "Subheading", "default": "<p>Pro‑grade towing & cargo management.</p>" },
+        { "type": "text", "id": "badge", "label": "Pill/badge", "default": "New" },
+        {
+          "type": "select", "id": "image_anim", "label": "Image animation",
+          "default": "none",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "kenburns", "label": "Ken Burns (pan/zoom)" }
+          ]
+        },
+        {
+          "type": "select", "id": "content_anim", "label": "Text animation",
+          "default": "fade-up",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "fade", "label": "Fade" },
+            { "value": "fade-up", "label": "Fade up" },
+            { "value": "slide-left", "label": "Slide left" },
+            { "value": "slide-right", "label": "Slide right" },
+            { "value": "zoom-in", "label": "Zoom in" }
+          ]
+        },
+        { "type": "checkbox", "id": "text_on_dark", "label": "Use light text (for dark images)", "default": true },
+        { "type": "range", "id": "content_max", "label": "Content max width", "min": 420, "max": 1200, "step": 10, "unit": "px", "default": 800 },
+
+        { "type": "text", "id": "primary_label", "label": "Primary button label", "default": "Shop towing" },
+        { "type": "url",  "id": "primary_link",  "label": "Primary button link" },
+        {
+          "type": "select", "id": "primary_style", "label": "Primary button style",
+          "default": "solid",
+          "options": [
+            { "value": "solid", "label": "Solid" },
+            { "value": "outline", "label": "Outline" },
+            { "value": "ghost", "label": "Ghost" }
+          ]
+        },
+        { "type": "checkbox", "id": "primary_shimmer", "label": "Shimmer effect", "default": true },
+        { "type": "checkbox", "id": "primary_3d", "label": "3D press effect", "default": true },
+
+        { "type": "text", "id": "secondary_label", "label": "Secondary button label", "default": "Learn more" },
+        { "type": "url",  "id": "secondary_link",  "label": "Secondary button link" },
+        {
+          "type": "select", "id": "secondary_style", "label": "Secondary button style",
+          "default": "outline",
+          "options": [
+            { "value": "solid", "label": "Solid" },
+            { "value": "outline", "label": "Outline" },
+            { "value": "ghost", "label": "Ghost" }
+          ]
+        },
+        { "type": "checkbox", "id": "secondary_shimmer", "label": "Shimmer effect", "default": false },
+        { "type": "checkbox", "id": "secondary_3d", "label": "3D press effect", "default": false }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "AGG — Pro Hero Slider",
+      "category": "AGG",
+      "blocks": [
+        { "type": "slide" },
+        { "type": "slide" },
+        { "type": "slide" }
+      ]
+    }
+  ]
+}
+{% endschema %}
