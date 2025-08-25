@@ -9,6 +9,43 @@
  */
 {
   "sections": {
+    "pro_agg_hero_slider_Cg6cRT": {
+      "type": "pro_agg_hero_slider",
+      "blocks": {
+        "slide_F3eTUL": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
+            "heading": "Adventure is calling",
+            "subheading": "Gear up & go  be ready for wherever the road takes you.",
+            "primary_button_label": "Explore now",
+            "primary_button_link": "",
+            "secondary_button_enable": true,
+            "secondary_button_label": "Learn more",
+            "secondary_button_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "slide_F3eTUL"
+      ],
+      "name": "Pro AGG Hero Slider",
+      "settings": {
+        "enable_autoplay": true,
+        "autoplay_speed": 5000,
+        "slider_height": "medium",
+        "fallback_image": "shopify://shop_images/waterfall-rainbow-nature-adventure-gear.jpg",
+        "overlay_color": "#000000",
+        "overlay_opacity": 30,
+        "heading_position": "middle-center",
+        "subheading_position": "middle-center",
+        "buttons_position": "bottom-center",
+        "enable_button_3d": true,
+        "enable_button_shimmer": true,
+        "enable_sparkle_overlay": false,
+        "sparkle_intensity": 12
+      }
+    },
     "featured_collection": {
       "type": "featured-collection",
       "settings": {
@@ -39,6 +76,7 @@
     }
   },
   "order": [
+    "pro_agg_hero_slider_Cg6cRT",
     "featured_collection"
   ]
 }
