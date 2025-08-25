@@ -1,25 +1,161 @@
-﻿/* assets/pro_agg_hero.css */
-:root{
-  --pro-agg-primary:#E67E22; /* Highlight Orange */
-  --pro-agg-dark:#1C1C1C;
-  --pro-agg-light:#FAFAFA;
+﻿/* pro_agg_hero.css  Hotfix base styles */
+.pro-agg-hero-slider {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
 }
-.pro-agg-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.25rem;border-radius:8px;text-decoration:none;font-weight:600;transition:transform .12s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease}
-.pro-agg-btn:active{transform:translateY(1px)}
-.pro-agg-btn--primary{background:var(--pro-agg-primary);color:#fff;box-shadow:0 4px 18px rgba(230,126,34,.35)}
-.pro-agg-btn--primary:hover{box-shadow:0 6px 22px rgba(230,126,34,.46)}
-.pro-agg-btn--secondary{background:#FFFFFF;color:var(--pro-agg-dark);border:1px solid rgba(0,0,0,.1)}
-.pro-agg-btn--secondary:hover{border-color:rgba(0,0,0,.2)}
-.pro-agg-btn--ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)}
-.pro-agg-btn--ghost:hover{border-color:#fff}
-.pro-agg-btn--sm{padding:.5rem .9rem;font-size:.9rem}
-.pro-agg-btn--md{padding:.7rem 1.15rem;font-size:1rem}
-.pro-agg-btn--lg{padding:.9rem 1.35rem;font-size:1.125rem}
 
-/* Content typography (inherit Dawn scale nicely) */
-.pro-agg-hero__eyebrow{letter-spacing:.08em;text-transform:uppercase;font-weight:600;opacity:.9}
-.pro-agg-hero__title{font-size:clamp(1.75rem, 3vw + 1rem, 3rem);line-height:1.1}
-.pro-agg-hero__body{font-size:clamp(1rem, .5vw + .8rem, 1.125rem);opacity:.95}
+.pro-agg-slides {
+  position: relative;
+}
 
-/* Safer focus styles for accessibility */
-.pro-agg-hero button:focus-visible, .pro-agg-hero a:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.pro-agg-slide {
+  position: relative;
+  width: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 400ms ease;
+}
+
+.pro-agg-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pro-agg-media {
+  position: relative;
+  width: 100%;
+}
+
+.pro-agg-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Height logic */
+.pro-agg-hero-slider[data-height="fixed"] .pro-agg-media,
+.pro-agg-hero-slider[data-height="fixed"] .pro-agg-image {
+  height: var(--pro-agg-fixed-height, 600px);
+  object-fit: cover;
+}
+
+.pro-agg-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.pro-agg-pos {
+  position: absolute;
+  max-width: min(92vw, 1200px);
+  pointer-events: auto;
+}
+
+/* 9-point positions */
+.pos-top-left    { top: 4%;  left: 4%;  transform: translate(0,0); }
+.pos-top-center  { top: 4%;  left: 50%; transform: translate(-50%,0); }
+.pos-top-right   { top: 4%;  right: 4%; transform: translate(0,0); }
+.pos-mid-left    { top: 50%; left: 4%;  transform: translate(0,-50%); }
+.pos-mid-center  { top: 50%; left: 50%; transform: translate(-50%,-50%); }
+.pos-mid-right   { top: 50%; right: 4%; transform: translate(0,-50%); }
+.pos-bot-left    { bottom: 4%; left: 4%; transform: translate(0,0); }
+.pos-bot-center  { bottom: 4%; left: 50%; transform: translate(-50%,0); }
+.pos-bot-right   { bottom: 4%; right: 4%; transform: translate(0,0); }
+
+.pro-agg-heading-text {
+  margin: 0;
+  font-size: clamp(28px, 5vw, 64px);
+  line-height: 1.05;
+  color: var(--agg-heading-color, #FAFAFA);
+  text-shadow: 0 2px 12px rgba(0,0,0,.35);
+}
+
+.pro-agg-subheading-text {
+  margin: 0 0 .35rem 0;
+  font-size: clamp(14px, 2.4vw, 22px);
+  letter-spacing: .02em;
+  color: var(--agg-subheading-color, #F5F3EF);
+  text-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+.pro-agg-richtext {
+  color: var(--agg-body-color, #FAFAFA);
+  text-shadow: 0 1px 8px rgba(0,0,0,.35);
+  font-size: clamp(14px, 1.8vw, 18px);
+  max-width: 60ch;
+}
+
+.pro-agg-buttons-row {
+  display: inline-flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+.pro-agg-btn {
+  --btn-bg: #E67E22;   /* Highlight Orange */
+  --btn-fg: #1C1C1C;   /* Text Dark */
+  --btn-bg-ghost: rgba(0,0,0,.2);
+  --btn-border: rgba(255,255,255,.6);
+  display: inline-block;
+  text-decoration: none;
+  padding: .8rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 700;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 140ms ease;
+  backdrop-filter: saturate(1.1);
+  border: 1px solid transparent;
+  color: #fff;
+}
+
+/* Solid */
+.pro-agg-btn.style-solid {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+}
+
+/* Ghost */
+.pro-agg-btn.style-ghost {
+  background: var(--btn-bg-ghost);
+  border-color: var(--btn-border);
+  color: #fff;
+}
+
+/* 3D */
+.pro-agg-btn.style-3d {
+  background: linear-gradient(180deg, #ffb161 0%, #E67E22 35%, #c46716 100%);
+  box-shadow: 0 10px 0 #8a450d, 0 16px 24px rgba(0,0,0,.35);
+  transform: translateY(0);
+}
+.pro-agg-btn.style-3d:hover { transform: translateY(-1px); box-shadow: 0 11px 0 #8a450d, 0 20px 28px rgba(0,0,0,.4); }
+.pro-agg-btn.style-3d:active { transform: translateY(2px); box-shadow: 0 8px 0 #8a450d, 0 14px 20px rgba(0,0,0,.3); }
+
+/* Sparkle hook (to be enhanced next) */
+.pro-agg-sparkle {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.4), transparent 60%),
+                    radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,.35), transparent 60%),
+                    radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.28), transparent 60%);
+  mix-blend-mode: screen;
+  animation: pro-agg-shimmer 6s linear infinite;
+  opacity: .25;
+}
+
+@keyframes pro-agg-shimmer {
+  0% { background-position: 0 0, 0 0, 0 0; }
+  100% { background-position: 1200px 0, -800px 0, 600px 0; }
+}
+
+/* Mobile refinements */
+@media (max-width: 749px) {
+  .pos-top-left,.pos-top-center,.pos-top-right,
+  .pos-mid-left,.pos-mid-center,.pos-mid-right,
+  .pos-bot-left,.pos-bot-center,.pos-bot-right {
+    left: 50%; right: auto; transform: translate(-50%, 0);
+    top: auto; bottom: 6%;
+  }
+  .pro-agg-heading-text { font-size: clamp(22px, 8vw, 36px); }
+  .pro-agg-subheading-text { font-size: clamp(12px, 4.2vw, 16px); }
+  .pro-agg-richtext { font-size: 14px; text-align: center; }
+  .pro-agg-buttons-row { justify-content: center; }
+}
