@@ -1,181 +1,98 @@
 ﻿{% comment %}
-  Pro AGG Hero Slider  Step 7 (Stabilize + Scaffold)
-  - Fix image rendering with solid fallback chain
-  - Default preset so the section shows immediately
-  - Section-level 9-point positioning for heading/subheading/buttons
-  - Dual buttons with optional 3D + shimmer
-  - Autoplay honored and capped by schema (<= 9000ms)
-  - Sparkle overlay scaffold (off by default)  full effects coming next step
+  Pro AGG Hero Slider  Safe baseline
+  - Minimal markup, valid schema (name <= 25 chars), includes presets
+  - Autoplay speed max = 9000 (Shopify requires < 10000)
 {% endcomment %}
-
 {{ 'pro_agg_hero.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'pro_agg_hero.js' | asset_url }}" defer="defer"></script>
+{{ 'pro_agg_hero.js' | asset_url | script_tag }}
 
-{%- liquid
-  assign slider_height = section.settings.slider_height | default: 'large'
-  assign overlay_opacity = section.settings.overlay_opacity | default: 30
-  assign overlay_color = section.settings.overlay_color | default: '#000000'
-  assign enable_autoplay = section.settings.enable_autoplay | default: true
-  assign autoplay_speed = section.settings.autoplay_speed | default: 5000
-  if autoplay_speed > 9000
-    assign autoplay_speed = 9000
-  endif
-  assign enable_button_3d = section.settings.enable_button_3d | default: true
-  assign enable_button_shimmer = section.settings.enable_button_shimmer | default: true
-  assign enable_sparkle_overlay = section.settings.enable_sparkle_overlay | default: false
-  assign sparkle_intensity = section.settings.sparkle_intensity | default: 12
-
-  assign heading_pos = section.settings.heading_position | default: 'middle-center'
-  assign subheading_pos = section.settings.subheading_position | default: 'middle-center'
-  assign buttons_pos = section.settings.buttons_position | default: 'bottom-center'
--%}
-
-<section
-  class="section section-pro-agg-hero-slider"
-  data-section-id="{{ section.id }}"
->
-  <div
-    class="pro-agg-slider h-{{ slider_height }}"
-    data-autoplay="{{ enable_autoplay }}"
-    data-speed="{{ autoplay_speed }}"
-    data-sparkle="{{ enable_sparkle_overlay }}"
-    data-sparkle-intensity="{{ sparkle_intensity }}"
-    style="--overlay-opacity: {{ overlay_opacity | times: 0.01 }}; --overlay-color: {{ overlay_color }};"
-  >
-    {%- for block in section.blocks -%}
-      {%- if block.type == 'slide' -%}
-        <div class="pro-agg-slide{% if forloop.first %} is-active{% endif %}" {{ block.shopify_attributes }}>
-          <div class="pro-agg-media">
-            {%- if block.settings.image != blank -%}
-              {{ block.settings.image | image_url: width: 2880 | image_tag:
-                 class: 'slide__image',
-                 loading: 'lazy',
-                 decoding: 'async',
-                 alt: block.settings.heading | escape }}
-            {%- elsif section.settings.fallback_image != blank -%}
-              {{ section.settings.fallback_image | image_url: width: 2880 | image_tag:
-                 class: 'slide__image',
-                 loading: 'lazy',
-                 decoding: 'async',
-                 alt: 'Hero slide' }}
-            {%- else -%}
-              {{ 'image' | placeholder_svg_tag: 'placeholder slide__placeholder' }}
-            {%- endif -%}
-          </div>
-
-          <div class="pro-agg-overlay"></div>
-
-          {%- if enable_sparkle_overlay -%}
-            <div class="pro-agg-sparkle" aria-hidden="true"></div>
-          {%- endif -%}
-
-          {%- if block.settings.heading != blank -%}
-            <div class="pro-agg-content pos {{ heading_pos }}">
-              <h2 class="pro-agg-heading">{{ block.settings.heading | escape }}</h2>
+<div class="pro-agg-hero"
+     id="pro-agg-hero-{{ section.id }}"
+     data-autoplay="{{ section.settings.autoplay }}"
+     data-speed="{{ section.settings.autoplay_speed }}"
+     data-show-dots="{{ section.settings.show_dots }}"
+     data-show-arrows="{{ section.settings.show_arrows }}"
+     data-position="{{ section.settings.content_position }}"
+     data-overlay="{{ section.settings.overlay_opacity }}">
+  <div class="pro-agg-hero__slides">
+    {% for block in section.blocks %}
+      <div class="pro-agg-hero__slide{% if forloop.first %} is-active{% endif %}" {{ block.shopify_attributes }}>
+        {% if block.settings.image != blank %}
+          <div class="pro-agg-hero__bg"
+               style="background-image:url({{ block.settings.image | image_url: width: 2000 }});"></div>
+        {% else %}
+          <div class="pro-agg-hero__bg pro-agg-hero__bg--placeholder"></div>
+        {% endif %}
+        <div class="pro-agg-hero__overlay"></div>
+        <div class="pro-agg-hero__content">
+          {% if block.settings.heading != blank %}
+            <h2 class="pro-agg-hero__heading">{{ block.settings.heading }}</h2>
+          {% endif %}
+          {% if block.settings.subheading != blank %}
+            <p class="pro-agg-hero__subheading">{{ block.settings.subheading }}</p>
+          {% endif %}
+          {% if block.settings.button1_label != blank or block.settings.button2_label != blank %}
+            <div class="pro-agg-hero__buttons">
+              {% if block.settings.button1_label != blank %}
+                <a class="btn-agg" href="{{ block.settings.button1_link | default: '#' }}">{{ block.settings.button1_label }}</a>
+              {% endif %}
+              {% if block.settings.button2_label != blank %}
+                <a class="btn-agg btn-agg--secondary" href="{{ block.settings.button2_link | default: '#' }}">{{ block.settings.button2_label }}</a>
+              {% endif %}
             </div>
-          {%- endif -%}
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
 
-          {%- if block.settings.subheading != blank -%}
-            <div class="pro-agg-content pos {{ subheading_pos }}">
-              <p class="pro-agg-subheading">{{ block.settings.subheading | escape }}</p>
-            </div>
-          {%- endif -%}
-
-          {%- if block.settings.primary_button_label != blank or block.settings.secondary_button_enable -%}
-            <div class="pro-agg-content pos {{ buttons_pos }}">
-              <div class="pro-agg-buttons">
-                {%- if block.settings.primary_button_label != blank -%}
-                  <a
-                    class="pro-agg-btn{% if enable_button_3d %} btn--3d{% endif %}{% if enable_button_shimmer %} btn--shimmer{% endif %}"
-                    href="{{ block.settings.primary_button_link | default: '#' }}"
-                  >
-                    {{ block.settings.primary_button_label | escape }}
-                  </a>
-                {%- endif -%}
-                {%- if block.settings.secondary_button_enable and block.settings.secondary_button_label != blank -%}
-                  <a
-                    class="pro-agg-btn btn--secondary{% if enable_button_3d %} btn--3d{% endif %}{% if enable_button_shimmer %} btn--shimmer{% endif %}"
-                    href="{{ block.settings.secondary_button_link | default: '#' }}"
-                  >
-                    {{ block.settings.secondary_button_label | escape }}
-                  </a>
-                {%- endif -%}
-              </div>
-            </div>
-          {%- endif -%}
-        </div>
-      {%- endif -%}
-    {%- endfor -%}
-
-    {%- if section.blocks.size == 0 -%}
-      <div class="pro-agg-slide is-active">
-        <div class="pro-agg-media">
-          {%- if section.settings.fallback_image != blank -%}
-            {{ section.settings.fallback_image | image_url: width: 2880 | image_tag:
-               class: 'slide__image',
-               loading: 'lazy',
-               decoding: 'async',
-               alt: 'Hero slide' }}
-          {%- else -%}
-            {{ 'image' | placeholder_svg_tag: 'placeholder slide__placeholder' }}
-          {%- endif -%}
-        </div>
-        <div class="pro-agg-overlay"></div>
-        <div class="pro-agg-content pos {{ heading_pos }}">
-          <h2 class="pro-agg-heading">Adventure is calling</h2>
-        </div>
-        <div class="pro-agg-content pos {{ subheading_pos }}">
-          <p class="pro-agg-subheading">Gear up &amp; go  be ready for wherever the road takes you.</p>
-        </div>
-        <div class="pro-agg-content pos {{ buttons_pos }}">
-          <div class="pro-agg-buttons">
-            <a class="pro-agg-btn{% if enable_button_3d %} btn--3d{% endif %}{% if enable_button_shimmer %} btn--shimmer{% endif %}" href="#">
-              Explore now
-            </a>
-            <a class="pro-agg-btn btn--secondary{% if enable_button_3d %} btn--3d{% endif %}{% if enable_button_shimmer %} btn--shimmer{% endif %}" href="#">
-              Learn more
-            </a>
+    {% if section.blocks.size == 0 %}
+      <div class="pro-agg-hero__slide is-active">
+        <div class="pro-agg-hero__bg pro-agg-hero__bg--placeholder"></div>
+        <div class="pro-agg-hero__overlay"></div>
+        <div class="pro-agg-hero__content">
+          <h2 class="pro-agg-hero__heading">Pro AGG Hero Slider</h2>
+          <p class="pro-agg-hero__subheading">Add slides in the theme editor</p>
+          <div class="pro-agg-hero__buttons">
+            <a class="btn-agg" href="#">Primary</a>
+            <a class="btn-agg btn-agg--secondary" href="#">Secondary</a>
           </div>
         </div>
       </div>
-    {%- endif -%}
+    {% endif %}
   </div>
-</section>
+
+  {% if section.settings.show_arrows and section.blocks.size > 1 %}
+    <button class="pro-agg-hero__arrow prev" aria-label="Previous slide"></button>
+    <button class="pro-agg-hero__arrow next" aria-label="Next slide"></button>
+  {% endif %}
+
+  {% if section.settings.show_dots and section.blocks.size > 1 %}
+    <div class="pro-agg-hero__dots" aria-label="Slide dots"></div>
+  {% endif %}
+</div>
 
 {% schema %}
 {
   "name": "Pro AGG Hero Slider",
-  "tag": "section",
-  "class": "section-pro-agg-hero-slider",
+  "class": "section-pro-agg-hero",
   "settings": [
-    { "type": "checkbox", "id": "enable_autoplay", "label": "Autoplay slides", "default": true },
-    { "type": "range", "id": "autoplay_speed", "label": "Autoplay speed (ms)", "min": 2000, "max": 9000, "step": 500, "default": 5000 },
-    { "type": "select", "id": "slider_height", "label": "Height", "default": "large",
-      "options": [
-        { "value": "adapt", "label": "Adapt to image" },
-        { "value": "small", "label": "Small" },
-        { "value": "medium", "label": "Medium" },
-        { "value": "large", "label": "Large" }
-      ]
+    { "type": "checkbox", "id": "autoplay", "label": "Autoplay", "default": true },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay speed (ms)",
+      "min": 1000,
+      "max": 9000,
+      "step": 500,
+      "default": 4000
     },
-    { "type": "image_picker", "id": "fallback_image", "label": "Fallback image (used when a slide has no image)" },
-    { "type": "color", "id": "overlay_color", "label": "Overlay color", "default": "#000000" },
-    { "type": "range", "id": "overlay_opacity", "label": "Overlay opacity", "min": 0, "max": 90, "step": 1, "default": 30 },
-
-    { "type": "select", "id": "heading_position", "label": "Heading position", "default": "middle-center",
-      "options": [
-        { "value": "top-left", "label": "Top left" },
-        { "value": "top-center", "label": "Top center" },
-        { "value": "top-right", "label": "Top right" },
-        { "value": "middle-left", "label": "Middle left" },
-        { "value": "middle-center", "label": "Middle center" },
-        { "value": "middle-right", "label": "Middle right" },
-        { "value": "bottom-left", "label": "Bottom left" },
-        { "value": "bottom-center", "label": "Bottom center" },
-        { "value": "bottom-right", "label": "Bottom right" }
-      ]
-    },
-    { "type": "select", "id": "subheading_position", "label": "Subheading position", "default": "middle-center",
+    { "type": "checkbox", "id": "show_dots", "label": "Show dots", "default": true },
+    { "type": "checkbox", "id": "show_arrows", "label": "Show arrows", "default": true },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "Content position",
+      "default": "middle-center",
       "options": [
         { "value": "top-left", "label": "Top left" },
         { "value": "top-center", "label": "Top center" },
@@ -188,60 +105,38 @@
         { "value": "bottom-right", "label": "Bottom right" }
       ]
     },
-    { "type": "select", "id": "buttons_position", "label": "Buttons position", "default": "bottom-center",
-      "options": [
-        { "value": "top-left", "label": "Top left" },
-        { "value": "top-center", "label": "Top center" },
-        { "value": "top-right", "label": "Top right" },
-        { "value": "middle-left", "label": "Middle left" },
-        { "value": "middle-center", "label": "Middle center" },
-        { "value": "middle-right", "label": "Middle right" },
-        { "value": "bottom-left", "label": "Bottom left" },
-        { "value": "bottom-center", "label": "Bottom center" },
-        { "value": "bottom-right", "label": "Bottom right" }
-      ]
-    },
-
-    { "type": "checkbox", "id": "enable_button_3d", "label": "3D button depth", "default": true },
-    { "type": "checkbox", "id": "enable_button_shimmer", "label": "Subtle shimmer on buttons", "default": true },
-
-    { "type": "checkbox", "id": "enable_sparkle_overlay", "label": "Sparkle overlay (subtle)", "default": false },
-    { "type": "range", "id": "sparkle_intensity", "label": "Sparkle intensity", "min": 0, "max": 100, "step": 1, "default": 12 }
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "default": 20
+    }
   ],
   "blocks": [
     {
       "type": "slide",
       "name": "Slide",
-      "limit": 8,
       "settings": [
-        { "type": "image_picker", "id": "image", "label": "Slide image" },
-        { "type": "text", "id": "heading", "label": "Heading", "default": "Adventure is calling" },
-        { "type": "text", "id": "subheading", "label": "Subheading", "default": "Gear up & go  be ready for wherever the road takes you." },
-
-        { "type": "text", "id": "primary_button_label", "label": "Primary button label", "default": "Explore now" },
-        { "type": "url", "id": "primary_button_link", "label": "Primary button link" },
-
-        { "type": "checkbox", "id": "secondary_button_enable", "label": "Enable secondary button", "default": true },
-        { "type": "text", "id": "secondary_button_label", "label": "Secondary button label", "default": "Learn more" },
-        { "type": "url", "id": "secondary_button_link", "label": "Secondary button link" }
+        { "type": "image_picker", "id": "image", "label": "Background image" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Your headline" },
+        { "type": "text", "id": "subheading", "label": "Subheading", "default": "A short supporting line" },
+        { "type": "text", "id": "button1_label", "label": "Primary button label", "default": "Shop now" },
+        { "type": "url", "id": "button1_link", "label": "Primary button link" },
+        { "type": "text", "id": "button2_label", "label": "Secondary button label" },
+        { "type": "url", "id": "button2_link", "label": "Secondary button link" }
       ]
     }
   ],
+  "max_blocks": 8,
   "presets": [
     {
       "name": "Pro AGG Hero Slider",
       "category": "Image",
       "blocks": [
-        {
-          "type": "slide",
-          "settings": {
-            "heading": "Adventure is calling",
-            "subheading": "Gear up & go  be ready for wherever the road takes you.",
-            "primary_button_label": "Explore now",
-            "secondary_button_enable": true,
-            "secondary_button_label": "Learn more"
-          }
-        }
+        { "type": "slide", "settings": { "heading": "Adventure is calling", "subheading": "Gear up for the road ahead", "button1_label": "Explore now" } }
       ]
     }
   ]

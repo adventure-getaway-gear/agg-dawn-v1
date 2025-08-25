@@ -1,0 +1,157 @@
+﻿/* Pro AGG Hero Slider  Step 7 (Stabilize + Scaffold) */
+
+.section-pro-agg-hero-slider {
+  --overlay-color: var(--overlay-color, #000);
+  --overlay-opacity: var(--overlay-opacity, 0.3);
+  --btn-radius: 10px;
+  --btn-padding: 0.85rem 1.25rem;
+  --btn-gap: 0.75rem;
+}
+
+.pro-agg-slider {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  background: #111;
+}
+
+.pro-agg-slider.h-small { aspect-ratio: 16 / 6; }
+.pro-agg-slider.h-medium { aspect-ratio: 16 / 7; }
+.pro-agg-slider.h-large { aspect-ratio: 16 / 9; }
+.pro-agg-slider.h-adapt .slide__image { height: auto; }
+
+.pro-agg-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .6s ease;
+}
+.pro-agg-slide.is-active {
+  opacity: 1;
+  position: relative;
+}
+
+.pro-agg-media, .pro-agg-media .slide__image, .pro-agg-media .slide__placeholder {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.pro-agg-media { position: absolute; inset: 0; }
+.pro-agg-media .slide__image { object-fit: cover; }
+
+.pro-agg-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--overlay-color, #000);
+  opacity: var(--overlay-opacity, 0.3);
+  pointer-events: none;
+}
+
+/* Sparkle scaffold (subtle) */
+.pro-agg-sparkle {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.35), transparent 60%),
+    radial-gradient(1.5px 1.5px at 70% 60%, rgba(255,255,255,.25), transparent 60%),
+    radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.3), transparent 60%);
+  opacity: 0.0; /* default off; JS can raise if enabled */
+  animation: aggSparkle 6s linear infinite;
+}
+@keyframes aggSparkle {
+  0% { background-position: 0% 0%, 0% 0%, 0% 0%; }
+  100% { background-position: 100% 100%, 100% 100%, 100% 100%; }
+}
+
+/* Content positioning (9-point) */
+.pro-agg-content.pos {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  padding: clamp(12px, 2vw, 32px);
+}
+.pos.top-left { place-items: start start; }
+.pos.top-center { place-items: start center; }
+.pos.top-right { place-items: start end; }
+.pos.middle-left { place-items: center start; }
+.pos.middle-center { place-items: center center; }
+.pos.middle-right { place-items: center end; }
+.pos.bottom-left { place-items: end start; }
+.pos.bottom-center { place-items: end center; }
+.pos.bottom-right { place-items: end end; }
+
+.pro-agg-heading {
+  color: var(--color-foreground, #fff);
+  text-shadow: 0 2px 10px rgba(0,0,0,.45);
+  font-size: clamp(1.6rem, 3.5vw, 3.2rem);
+  line-height: 1.15;
+  margin: 0;
+}
+.pro-agg-subheading {
+  color: rgba(255,255,255,.92);
+  text-shadow: 0 2px 8px rgba(0,0,0,.4);
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  margin: .6rem 0 0 0;
+  max-width: min(72ch, 90vw);
+}
+
+.pro-agg-buttons {
+  display: flex;
+  gap: var(--btn-gap);
+  flex-wrap: wrap;
+}
+.pro-agg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--btn-padding);
+  border-radius: var(--btn-radius);
+  color: #0b1f15;
+  background: linear-gradient(180deg, #E9A54A, #E67E22 65%, #C7630E);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: .2px;
+  position: relative;
+  isolation: isolate;
+  transition: transform .15s ease, box-shadow .15s ease, filter .2s ease;
+}
+.pro-agg-btn.btn--secondary {
+  background: linear-gradient(180deg, #F5F3EF, #DAD6CE 65%, #BEB9AF);
+  color: #1C1C1C;
+}
+.pro-agg-btn.btn--3d {
+  box-shadow:
+    0 10px 20px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.35);
+  transform: translateY(0);
+}
+.pro-agg-btn.btn--3d:hover { transform: translateY(-1px); }
+.pro-agg-btn.btn--3d:active { transform: translateY(0); }
+
+.pro-agg-btn.btn--shimmer::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.35) 12%, transparent 24% 100%);
+  transform: translateX(-120%);
+  animation: shimmer 2.8s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+/* Mobile tuning */
+@media (max-width: 768px) {
+  .pro-agg-slider.h-small,
+  .pro-agg-slider.h-medium,
+  .pro-agg-slider.h-large { aspect-ratio: 9 / 12; }
+  .pro-agg-buttons { justify-content: center; }
+  .pro-agg-subheading { text-align: center; }
+  .pos.middle-left, .pos.middle-right { place-items: center center; }
+  .pos.bottom-left, .pos.bottom-right { place-items: end center; }
+}
