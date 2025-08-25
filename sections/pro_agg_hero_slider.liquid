@@ -1,0 +1,177 @@
+﻿{% comment %}
+  Pro AGG Hero Slider v1
+  Files: 
+    - sections/pro_agg_hero_slider.liquid
+    - snippets/pro_agg_button.liquid (used via {% render 'pro_agg_button' %})
+    - assets/pro_agg_hero.css
+    - assets/pro_agg_hero.js
+  Notes:
+    * Uses CSS/JS assets for layout and slider logic (no external libraries).
+    * Add this section from the theme customizer under "Pro AGG Hero Slider".
+{% endcomment %}
+
+{{ 'pro_agg_hero.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pro_agg_hero.js' | asset_url }}" defer></script>
+
+<section id="section-{{ section.id }}" class="pro-agg-hero pro-agg-hero--{{ section.settings.height }}" 
+  style="--overlay-color: {{ section.settings.overlay_color }}; --overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};">
+  <div class="pro-agg-hero__viewport" data-section-id="{{ section.id }}"
+       data-autoplay="{{ section.settings.autoplay }}" 
+       data-speed="{{ section.settings.autoplay_speed }}"
+       data-show-dots="{{ section.settings.show_dots }}"
+       data-show-arrows="{{ section.settings.show_arrows }}">
+
+    <ul class="pro-agg-hero__track">
+      {% for block in section.blocks %}
+        {% assign mobile_img = block.settings.image | img_url: '800x' %}
+        {% assign desktop_img = block.settings.image | img_url: '2000x' %}
+        <li id="block-{{ block.id }}" class="pro-agg-hero__slide" 
+            style="--bg-image-desktop: url('{{ desktop_img }}'); --bg-image-mobile: url('{{ mobile_img }}');"
+            {{ block.shopify_attributes }}>
+          <div class="pro-agg-hero__media" role="img" aria-label="{{ block.settings.heading | escape }}"></div>
+          <div class="pro-agg-hero__overlay" aria-hidden="true"></div>
+
+          <div class="pro-agg-hero__content wrap--{{ section.settings.content_width }} align--{{ block.settings.text_align }}">
+            {% if block.settings.subheading != blank %}
+              <p class="pro-agg-hero__eyebrow" style="color: {{ block.settings.text_color }}">{{ block.settings.subheading }}</p>
+            {% endif %}
+            {% if block.settings.heading != blank %}
+              <h2 class="pro-agg-hero__title" style="color: {{ block.settings.text_color }}">{{ block.settings.heading }}</h2>
+            {% endif %}
+            {% if block.settings.body != blank %}
+              <div class="pro-agg-hero__body rte" style="color: {{ block.settings.text_color }}">{{ block.settings.body }}</div>
+            {% endif %}
+
+            <div class="pro-agg-hero__buttons">
+              {% if block.settings.btn_primary_label != blank and block.settings.btn_primary_link != blank %}
+                {% render 'pro_agg_button', 
+                  label: block.settings.btn_primary_label, 
+                  url: block.settings.btn_primary_link, 
+                  style: block.settings.btn_primary_style, 
+                  size: block.settings.btn_size %}
+              {% endif %}
+              {% if block.settings.btn_secondary_label != blank and block.settings.btn_secondary_link != blank %}
+                {% render 'pro_agg_button', 
+                  label: block.settings.btn_secondary_label, 
+                  url: block.settings.btn_secondary_link, 
+                  style: block.settings.btn_secondary_style, 
+                  size: block.settings.btn_size %}
+              {% endif %}
+            </div>
+          </div>
+        </li>
+      {% else %}
+        <li class="pro-agg-hero__slide pro-agg-hero__slide--placeholder">
+          <div class="pro-agg-hero__media"></div>
+          <div class="pro-agg-hero__overlay" aria-hidden="true"></div>
+          <div class="pro-agg-hero__content wrap--{{ section.settings.content_width }} align--center">
+            <p class="pro-agg-hero__eyebrow">Pro AGG</p>
+            <h2 class="pro-agg-hero__title">Add your first slide</h2>
+            <div class="pro-agg-hero__buttons">
+              {% render 'pro_agg_button', label: 'Shop Now', url: routes.all_products_collection_url, style: 'primary', size: 'lg' %}
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    {% if section.settings.show_arrows %}
+      <button class="pro-agg-hero__nav pro-agg-hero__nav--prev" aria-label="Previous slide" type="button">&#10094;</button>
+      <button class="pro-agg-hero__nav pro-agg-hero__nav--next" aria-label="Next slide" type="button">&#10095;</button>
+    {% endif %}
+
+    {% if section.settings.show_dots %}
+      <div class="pro-agg-hero__dots" role="tablist" aria-label="Hero slides"></div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Pro AGG Hero Slider",
+  "tag": "section",
+  "class": "section pro-agg-hero-section",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "select", "id": "height", "label": "Section height", "default": "md", "options": [
+      {"value": "sm", "label": "Small"}, {"value": "md", "label": "Medium"}, {"value": "lg", "label": "Large"}, {"value": "xl", "label": "Full viewport"}
+    ]},
+    { "type": "select", "id": "content_width", "label": "Content width", "default": "narrow", "options": [
+      {"value": "narrow", "label": "Narrow"}, {"value": "wide", "label": "Wide"}
+    ]},
+    { "type": "color", "id": "overlay_color", "label": "Overlay color", "default": "#000000" },
+    { "type": "range", "id": "overlay_opacity", "label": "Overlay opacity (%)", "min": 0, "max": 90, "step": 5, "default": 35 },
+    { "type": "checkbox", "id": "autoplay", "label": "Autoplay", "default": true },
+    { "type": "range", "id": "autoplay_speed", "label": "Autoplay speed (ms)", "min": 2000, "max": 12000, "step": 500, "default": 5500 },
+    { "type": "checkbox", "id": "show_dots", "label": "Show dots", "default": true },
+    { "type": "checkbox", "id": "show_arrows", "label": "Show arrows", "default": true }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Background image" },
+        { "type": "text", "id": "subheading", "label": "Eyebrow" },
+        { "type": "text", "id": "heading", "label": "Heading" },
+        { "type": "richtext", "id": "body", "label": "Body" },
+        { "type": "select", "id": "text_align", "label": "Text alignment", "default": "left", "options": [
+          {"value": "left", "label": "Left"}, {"value": "center", "label": "Center"}, {"value": "right", "label": "Right"}
+        ]},
+        { "type": "color", "id": "text_color", "label": "Text color", "default": "#FFFFFF" },
+
+        { "type": "header", "content": "Primary button" },
+        { "type": "text", "id": "btn_primary_label", "label": "Label" },
+        { "type": "url", "id": "btn_primary_link", "label": "Link" },
+        { "type": "select", "id": "btn_primary_style", "label": "Style", "default": "primary", "options": [
+          {"value": "primary", "label": "Primary"}, {"value": "secondary", "label": "Secondary"}, {"value": "ghost", "label": "Ghost"}
+        ]},
+
+        { "type": "header", "content": "Secondary button" },
+        { "type": "text", "id": "btn_secondary_label", "label": "Label" },
+        { "type": "url", "id": "btn_secondary_link", "label": "Link" },
+        { "type": "select", "id": "btn_secondary_style", "label": "Style", "default": "secondary", "options": [
+          {"value": "primary", "label": "Primary"}, {"value": "secondary", "label": "Secondary"}, {"value": "ghost", "label": "Ghost"}
+        ]},
+
+        { "type": "select", "id": "btn_size", "label": "Button size", "default": "md", "options": [
+          {"value": "sm", "label": "Small"}, {"value": "md", "label": "Medium"}, {"value": "lg", "label": "Large"}
+        ]}
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Pro AGG Hero Slider", "category": "Hero" }
+  ]
+}
+{% endschema %}
+
+{% stylesheet %}
+/* Inline critical styles (non-blocking full CSS is in assets/pro_agg_hero.css) */
+.pro-agg-hero { position: relative; }
+.pro-agg-hero__viewport { position: relative; overflow: hidden; }
+.pro-agg-hero__track { list-style: none; margin: 0; padding: 0; display: flex; transition: transform 500ms ease; }
+.pro-agg-hero__slide { position: relative; min-width: 100%; }
+.pro-agg-hero__media { position: absolute; inset: 0; background-size: cover; background-position: center; }
+@media (min-width: 750px) { .pro-agg-hero__media { background-image: var(--bg-image-desktop); } }
+@media (max-width: 749.98px) { .pro-agg-hero__media { background-image: var(--bg-image-mobile); } }
+.pro-agg-hero__overlay { position: absolute; inset: 0; background: var(--overlay-color); opacity: var(--overlay-opacity); }
+.pro-agg-hero__content { position: relative; z-index: 2; padding: 2rem 1rem; }
+.pro-agg-hero__title { margin: 0.25rem 0 0.5rem; }
+.pro-agg-hero__buttons { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1rem; }
+.align--left { text-align: left; align-items: flex-start; }
+.align--center { text-align: center; align-items: center; }
+.align--right { text-align: right; align-items: flex-end; }
+.wrap--narrow { max-width: 720px; margin: 0 auto; }
+.wrap--wide { max-width: 1120px; margin: 0 auto; }
+.pro-agg-hero--sm { min-height: 40vh; }
+.pro-agg-hero--md { min-height: 60vh; }
+.pro-agg-hero--lg { min-height: 80vh; }
+.pro-agg-hero--xl { min-height: 100vh; }
+.pro-agg-hero__nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; background: rgba(0,0,0,.3); color: #fff; border: 0; width: 40px; height: 40px; border-radius: 999px; cursor: pointer; }
+.pro-agg-hero__nav--prev { left: 10px; }
+.pro-agg-hero__nav--next { right: 10px; }
+.pro-agg-hero__dots { position: absolute; left: 0; right: 0; bottom: 12px; display: flex; gap: 8px; justify-content: center; z-index: 3; }
+.pro-agg-hero__dots button { width: 10px; height: 10px; border-radius: 999px; border: 0; background: rgba(255,255,255,.5); }
+.pro-agg-hero__dots button[aria-selected='true'] { background: #fff; }
+{% endstylesheet %}

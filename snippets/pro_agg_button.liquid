@@ -1,0 +1,16 @@
+﻿{%- comment -%}
+  pro_agg_button.liquid
+  Params:
+    - label: string
+    - url: string
+    - style: 'primary' | 'secondary' | 'ghost'
+    - size: 'sm' | 'md' | 'lg'
+{%- endcomment -%}
+{%- assign _label = label | default: 'Click' -%}
+{%- assign _url = url | default: '#' -%}
+{%- assign _style = style | default: 'primary' -%}
+{%- assign _size = size | default: 'md' -%}
+
+<a href="{{ _url }}" class="pro-agg-btn pro-agg-btn--{{ _style }} pro-agg-btn--{{ _size }}">
+  <span class="pro-agg-btn__label">{{ _label }}</span>
+</a>
