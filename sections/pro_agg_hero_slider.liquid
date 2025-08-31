@@ -1,7 +1,6 @@
 {% comment %}
-  pro_agg_hero_slider.liquid (basic)
+  pro_agg_hero_slider.liquid (basic, fixed)
   Single-image hero with heading, subheading, and dual CTAs.
-  Named to match your pattern: pro_agg_hero_slider
 {% endcomment %}
 
 {{ 'pro_agg_hero_slider.css' | asset_url | stylesheet_tag }}
@@ -33,7 +32,7 @@
         {{ section.settings.cta1_url }}{{ section.settings.cta1_label }}</a>
       {% endif %}
       {% if section.settings.cta2_label != blank and section.settings.cta2_url != blank %}
-        <a class="btn btn--secondary" href="{{ section.settings.cta2_url</a>
+        <a href="{{settings.cta2_url }}{{ section.settings.cta2_label }}</a>
       {% endif %}
     </div>
   </div>
