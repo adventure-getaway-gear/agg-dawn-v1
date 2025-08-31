@@ -1,6 +1,6 @@
 {% comment %}
   pro_agg_hero_slider.liquid (basic, fixed)
-  Single-image hero with heading, subheading, and dual CTAs.
+  Single-image hero with heading, subheading, dual CTAs, 9-point positioning.
 {% endcomment %}
 
 {{ 'pro_agg_hero_slider.css' | asset_url | stylesheet_tag }}
@@ -32,7 +32,7 @@
         {{ section.settings.cta1_url }}{{ section.settings.cta1_label }}</a>
       {% endif %}
       {% if section.settings.cta2_label != blank and section.settings.cta2_url != blank %}
-        <a href="{{settings.cta2_url }}{{ section.settings.cta2_label }}</a>
+        {{ section.settings.cta2_url }}{{ section.settings.cta2_label }}</a>
       {% endif %}
     </div>
   </div>
@@ -40,7 +40,7 @@
 
 {% schema %}
 {
-  "name": "PRO AGG — Hero Slider (basic)",
+  "name": "PRO AGG Hero",
   "settings": [
     { "type": "image_picker", "id": "bg_image", "label": "Background image" },
     { "type": "range", "id": "overlay_opacity", "label": "Overlay opacity %", "min": 0, "max": 90, "step": 5, "default": 30 },
@@ -73,7 +73,7 @@
   ],
   "blocks": [],
   "presets": [
-    { "name": "PRO AGG — Hero Slider (basic)" }
+    { "name": "PRO AGG Hero" }
   ]
 }
 {% endschema %}
