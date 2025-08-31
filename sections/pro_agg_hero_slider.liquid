@@ -1,0 +1,80 @@
+{% comment %}
+  pro_agg_hero_slider.liquid (basic)
+  Single-image hero with heading, subheading, and dual CTAs.
+  Named to match your pattern: pro_agg_hero_slider
+{% endcomment %}
+
+{{ 'pro_agg_hero_slider.css' | asset_url | stylesheet_tag }}
+
+{% assign bg = section.settings.bg_image %}
+<section
+  class="pro-agg-hero pro-agg-pos-{{ section.settings.position }}"
+  style="
+    {% if bg != blank %}
+      background-image: url({{ bg | image_url: width: 1920 }});
+    {% endif %}
+  "
+>
+  <div
+    class="pro-agg-hero__overlay"
+    style="opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }}"
+  ></div>
+
+  <div class="pro-agg-hero__content">
+    {% if section.settings.heading != blank %}
+      <h1>{{ section.settings.heading }}</h1>
+    {% endif %}
+    {% if section.settings.subheading != blank %}
+      <p class="subheading">{{ section.settings.subheading }}</p>
+    {% endif %}
+
+    <div class="cta-group">
+      {% if section.settings.cta1_label != blank and section.settings.cta1_url != blank %}
+        {{ section.settings.cta1_url }}{{ section.settings.cta1_label }}</a>
+      {% endif %}
+      {% if section.settings.cta2_label != blank and section.settings.cta2_url != blank %}
+        <a class="btn btn--secondary" href="{{ section.settings.cta2_url</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "PRO AGG — Hero Slider (basic)",
+  "settings": [
+    { "type": "image_picker", "id": "bg_image", "label": "Background image" },
+    { "type": "range", "id": "overlay_opacity", "label": "Overlay opacity %", "min": 0, "max": 90, "step": 5, "default": 30 },
+
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Adventure awaits" },
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Test hero section" },
+
+    { "type": "text", "id": "cta1_label", "label": "Primary CTA label", "default": "Shop now" },
+    { "type": "url",  "id": "cta1_url",   "label": "Primary CTA link" },
+    { "type": "text", "id": "cta2_label", "label": "Secondary CTA label", "default": "Learn more" },
+    { "type": "url",  "id": "cta2_url",   "label": "Secondary CTA link" },
+
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Content position",
+      "default": "center",
+      "options": [
+        { "label": "Top left",      "value": "top-left" },
+        { "label": "Top center",    "value": "top-center" },
+        { "label": "Top right",     "value": "top-right" },
+        { "label": "Center left",   "value": "center-left" },
+        { "label": "Center",        "value": "center" },
+        { "label": "Center right",  "value": "center-right" },
+        { "label": "Bottom left",   "value": "bottom-left" },
+        { "label": "Bottom center", "value": "bottom-center" },
+        { "label": "Bottom right",  "value": "bottom-right" }
+      ]
+    }
+  ],
+  "blocks": [],
+  "presets": [
+    { "name": "PRO AGG — Hero Slider (basic)" }
+  ]
+}
+{% endschema %}
