@@ -33,3 +33,14 @@ _Last updated:
 ## Session Startup Phrase
 Load AGG Context v1.0 and prepare to work on <task>.
 
+## Changelog
+- 2025-08-31: Created Capsule v1.0 and Open helper. (PS7)
+- 2025-08-31: Confirmed OneDrive path and open test successful.
+
+## Quick Rehydrate Prompt
+Load AGG Context v1.0 and prepare to work on <today’s task>.
+(If needed, capsule is at:
+OneDrive: C:\Users\chris\OneDrive - Adventure Getaway Gear LLC\AGG_Chat_History\Notes\2025\08-August\AGG_Context.md
+Repo:     C:\WebProjects\agg-dawn-v1\docs\AGG_Context.md)
+
+
