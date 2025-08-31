@@ -1,79 +1,136 @@
-{% comment %}
-  pro_agg_hero_slider.liquid (basic, fixed)
-  Single-image hero with heading, subheading, dual CTAs, 9-point positioning.
-{% endcomment %}
-
 {{ 'pro_agg_hero_slider.css' | asset_url | stylesheet_tag }}
 
-{% assign bg = section.settings.bg_image %}
-<section
-  class="pro-agg-hero pro-agg-pos-{{ section.settings.position }}"
-  style="
-    {% if bg != blank %}
-      background-image: url({{ bg | image_url: width: 1920 }});
-    {% endif %}
-  "
->
-  <div
-    class="pro-agg-hero__overlay"
-    style="opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }}"
-  ></div>
-
-  <div class="pro-agg-hero__content">
-    {% if section.settings.heading != blank %}
-      <h1>{{ section.settings.heading }}</h1>
-    {% endif %}
-    {% if section.settings.subheading != blank %}
-      <p class="subheading">{{ section.settings.subheading }}</p>
-    {% endif %}
-
-    <div class="cta-group">
-      {% if section.settings.cta1_label != blank and section.settings.cta1_url != blank %}
-        {{ section.settings.cta1_url }}{{ section.settings.cta1_label }}</a>
-      {% endif %}
-      {% if section.settings.cta2_label != blank and section.settings.cta2_url != blank %}
-        {{ section.settings.cta2_url }}{{ section.settings.cta2_label }}</a>
-      {% endif %}
-    </div>
+<div class="pro-hero-slider" 
+     data-autoplay="{{ section.settings.autoplay }}" 
+     data-interval="{{ section.settings.autoplay_interval }}">
+  <div class="slides">
+    {% for block in section.blocks %}
+      <div id="slide-{{ block.id }}" class="slide" 
+           style="background-image: url({{ block.settings.image | img_url: '1600x' }});">
+        <div class="slide-content">
+          {% if block.settings.heading != blank %}
+            <h2 class="slide-heading">{{ block.settings.heading }}</h2>
+          {% endif %}
+          {% if block.settings.subheading != blank %}
+            <p class="slide-subheading">{{ block.settings.subheading }}</p>
+          {% endif %}
+          {% if block.settings.button_text != blank %}
+            <a href="{{ block.settings.button_link }}" class="slide-button">
+              {{ block.settings.button_text }}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
   </div>
-</section>
+
+  {% if section.blocks.size > 1 %}
+    <button class="slider-prev" aria-label="Previous slide">&larr;</button>
+    <button class="slider-next" aria-label="Next slide">&rarr;</button>
+    <div class="slider-dots">
+      {% for block in section.blocks %}
+        <button class="dot{% if forloop.first %} active{% endif %}" 
+                data-slide="{{ forloop.index0 }}"></button>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  (function(){
+    const wrapper = document.querySelector('.pro-hero-slider');
+    if (!wrapper) return;
+    const track    = wrapper.querySelector('.slides');
+    const slides   = wrapper.querySelectorAll('.slide');
+    const dots     = wrapper.querySelectorAll('.dot');
+    const prevBtn  = wrapper.querySelector('.slider-prev');
+    const nextBtn  = wrapper.querySelector('.slider-next');
+    let   current  = 0;
+    const total    = slides.length;
+    const interval = parseInt(wrapper.dataset.interval, 10);
+    const autoplay = wrapper.dataset.autoplay === 'true';
+
+    function update() {
+      track.style.transform = 	ranslateX(-% );
+      dots.forEach((d,i) => d.classList.toggle('active', i === current));
+    }
+
+    function goNext(){ current = (current + 1) % total; update(); }
+    function goPrev(){ current = (current - 1 + total) % total; update(); }
+
+    nextBtn?.addEventListener('click', goNext);
+    prevBtn?.addEventListener('click', goPrev);
+    dots.forEach(dot =>
+      dot.addEventListener('click', e => {
+        current = Number(e.target.dataset.slide);
+        update();
+      })
+    );
+
+    if (autoplay) setInterval(goNext, interval);
+  })();
+</script>
 
 {% schema %}
 {
-  "name": "PRO AGG Hero",
+  "name": "Pro AGG Hero Slider",
   "settings": [
-    { "type": "image_picker", "id": "bg_image", "label": "Background image" },
-    { "type": "range", "id": "overlay_opacity", "label": "Overlay opacity %", "min": 0, "max": 90, "step": 5, "default": 30 },
-
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Adventure awaits" },
-    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Test hero section" },
-
-    { "type": "text", "id": "cta1_label", "label": "Primary CTA label", "default": "Shop now" },
-    { "type": "url",  "id": "cta1_url",   "label": "Primary CTA link" },
-    { "type": "text", "id": "cta2_label", "label": "Secondary CTA label", "default": "Learn more" },
-    { "type": "url",  "id": "cta2_url",   "label": "Secondary CTA link" },
-
     {
-      "type": "select",
-      "id": "position",
-      "label": "Content position",
-      "default": "center",
-      "options": [
-        { "label": "Top left",      "value": "top-left" },
-        { "label": "Top center",    "value": "top-center" },
-        { "label": "Top right",     "value": "top-right" },
-        { "label": "Center left",   "value": "center-left" },
-        { "label": "Center",        "value": "center" },
-        { "label": "Center right",  "value": "center-right" },
-        { "label": "Bottom left",   "value": "bottom-left" },
-        { "label": "Bottom center", "value": "bottom-center" },
-        { "label": "Bottom right",  "value": "bottom-right" }
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay slides",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "autoplay_interval",
+      "label": "Autoplay interval (ms)",
+      "default": 5000
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Background image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": ""
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": ""
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": ""
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link",
+          "default": ""
+        }
       ]
     }
   ],
-  "blocks": [],
+  "max_blocks": 10,
   "presets": [
-    { "name": "PRO AGG Hero" }
+    {
+      "name": "Pro AGG Hero Slider",
+      "category": "Hero"
+    }
   ]
 }
 {% endschema %}

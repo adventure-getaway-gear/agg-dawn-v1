@@ -1,61 +1,10 @@
-/* pro_agg_hero_slider.css — basic styles */
-.pro-agg-hero {
+.pro-hero-slider {
   position: relative;
-  display: grid;
-  min-height: 60vh;
-  background-size: cover;
-  background-position: center;
-  isolation: isolate;
-}
-.pro-agg-hero__overlay {
-  position: absolute;
-  inset: 0;
-  background: #000;
-  opacity: 0.3; /* default; will be overridden inline by setting */
-  z-index: 0;
-}
-.pro-agg-hero__content {
-  position: relative;
-  z-index: 1;
-  color: #fff;
-  padding: 32px;
-  display: grid;
-  gap: 12px;
-}
-.pro-agg-hero__content h1 {
-  margin: 0;
-}
-.pro-agg-hero__content .subheading {
-  margin: 0 0 8px;
-  opacity: 0.9;
-}
-.pro-agg-hero .cta-group {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.pro-agg-hero .btn {
-  display: inline-block;
-  padding: 10px 16px;
-  border-radius: 4px;
-  background: #1a1a1a;
-  color: #fff;
-  text-decoration: none;
-}
-.pro-agg-hero .btn:hover { opacity: 0.92; }
-.pro-agg-hero .btn--secondary {
-  background: transparent;
-  color: #fff;
-  border: 1px solid #fff;
+  overflow: hidden;
 }
 
-/* 9-point positioning helpers */
-.pro-agg-pos-top-left      { place-content: start start; }
-.pro-agg-pos-top-center    { place-content: start center; }
-.pro-agg-pos-top-right     { place-content: start end; }
-.pro-agg-pos-center-left   { place-content: center start; }
-.pro-agg-pos-center        { place-content: center center; }
-.pro-agg-pos-center-right  { place-content: center end; }
-.pro-agg-pos-bottom-left   { place-content: end start; }
-.pro-agg-pos-bottom-center { place-content: end center; }
-.pro-agg-pos-bottom-right  { place-content: end end; }
+/* ...rest of CSS from above... */
+
+.pro-hero-slider .dot.active {
+  background: #fff;
+}

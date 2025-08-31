@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "header":    { "type": "header" },
+    "hero_slider": {
+      "type": "pro_agg_hero_slider",
+      "settings": {}
+    },
+    "main":      { "type": "main-page" },
+    "footer":    { "type": "footer" }
+  },
+  "order": ["header", "hero_slider", "main", "footer"]
+}
