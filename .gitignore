@@ -1,15 +1,26 @@
-# OS / editor junk
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# Node / build
+# Node modules
 node_modules/
-dist/
-.cache/
-*.log
 
-# Env
+# VS Code settings
+.vscode/
+
+# PowerShell history
+*.ps1
+*.psm1
+*.psd1
+
+# Shopify theme junk
+.DS_Store
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.sass-cache
+.cache/
 .env
 .env.*
+
+# macOS system files
+._*
+Thumbs.db
