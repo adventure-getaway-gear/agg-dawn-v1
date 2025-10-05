@@ -1,0 +1,102 @@
+{% schema %}
+{
+  "name": "PRO-AGG Hero",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Hero Image"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Adventure Starts Simple."
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Memories Last Forever."
+    },
+    {
+      "type": "url",
+      "id": "primary_link",
+      "label": "Primary Button Link"
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Primary Button Label",
+      "default": "Explore Essentials"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Secondary Button Link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Secondary Button Label",
+      "default": "Our Story"
+    }
+  ],
+  "presets": [
+    {
+      "name": "PRO-AGG Hero"
+    }
+  ]
+}
+{% endschema %}
+
+<div class="pro-agg-hero">
+  <div class="pro-agg-hero__image-wrapper">
+    {% if section.settings.hero_image != blank %}
+      <img 
+        src="{{ section.settings.hero_image | img_url: '2000x' }}" 
+        alt="Family preparing SUV for adventure at sunrise — Adventure Getaway Gear hero image"
+        loading="lazy"
+        width="2000"
+        height="auto"
+        class="pro-agg-hero__image"
+      >
+    {% endif %}
+    <div class="pro-agg-hero__overlay">
+      <div class="pro-agg-hero__content">
+        <h1 class="pro-agg-hero__heading">{{ section.settings.heading }}</h1>
+        <p class="pro-agg-hero__subheading">{{ section.settings.subheading }}</p>
+        <div class="pro-agg-hero__buttons">
+          {% if section.settings.primary_link != blank %}
+            <a href="{{ section.settings.primary_link }}" class="pro-agg-btn pro-agg-btn--primary">
+              {{ section.settings.primary_label }}
+            </a>
+          {% endif %}
+          {% if section.settings.secondary_link != blank %}
+            <a href="{{ section.settings.secondary_link }}" class="pro-agg-btn pro-agg-btn--secondary">
+              {{ section.settings.secondary_label }}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile container -->
+  <div class="pro-agg-hero__mobile">
+    <h1 class="pro-agg-hero__heading">{{ section.settings.heading }}</h1>
+    <p class="pro-agg-hero__subheading">{{ section.settings.subheading }}</p>
+    <div class="pro-agg-hero__buttons">
+      {% if section.settings.primary_link != blank %}
+        <a href="{{ section.settings.primary_link }}" class="pro-agg-btn pro-agg-btn--primary">
+          {{ section.settings.primary_label }}
+        </a>
+      {% endif %}
+      {% if section.settings.secondary_link != blank %}
+        <a href="{{ section.settings.secondary_link }}" class="pro-agg-btn pro-agg-btn--secondary">
+          {{ section.settings.secondary_label }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
