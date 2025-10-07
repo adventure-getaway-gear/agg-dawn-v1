@@ -79,11 +79,85 @@
         "padding_top": 44,
         "padding_bottom": 36
       }
+    },
+    "blocks_BATQ3y": {
+      "type": "_blocks",
+      "blocks": {
+        "ai_gen_block_df0d8b8_BweMPn": {
+          "type": "ai_gen_block_df0d8b8",
+          "settings": {
+            "max_width": 1200,
+            "content_spacing": 32,
+            "section_padding_top": 40,
+            "section_padding_bottom": 40,
+            "show_hero": true,
+            "hero_image": "shopify://shop_images/agg-cover-camping-family-20251004-v1.2.png",
+            "hero_aspect_ratio": "16/9",
+            "hero_category": "Featured",
+            "hero_title": "The Future of Adventure Gear",
+            "hero_excerpt": "Discover the latest innovations in outdoor equipment that are changing how we explore the world.",
+            "overlay_opacity": 40,
+            "article_1_category": "Gear Review",
+            "article_1_title": "Best Hiking Boots for 2024",
+            "article_1_excerpt": "We tested the top hiking boots of the year to find the perfect balance of comfort, durability, and performance.",
+            "article_1_date": "March 15, 2024",
+            "article_1_author": "Sarah Johnson",
+            "article_2_category": "Adventure",
+            "article_2_title": "Hidden Trails of the Pacific Northwest",
+            "article_2_excerpt": "Explore lesser-known hiking trails that offer stunning views and peaceful solitude away from the crowds.",
+            "article_2_date": "March 12, 2024",
+            "article_2_author": "Mike Chen",
+            "article_3_category": "Tips",
+            "article_3_title": "Essential Camping Safety Tips",
+            "article_3_excerpt": "Stay safe on your next camping trip with these expert-recommended safety practices and emergency preparedness tips.",
+            "article_3_date": "March 10, 2024",
+            "article_3_author": "Alex Rivera",
+            "sidebar_title": "Latest News",
+            "sidebar_1_title": "New Ultralight Tent Collection",
+            "sidebar_1_date": "March 8, 2024",
+            "sidebar_2_title": "Winter Gear Sale Starts Tomorrow",
+            "sidebar_2_date": "March 5, 2024",
+            "sidebar_3_title": "Sustainable Outdoor Practices",
+            "sidebar_3_date": "March 3, 2024",
+            "sidebar_4_title": "Community Hiking Events",
+            "sidebar_4_date": "March 1, 2024",
+            "title_font": "assistant_n4",
+            "hero_title_size": 42,
+            "article_title_size": 22,
+            "sidebar_title_size": 20,
+            "sidebar_item_title_size": 14,
+            "body_text_size": 14,
+            "excerpt_size": 16,
+            "background_color": "#FFFFFF",
+            "text_color": "#121212",
+            "category_color": "#334FB4",
+            "overlay_text_color": "#FFFFFF",
+            "article_background": "#FFFFFF",
+            "sidebar_background": "#F3F3F3",
+            "article_padding": 24,
+            "article_border_radius": 8,
+            "article_border_width": 1,
+            "article_border_color": "#E5E5E5",
+            "sidebar_padding": 24,
+            "sidebar_border_radius": 8,
+            "sidebar_border_width": 1,
+            "sidebar_border_color": "#E5E5E5",
+            "image_border_radius": 6
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "ai_gen_block_df0d8b8_BweMPn"
+      ],
+      "name": "AGG-editorial layout",
+      "settings": {}
     }
   },
   "order": [
     "1759858091f4c1364a",
     "image_banner",
-    "featured_collection"
+    "featured_collection",
+    "blocks_BATQ3y"
   ]
 }
