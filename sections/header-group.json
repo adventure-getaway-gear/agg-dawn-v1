@@ -53,16 +53,10 @@
         "padding_top": 20,
         "padding_bottom": 20
       }
-    },
-    "blocks_wyreyM": {
-      "type": "_blocks",
-      "name": "AGG-editorial layout",
-      "settings": {}
     }
   },
   "order": [
     "announcement-bar",
-    "header",
-    "blocks_wyreyM"
+    "header"
   ]
 }
