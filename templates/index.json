@@ -11,31 +11,6 @@
   "sections": {
     "1759858091f4c1364a": {
       "type": "_blocks",
-      "blocks": {
-        "ai_gen_block_36ba103_MpcX7Q": {
-          "type": "ai_gen_block_36ba103",
-          "settings": {
-            "heading_text": "Adventure Awaits",
-            "heading_tag": "h2",
-            "text_alignment": "center",
-            "heading_font": "assistant_n4",
-            "font_size": 48,
-            "text_color": "#FFFFFF",
-            "glow_color": "#334FB4",
-            "glow_blur": 15,
-            "animation_duration": 2,
-            "enable_background_glow": true,
-            "background_glow_color": "#334FB4",
-            "padding_top": 40,
-            "padding_bottom": 40,
-            "padding_horizontal": 20
-          },
-          "blocks": {}
-        }
-      },
-      "block_order": [
-        "ai_gen_block_36ba103_MpcX7Q"
-      ],
       "settings": {}
     },
     "image_banner": {
