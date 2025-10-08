@@ -19,16 +19,8 @@ PRO-AGG Hero Slider Section
         {% if block.settings.image != blank %}
           <picture>
             {% if block.settings.mobile_image != blank %}
-              <source mediaings.mobile_image | img_url: 
-            {% endif %}
-            <img src="{{ block.settings.image | img_url: '2000x' }}" alt="{{ block.settings.image_alt | escape }}" loading="{% if forloop pos-desktop-{{ block.settings.position_desktop }} pos-mobile-{{ block.settings.position_mobile }}"
-          style="
-            color: {{ block.settings.text_color_desktop }};
-            --text-color-mobile: {{ block.settings.text_color_mobile }};
-            min-height: {{ section.settings.min_height_desktop }}vh;
-            --min-height-mobile: {{ section.settings.min_height_mobile }}vh;
-          "
-        >
+              <source media="(max-width: 749px)" srcset="{{ block.settings.mobile_image |    <img src="{{ block.settings.image | img_url: '2000x' }}" alt="{{ block.settings.image_alt | escape }}" loading="{% if forloop.first %ktop-{{ block.settings.position_desktop }} pos-mobile-{{ block.settings.position_mobile }}"
+          style="color: {{ block.settings.text_color_desktop }}; --text-color-mobile: {{ block.settings.text_color_mobile }}; min-height: {{ section.settings.min_height_desktop }}vh; --min-height-mobile: {{ section.settings.min_height_mobile }}vh;">
           {% if block.settings.heading != blank %}
             <h2 class="pro-agg-hero-slider__heading">{{ block.settings.heading }}</h2>
           {% endif %}
@@ -37,9 +29,10 @@ PRO-AGG Hero Slider Section
           {% endif %}
           <div class="pro-agg-hero-slider__ctas {% if section.settings.cta_layout == 'side_by_side' %}ctas--side{% else %}ctas--stack{% endif %}">
             {% if block.settings.button_1_label != blank %}
-              <a href="{{ block.settings.button_1_link }}" class="pro-agg-hero-slider__cta">{{ block.settings%}
-            {% if block.settings.button_2_label != blank and block.settings.show_button_2_on_mobile %}
-              <a href="{{ block.settings.button_2_link }}" class="pro-agg-hero-slider__cta">{{ block.settings.button      </div>
+              <a href="{{ block.settings.button_1_link }}" class="pro-agg-hero-slider__cta">{{ block.settings.button_1_label }}</ block.settings.button_2_label != blank and block.settings.show_button_2_on_mobile %}
+              <a href="{{ block.settings.button_2_link }}" class="pro-agg-hero-slider__
+            {% endif %}
+          </div>
         </div>
       </div>
     {% endfor %}
