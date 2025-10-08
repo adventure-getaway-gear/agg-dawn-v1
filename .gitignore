@@ -1,5 +1,4 @@
-# OS generated files #
-######################
+# OS generated files
 .DS_Store
 .DS_Store?
 ._*
@@ -7,4 +6,44 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
-.shopify
+
+# Editor folders
+.vscode/
+.idea/
+
+# Node / Build (if you add tooling later)
+node_modules/
+dist/
+build/
+.cache/
+*.map
+
+# Logs / Temp
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+.sass-cache/
+
+# Env files
+.env
+.env.*
+
+# PowerShell history (optional: remove if you want to keep scripts in Git)
+# *.ps1
+# *.psm1
+# *.psd1
+
+# Shopify theme artifacts (Dawn structure below is tracked; ignore only junk, not theme files)
+# (Do NOT ignore assets/, config/, layout/, locales/, sections/, snippets/, templates/)
+
+# macOS system files
+._*
+
+# Windows system files
+Thumbs.db
+
+# Optional: ignore local test or backup folders
+/test/
+_backup/
