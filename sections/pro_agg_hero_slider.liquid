@@ -1,0 +1,740 @@
+{{ 'pro_agg_hero_slider.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pro_agg_hero_slider.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign transition_type = section.settings.transition_type
+  assign content_animation = section.settings.content_animation
+-%}
+
+{%- style -%}
+  #ProAggSlider-{{ section.id }} {
+    --pro-agg-desktop-min-height: {{ section.settings.desktop_min_height }}px;
+    --pro-agg-desktop-max-height: {{ section.settings.desktop_max_height }}px;
+    --pro-agg-mobile-min-height: {{ section.settings.mobile_min_height }}px;
+    --pro-agg-mobile-max-height: {{ section.settings.mobile_max_height }}px;
+  }
+
+  {%- for block in section.blocks -%}
+    #ProAggSlide-{{ section.id }}-{{ forloop.index }} .pro_agg_slide__overlay::after {
+      opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }};
+    }
+
+    #ProAggSlide-{{ section.id }}-{{ forloop.index }} .pro_agg_slide__content {
+      --desktop-text-color: {{ block.settings.desktop_text_color }};
+      --mobile-text-color: {{ block.settings.mobile_text_color }};
+      justify-content: {{ block.settings.content_vertical_position }};
+      align-items: {{ block.settings.content_horizontal_position }};
+    }
+
+    #ProAggSlide-{{ section.id }}-{{ forloop.index }} .pro_agg_slide__content-wrapper {
+      transform: translate({{ block.settings.content_offset_x }}px, {{ block.settings.content_offset_y }}px);
+    }
+
+    @media screen and (max-width: 749px) {
+      #ProAggSlide-{{ section.id }}-{{ forloop.index }} .pro_agg_slide__content {
+        justify-content: {{ block.settings.mobile_content_vertical_position }};
+        align-items: {{ block.settings.mobile_content_horizontal_position }};
+      }
+    }
+  {%- endfor -%}
+{%- endstyle -%}
+
+<pro-agg-hero-slider
+  id="ProAggSlider-{{ section.id }}"
+  class="pro_agg_hero_slider"
+  role="region"
+  aria-roledescription="Hero carousel"
+  aria-label="{{ section.settings.accessibility_label | escape }}"
+  data-autoplay="{{ section.settings.autoplay }}"
+  data-autoplay-speed="{{ section.settings.autoplay_speed }}"
+  data-pause-on-hover="{{ section.settings.pause_on_hover }}"
+  data-transition="{{ transition_type }}"
+  data-content-animation="{{ content_animation }}"
+  data-slide-count="{{ section.blocks.size }}"
+>
+  {%- if section.settings.show_controls and section.blocks.size > 1 -%}
+    <div class="pro_agg_slider__controls">
+      <button
+        type="button"
+        class="pro_agg_slider__button pro_agg_slider__button--prev"
+        aria-label="Previous slide"
+        aria-controls="ProAggSlider-{{ section.id }}"
+      >
+        <span class="svg-wrapper">
+          {{- 'icon-caret.svg' | inline_asset_content -}}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="pro_agg_slider__button pro_agg_slider__button--next"
+        aria-label="Next slide"
+        aria-controls="ProAggSlider-{{ section.id }}"
+      >
+        <span class="svg-wrapper">
+          {{- 'icon-caret.svg' | inline_asset_content -}}
+        </span>
+      </button>
+    </div>
+
+    {%- if section.settings.show_dots -%}
+      <div class="pro_agg_slider__dots" role="tablist">
+        {%- for block in section.blocks -%}
+          <button
+            type="button"
+            class="pro_agg_slider__dot{% if forloop.first %} pro_agg_slider__dot--active{% endif %}"
+            role="tab"
+            aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}"
+            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+            aria-controls="ProAggSlide-{{ section.id }}-{{ forloop.index }}"
+            data-slide-index="{{ forloop.index0 }}"
+          >
+            <span class="visually-hidden">Slide {{ forloop.index }}</span>
+          </button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.show_play_pause and section.settings.autoplay -%}
+      <button
+        type="button"
+        class="pro_agg_slider__play_pause"
+        aria-label="Pause slideshow"
+        data-state="playing"
+      >
+        <span class="svg-wrapper svg-wrapper--pause">
+          {{- 'icon-pause.svg' | inline_asset_content -}}
+        </span>
+        <span class="svg-wrapper svg-wrapper--play">
+          {{- 'icon-play.svg' | inline_asset_content -}}
+        </span>
+      </button>
+    {%- endif -%}
+  {%- endif -%}
+
+  <div class="pro_agg_slider__track" data-transition="{{ transition_type }}">
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign desktop_image = block.settings.desktop_image
+        assign mobile_image = block.settings.mobile_image
+        assign heading = block.settings.heading
+        assign subheading = block.settings.subheading
+        assign cta1_text = block.settings.cta1_text
+        assign cta1_link = block.settings.cta1_link
+        assign cta1_style = block.settings.cta1_style
+        assign cta2_text = block.settings.cta2_text
+        assign cta2_link = block.settings.cta2_link
+        assign cta2_style = block.settings.cta2_style
+        assign cta_layout = block.settings.cta_layout
+        assign hide_cta2_mobile = block.settings.hide_cta2_mobile
+        assign image_alt = block.settings.image_alt
+
+        if image_alt == blank and heading != blank
+          assign image_alt = heading
+        endif
+      -%}
+
+      <div
+        id="ProAggSlide-{{ section.id }}-{{ forloop.index }}"
+        class="pro_agg_slide{% if forloop.first %} pro_agg_slide--active{% endif %}"
+        role="group"
+        aria-roledescription="Slide"
+        aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}"
+        {{ block.shopify_attributes }}
+      >
+        <div class="pro_agg_slide__media">
+          {%- if desktop_image != blank -%}
+            {%- liquid
+              assign loading = 'lazy'
+              assign fetchpriority = 'auto'
+              if forloop.first
+                assign loading = 'eager'
+                assign fetchpriority = 'high'
+              endif
+            -%}
+
+            <picture class="pro_agg_slide__picture pro_agg_slide__picture--desktop">
+              {{
+                desktop_image
+                | image_url: width: 3840
+                | image_tag:
+                  loading: loading,
+                  fetchpriority: fetchpriority,
+                  sizes: '100vw',
+                  widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840',
+                  alt: image_alt,
+                  class: 'pro_agg_slide__image'
+              }}
+            </picture>
+
+            {%- if mobile_image != blank -%}
+              <picture class="pro_agg_slide__picture pro_agg_slide__picture--mobile">
+                {{
+                  mobile_image
+                  | image_url: width: 1500
+                  | image_tag:
+                    loading: loading,
+                    fetchpriority: fetchpriority,
+                    sizes: '100vw',
+                    widths: '375, 550, 750, 1100, 1500',
+                    alt: image_alt,
+                    class: 'pro_agg_slide__image'
+                }}
+              </picture>
+            {%- endif -%}
+          {%- else -%}
+            <div class="pro_agg_slide__placeholder">
+              {{ 'hero-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
+            </div>
+          {%- endif -%}
+
+          <div class="pro_agg_slide__overlay"></div>
+        </div>
+
+        <div class="pro_agg_slide__content" data-animation="{{ content_animation }}">
+          <div class="pro_agg_slide__content-wrapper">
+            {%- if heading != blank -%}
+              <h2 class="pro_agg_slide__heading {{ block.settings.heading_size }}">
+                {{ heading }}
+              </h2>
+            {%- endif -%}
+
+            {%- if subheading != blank -%}
+              <div class="pro_agg_slide__subheading {{ block.settings.subheading_size }}">
+                {{ subheading }}
+              </div>
+            {%- endif -%}
+
+            {%- if cta1_text != blank or cta2_text != blank -%}
+              <div class="pro_agg_slide__ctas pro_agg_slide__ctas--{{ cta_layout }}">
+                {%- if cta1_text != blank -%}
+                  <a
+                    href="{{ cta1_link | default: '#' }}"
+                    class="pro_agg_cta pro_agg_cta--{{ cta1_style }}"
+                    {% if cta1_link == blank %}
+                      role="link" aria-disabled="true"
+                    {% endif %}
+                  >
+                    {{ cta1_text | escape }}
+                  </a>
+                {%- endif -%}
+
+                {%- if cta2_text != blank -%}
+                  <a
+                    href="{{ cta2_link | default: '#' }}"
+                    class="pro_agg_cta pro_agg_cta--{{ cta2_style }}{% if hide_cta2_mobile %} pro_agg_cta--hide-mobile{% endif %}"
+                    {% if cta2_link == blank %}
+                      role="link" aria-disabled="true"
+                    {% endif %}
+                  >
+                    {{ cta2_text | escape }}
+                  </a>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+</pro-agg-hero-slider>
+
+{%- if request.design_mode -%}
+  <script src="{{ 'theme-editor.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "PRO-AGG Hero Slider",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Slider Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Auto-rotate slides",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Auto-rotate speed",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "transition_type",
+      "label": "Transition type",
+      "options": [
+        {
+          "value": "slide",
+          "label": "Slide"
+        },
+        {
+          "value": "fade",
+          "label": "Fade"
+        }
+      ],
+      "default": "slide"
+    },
+    {
+      "type": "select",
+      "id": "content_animation",
+      "label": "Content animation",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "fade",
+          "label": "Fade"
+        },
+        {
+          "value": "slide_up",
+          "label": "Slide up"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        }
+      ],
+      "default": "fade"
+    },
+    {
+      "type": "header",
+      "content": "Controls"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_controls",
+      "label": "Show navigation arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show navigation dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_play_pause",
+      "label": "Show play/pause button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Desktop Height"
+    },
+    {
+      "type": "range",
+      "id": "desktop_min_height",
+      "min": 300,
+      "max": 900,
+      "step": 50,
+      "unit": "px",
+      "label": "Minimum height",
+      "default": 500
+    },
+    {
+      "type": "range",
+      "id": "desktop_max_height",
+      "min": 400,
+      "max": 1200,
+      "step": 50,
+      "unit": "px",
+      "label": "Maximum height",
+      "default": 700
+    },
+    {
+      "type": "header",
+      "content": "Mobile Height"
+    },
+    {
+      "type": "range",
+      "id": "mobile_min_height",
+      "min": 200,
+      "max": 600,
+      "step": 50,
+      "unit": "px",
+      "label": "Minimum height",
+      "default": 400
+    },
+    {
+      "type": "range",
+      "id": "mobile_max_height",
+      "min": 300,
+      "max": 800,
+      "step": 50,
+      "unit": "px",
+      "label": "Maximum height",
+      "default": 600
+    },
+    {
+      "type": "header",
+      "content": "Accessibility"
+    },
+    {
+      "type": "text",
+      "id": "accessibility_label",
+      "label": "Slider description",
+      "info": "Describe the slider for screen readers",
+      "default": "Hero image slider"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Images"
+        },
+        {
+          "type": "image_picker",
+          "id": "desktop_image",
+          "label": "Desktop image"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image (optional)",
+          "info": "If not set, desktop image will be used"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Image alt text",
+          "info": "If empty, heading will be used"
+        },
+        {
+          "type": "range",
+          "id": "image_overlay_opacity",
+          "min": 0,
+          "max": 100,
+          "step": 10,
+          "unit": "%",
+          "label": "Image overlay opacity",
+          "default": 0
+        },
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Explore Your Adventure"
+        },
+        {
+          "type": "select",
+          "id": "heading_size",
+          "label": "Heading size",
+          "options": [
+            {
+              "value": "h3",
+              "label": "Small"
+            },
+            {
+              "value": "h2",
+              "label": "Medium"
+            },
+            {
+              "value": "h1",
+              "label": "Large"
+            },
+            {
+              "value": "h0",
+              "label": "Extra Large"
+            }
+          ],
+          "default": "h1"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "Gear up for your next journey"
+        },
+        {
+          "type": "select",
+          "id": "subheading_size",
+          "label": "Subheading size",
+          "options": [
+            {
+              "value": "small",
+              "label": "Small"
+            },
+            {
+              "value": "medium",
+              "label": "Medium"
+            },
+            {
+              "value": "large",
+              "label": "Large"
+            }
+          ],
+          "default": "medium"
+        },
+        {
+          "type": "header",
+          "content": "Desktop Positioning"
+        },
+        {
+          "type": "select",
+          "id": "content_vertical_position",
+          "label": "Vertical position",
+          "options": [
+            {
+              "value": "flex-start",
+              "label": "Top"
+            },
+            {
+              "value": "center",
+              "label": "Middle"
+            },
+            {
+              "value": "flex-end",
+              "label": "Bottom"
+            }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "select",
+          "id": "content_horizontal_position",
+          "label": "Horizontal position",
+          "options": [
+            {
+              "value": "flex-start",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "flex-end",
+              "label": "Right"
+            }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "range",
+          "id": "content_offset_x",
+          "min": -200,
+          "max": 200,
+          "step": 10,
+          "unit": "px",
+          "label": "Horizontal offset",
+          "default": 0
+        },
+        {
+          "type": "range",
+          "id": "content_offset_y",
+          "min": -200,
+          "max": 200,
+          "step": 10,
+          "unit": "px",
+          "label": "Vertical offset",
+          "default": 0
+        },
+        {
+          "type": "header",
+          "content": "Mobile Positioning"
+        },
+        {
+          "type": "select",
+          "id": "mobile_content_vertical_position",
+          "label": "Vertical position (Mobile)",
+          "options": [
+            {
+              "value": "flex-start",
+              "label": "Top"
+            },
+            {
+              "value": "center",
+              "label": "Middle"
+            },
+            {
+              "value": "flex-end",
+              "label": "Bottom"
+            }
+          ],
+          "default": "flex-end"
+        },
+        {
+          "type": "select",
+          "id": "mobile_content_horizontal_position",
+          "label": "Horizontal position (Mobile)",
+          "options": [
+            {
+              "value": "flex-start",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "flex-end",
+              "label": "Right"
+            }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "header",
+          "content": "Colors"
+        },
+        {
+          "type": "color",
+          "id": "desktop_text_color",
+          "label": "Desktop text color",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color",
+          "id": "mobile_text_color",
+          "label": "Mobile text color",
+          "default": "#ffffff"
+        },
+        {
+          "type": "header",
+          "content": "Call to Action 1"
+        },
+        {
+          "type": "text",
+          "id": "cta1_text",
+          "label": "Button text",
+          "default": "Shop Now"
+        },
+        {
+          "type": "url",
+          "id": "cta1_link",
+          "label": "Button link"
+        },
+        {
+          "type": "select",
+          "id": "cta1_style",
+          "label": "Button style",
+          "options": [
+            {
+              "value": "primary",
+              "label": "Primary"
+            },
+            {
+              "value": "secondary",
+              "label": "Secondary"
+            },
+            {
+              "value": "outline",
+              "label": "Outline"
+            }
+          ],
+          "default": "primary"
+        },
+        {
+          "type": "header",
+          "content": "Call to Action 2"
+        },
+        {
+          "type": "text",
+          "id": "cta2_text",
+          "label": "Button text"
+        },
+        {
+          "type": "url",
+          "id": "cta2_link",
+          "label": "Button link"
+        },
+        {
+          "type": "select",
+          "id": "cta2_style",
+          "label": "Button style",
+          "options": [
+            {
+              "value": "primary",
+              "label": "Primary"
+            },
+            {
+              "value": "secondary",
+              "label": "Secondary"
+            },
+            {
+              "value": "outline",
+              "label": "Outline"
+            }
+          ],
+          "default": "secondary"
+        },
+        {
+          "type": "header",
+          "content": "CTA Layout"
+        },
+        {
+          "type": "select",
+          "id": "cta_layout",
+          "label": "Desktop layout",
+          "options": [
+            {
+              "value": "inline",
+              "label": "Side by side"
+            },
+            {
+              "value": "stacked",
+              "label": "Stacked"
+            }
+          ],
+          "default": "inline",
+          "info": "Mobile always stacks CTAs"
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_cta2_mobile",
+          "label": "Hide second CTA on mobile",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "PRO-AGG Hero Slider",
+      "blocks": [
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
