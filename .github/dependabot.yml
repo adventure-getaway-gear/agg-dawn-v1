@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "adventure-getaway-gear-staging"
+    labels:
+      - "dependencies"
+      - "github_actions"
+    commit-message:
