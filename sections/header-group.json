@@ -13,49 +13,6 @@
   "sections": {
     "1759887590ef88ea4d": {
       "type": "_blocks",
-      "blocks": {
-        "ai_gen_block_5b0e16a_aTUYFE": {
-          "type": "ai_gen_block_5b0e16a",
-          "settings": {
-            "logo": "shopify://shop_images/agg-logo-badge-1200.png",
-            "logo_text": "Adventure Getaway Gear",
-            "logo_height": 50,
-            "logo_text_size": 24,
-            "logo_text_color": "#121212",
-            "menu": "main-menu",
-            "nav_font_size": 16,
-            "nav_font_weight": "500",
-            "nav_spacing": 20,
-            "nav_text_color": "#121212",
-            "nav_hover_color": "#334FB4",
-            "show_search": true,
-            "show_account": true,
-            "show_cart": true,
-            "icon_color": "#121212",
-            "cart_count_bg_color": "#334FB4",
-            "cart_count_text_color": "#FFFFFF",
-            "show_announcement": false,
-            "announcement_text": "Free shipping on orders over $75",
-            "announcement_link": "",
-            "announcement_dismissible": true,
-            "announcement_font_size": 14,
-            "announcement_padding": 12,
-            "announcement_bg_color": "#334FB4",
-            "announcement_text_color": "#FFFFFF",
-            "sticky_header": true,
-            "header_padding_vertical": 20,
-            "header_bg_color": "#FFFFFF",
-            "border_thickness": 1,
-            "border_color": "#E5E5E5",
-            "mobile_nav_bg_color": "#FFFFFF",
-            "mobile_nav_text_color": "#121212"
-          },
-          "blocks": {}
-        }
-      },
-      "block_order": [
-        "ai_gen_block_5b0e16a_aTUYFE"
-      ],
       "settings": {}
     },
     "announcement-bar": {
