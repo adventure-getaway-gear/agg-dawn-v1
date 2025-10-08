@@ -65,24 +65,6 @@
         </span>
       </button>
 
-      {%- if section.settings.show_dots -%}
-        <div class="pro_agg_slider__dots" role="tablist">
-          {%- for block in section.blocks -%}
-            <button
-              type="button"
-              class="pro_agg_slider__dot{% if forloop.first %} pro_agg_slider__dot--active{% endif %}"
-              role="tab"
-              aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}"
-              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-              aria-controls="ProAggSlide-{{ section.id }}-{{ forloop.index }}"
-              data-slide-index="{{ forloop.index0 }}"
-            >
-              <span class="visually-hidden">Slide {{ forloop.index }}</span>
-            </button>
-          {%- endfor -%}
-        </div>
-      {%- endif -%}
-
       <button
         type="button"
         class="pro_agg_slider__button pro_agg_slider__button--next"
@@ -93,23 +75,41 @@
           {{- 'icon-caret.svg' | inline_asset_content -}}
         </span>
       </button>
-
-      {%- if section.settings.show_play_pause and section.settings.autoplay -%}
-        <button
-          type="button"
-          class="pro_agg_slider__play_pause"
-          aria-label="Pause slideshow"
-          data-state="playing"
-        >
-          <span class="svg-wrapper svg-wrapper--pause">
-            {{- 'icon-pause.svg' | inline_asset_content -}}
-          </span>
-          <span class="svg-wrapper svg-wrapper--play">
-            {{- 'icon-play.svg' | inline_asset_content -}}
-          </span>
-        </button>
-      {%- endif -%}
     </div>
+
+    {%- if section.settings.show_dots -%}
+      <div class="pro_agg_slider__dots" role="tablist">
+        {%- for block in section.blocks -%}
+          <button
+            type="button"
+            class="pro_agg_slider__dot{% if forloop.first %} pro_agg_slider__dot--active{% endif %}"
+            role="tab"
+            aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}"
+            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+            aria-controls="ProAggSlide-{{ section.id }}-{{ forloop.index }}"
+            data-slide-index="{{ forloop.index0 }}"
+          >
+            <span class="visually-hidden">Slide {{ forloop.index }}</span>
+          </button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.show_play_pause and section.settings.autoplay -%}
+      <button
+        type="button"
+        class="pro_agg_slider__play_pause"
+        aria-label="Pause slideshow"
+        data-state="playing"
+      >
+        <span class="svg-wrapper svg-wrapper--pause">
+          {{- 'icon-pause.svg' | inline_asset_content -}}
+        </span>
+        <span class="svg-wrapper svg-wrapper--play">
+          {{- 'icon-play.svg' | inline_asset_content -}}
+        </span>
+      </button>
+    {%- endif -%}
   {%- endif -%}
 
   <div class="pro_agg_slider__track" data-transition="{{ transition_type }}">
