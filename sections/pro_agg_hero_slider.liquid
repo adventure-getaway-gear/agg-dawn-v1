@@ -2,8 +2,6 @@
 <script src="{{ 'pro_agg_hero_slider.js' | asset_url }}" defer="defer"></script>
 
 {%- liquid
-  assign desktop_height = section.settings.desktop_height
-  assign mobile_height = section.settings.mobile_height
   assign transition_type = section.settings.transition_type
   assign content_animation = section.settings.content_animation
 -%}
@@ -130,7 +128,7 @@
         assign cta_layout = block.settings.cta_layout
         assign hide_cta2_mobile = block.settings.hide_cta2_mobile
         assign image_alt = block.settings.image_alt
-        
+
         if image_alt == blank and heading != blank
           assign image_alt = heading
         endif
@@ -154,7 +152,7 @@
                 assign fetchpriority = 'high'
               endif
             -%}
-            
+
             <picture class="pro_agg_slide__picture pro_agg_slide__picture--desktop">
               {{
                 desktop_image
@@ -213,7 +211,9 @@
                   <a
                     href="{{ cta1_link | default: '#' }}"
                     class="pro_agg_cta pro_agg_cta--{{ cta1_style }}"
-                    {% if cta1_link == blank %}role="link" aria-disabled="true"{% endif %}
+                    {% if cta1_link == blank %}
+                      role="link" aria-disabled="true"
+                    {% endif %}
                   >
                     {{ cta1_text | escape }}
                   </a>
@@ -223,7 +223,9 @@
                   <a
                     href="{{ cta2_link | default: '#' }}"
                     class="pro_agg_cta pro_agg_cta--{{ cta2_style }}{% if hide_cta2_mobile %} pro_agg_cta--hide-mobile{% endif %}"
-                    {% if cta2_link == blank %}role="link" aria-disabled="true"{% endif %}
+                    {% if cta2_link == blank %}
+                      role="link" aria-disabled="true"
+                    {% endif %}
                   >
                     {{ cta2_text | escape }}
                   </a>
@@ -661,8 +663,7 @@
         {
           "type": "text",
           "id": "cta2_text",
-          "label": "Button text",
-          "default": ""
+          "label": "Button text"
         },
         {
           "type": "url",
