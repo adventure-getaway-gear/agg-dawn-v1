@@ -11,7 +11,7 @@
 - If you use the Shopify Customizer, it edits files (e.g., `config/settings_data.json`, `templates/*.json`). **Pull those changes** before more local edits.  
 - Accessibility + SEO always required. Performance matters (images sized, lazy load, good Lighthouse).
 
-## Naming &amp; Theme Conventions
+## Naming & Theme Conventions
 - All custom files/classes **prefix**: `pro_agg_` (e.g., `sections/pro_agg_hero_slider.liquid`).  
 - Section **display names** start with `PRO‑AGG ` and must be ≤ 20 chars.  
 - Themes:
