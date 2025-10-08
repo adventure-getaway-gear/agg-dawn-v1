@@ -1,7 +1,63 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "name": "t:sections.header.name",
   "type": "header",
   "sections": {
+    "1759887590ef88ea4d": {
+      "type": "_blocks",
+      "blocks": {
+        "ai_gen_block_5b0e16a_aTUYFE": {
+          "type": "ai_gen_block_5b0e16a",
+          "settings": {
+            "logo": "shopify://shop_images/agg-logo-badge-1200.png",
+            "logo_text": "Adventure Getaway Gear",
+            "logo_height": 50,
+            "logo_text_size": 24,
+            "logo_text_color": "#121212",
+            "menu": "main-menu",
+            "nav_font_size": 16,
+            "nav_font_weight": "500",
+            "nav_spacing": 20,
+            "nav_text_color": "#121212",
+            "nav_hover_color": "#334FB4",
+            "show_search": true,
+            "show_account": true,
+            "show_cart": true,
+            "icon_color": "#121212",
+            "cart_count_bg_color": "#334FB4",
+            "cart_count_text_color": "#FFFFFF",
+            "show_announcement": false,
+            "announcement_text": "Free shipping on orders over $75",
+            "announcement_link": "",
+            "announcement_dismissible": true,
+            "announcement_font_size": 14,
+            "announcement_padding": 12,
+            "announcement_bg_color": "#334FB4",
+            "announcement_text_color": "#FFFFFF",
+            "sticky_header": true,
+            "header_padding_vertical": 20,
+            "header_bg_color": "#FFFFFF",
+            "border_thickness": 1,
+            "border_color": "#E5E5E5",
+            "mobile_nav_bg_color": "#FFFFFF",
+            "mobile_nav_text_color": "#121212"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "ai_gen_block_5b0e16a_aTUYFE"
+      ],
+      "settings": {}
+    },
     "announcement-bar": {
       "type": "announcement-bar",
       "blocks": {
@@ -9,28 +65,37 @@
           "type": "announcement",
           "settings": {
             "text": "Welcome to our store",
-            "text_alignment": "center",
-            "color_scheme": "scheme-1",
             "link": ""
           }
         }
       },
       "block_order": [
         "announcement-bar-0"
-      ]
+      ],
+      "settings": {
+        "auto_rotate": false,
+        "change_slides_speed": 5,
+        "color_scheme": "",
+        "show_line_separator": true,
+        "show_social": false,
+        "enable_country_selector": false,
+        "enable_language_selector": false
+      }
     },
     "header": {
       "type": "header",
       "settings": {
-        "color_scheme": "scheme-1",
         "logo_position": "middle-left",
+        "mobile_logo_position": "center",
         "menu": "main-menu",
         "menu_type_desktop": "dropdown",
         "sticky_header_type": "on-scroll-up",
         "show_line_separator": true,
+        "color_scheme": "scheme-1",
+        "menu_color_scheme": "",
         "enable_country_selector": true,
         "enable_language_selector": true,
-        "mobile_logo_position": "center",
+        "enable_customer_avatar": true,
         "margin_bottom": 0,
         "padding_top": 20,
         "padding_bottom": 20
@@ -38,6 +103,7 @@
     }
   },
   "order": [
+    "1759887590ef88ea4d",
     "announcement-bar",
     "header"
   ]
