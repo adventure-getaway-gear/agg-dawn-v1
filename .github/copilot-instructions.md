@@ -11,13 +11,13 @@
 - If you use the Shopify Customizer, it edits files (e.g., `config/settings_data.json`, `templates/*.json`). **Pull those changes** before more local edits.  
 - Accessibility + SEO always required. Performance matters (images sized, lazy load, good Lighthouse).
 
-## Naming & Theme Conventions
+## Naming &amp; Theme Conventions
 - All custom files/classes **prefix**: `pro_agg_` (e.g., `sections/pro_agg_hero_slider.liquid`).  
 - Section **display names** start with `PRO‑AGG ` and must be ≤ 20 chars.  
 - Themes:
-  - `main` → **AGG Live (GitHub)**  
-  - `adventure-getaway-gear-staging` → **AGG Staging (GitHub)**  
-  - Temporary previews may point to feature branches.
+  - `main` → **AGG Live (GitHub)**
+  - `adventure-getaway-gear-staging` → **AGG Staging (GitHub)**
+  - Temporary preview themes may point to feature branches.
 
 ## PR Workflow
 - Open **draft PRs** from feature branch → `adventure-getaway-gear-staging`.  
